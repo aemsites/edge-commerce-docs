@@ -1,0 +1,101 @@
+/* Single JSON example panel for the API reference pages. Self-contained dark
+   panel + a compact prism theme (VS Code Dark tones) for JSON tokens. */
+
+.code-sample {
+  position: relative;
+  margin: 16px 0 24px;
+
+  /* Avoid a flash of unstyled code; revealed once prism has run. */
+  visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.code-sample.is-highlighted {
+  visibility: visible;
+}
+
+/* Header bar ------------------------------------------------------------- */
+
+.code-sample .code-sample-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #161b22;
+  border: 1px solid light-dark(var(--s2-gray-300), var(--s2-gray-800));
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.code-sample .code-sample-title {
+  font-family: ui-monospace, "SF Mono", menlo, consolas, monospace;
+  font-size: 12px;
+  color: #c9d1d9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.code-sample pre {
+  margin: 0;
+  padding: 20px 22px;
+  overflow: auto;
+  background: #0d1117;
+  color: #e6edf3;
+  border-radius: 12px;
+  border: 1px solid light-dark(var(--s2-gray-300), var(--s2-gray-800));
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+/* When a header bar is present, flatten the corners at the seam between them. */
+.code-sample .code-sample-head + pre {
+  border-radius: 0 0 12px 12px;
+}
+
+.code-sample code[class*="language-"] {
+  font-family: ui-monospace, "SF Mono", menlo, consolas, monospace;
+  white-space: pre;
+  background: none;
+  padding: 0;
+}
+
+/* Copy button ------------------------------------------------------------ */
+
+.code-sample .copy-code-btn {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #e6edf3;
+  background: rgb(255 255 255 / 12%);
+  transition: background 0.15s ease;
+}
+
+.code-sample .copy-code-btn:hover {
+  background: rgb(255 255 255 / 20%);
+}
+
+.code-sample .copy-code-btn.is-copied {
+  background: var(--s2-green-700);
+  opacity: 1;
+}
+
+/* JSON token colors ------------------------------------------------------ */
+
+.code-sample .token.property { color: #79c0ff; }
+
+.code-sample .token.string { color: #a5d6ff; }
+
+.code-sample .token.number,
+.code-sample .token.boolean,
+.code-sample .token.null,
+.code-sample .token.keyword { color: #ffa657; }
+
+.code-sample .token.punctuation,
+.code-sample .token.operator { color: #8b949e; }

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Compute an estimate — Helix Commerce API</title>
+    <meta name="description" content="Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`.">
+    <meta name="template" content="docs"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Estimate</p>
+        <h1>Compute an estimate</h1>
+        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/estimate/{estimateType}</code></p>
+        <p>Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`.</p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+            <tr><td><code>estimateType</code></td><td><code>"tax" | "shipping" | "price" | "order"</code></td><td>yes</td><td>Which estimate to compute.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge">200</span> The computed estimate. Body shape varies by `estimateType`.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge">400</span> The request failed schema validation or `country` could not be resolved.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code.</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message.</td></tr>
+            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge">404</span> Unknown `estimateType`.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/estimate/{estimateType}</span></div>
+          <pre><code class="language-json">{
+        "country": "US",
+        "shipping": {
+          "country": "US",
+          "state": "CA"
+        },
+        "items": [
+          {
+            "sku": "SKU-1",
+            "quantity": 1,
+            "price": {
+              "final": "10.00",
+              "currency": "USD"
+            }
+          }
+        ]
+      }</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <pre><code class="language-json">{
+        "code": "validation_failed",
+        "message": "invalid request",
+        "errors": [
+          {
+            "path": "$.country",
+            "message": "is required"
+          }
+        ]
+      }</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · 404</span></div>
+          <pre><code class="language-json">{
+        "code": "not_found",
+        "message": "route not found",
+        "resource": "route"
+      }</code></pre>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

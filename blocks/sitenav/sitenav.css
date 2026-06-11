@@ -1,83 +1,132 @@
+/* Rules are ordered by DOM structure (brand → tree → toggle), not by
+   specificity; the cascade is unambiguous here so the readability win wins. */
+/* stylelint-disable no-descending-specificity */
+
 .sitenav {
   grid-area: sitenav;
-  padding: 32px 36px 36px;
+  padding: 32px 20px 48px;
   font-size: 14px;
 
   a.docket-brand-logo {
     display: block;
     margin-bottom: calc(36px + 12px);
+
+    svg {
+      display: block;
+      height: 28px;
+    }
   }
 
-  svg {
-    display: block;
-    height: 28px;
-  }
+  /* Tree ------------------------------------------------------------------ */
 
-  ul {
+  .sitenav-tree,
+  .sitenav-tree ul {
     margin: 0;
-    padding: 0 0 0 12px;
-    box-sizing: border-box;
-    list-style: none;
-
-    > li > ul {
-      margin-right: 16px;
-      display: none;
-    }
-
-    &.is-open {
-      > li > .expand-tree {
-        transform: rotate(90deg);
-      }
-
-      > li > ul {
-        display: block;
-      }
-    }
-  }
-
-  li {
-    margin-block: 1rem 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-
-    ul {
-      flex: 1 0 100%;
-    }
-  }
-
-  /* First Level */
-  > ul {
     padding: 0;
+    list-style: none;
+    box-sizing: border-box;
   }
+
+  .sitenav-tree > li {
+    margin-top: 2px;
+
+    /* Top-level (API/tag) row: group label + expand toggle on one line. */
+    > .api-group {
+      display: inline-block;
+      font-weight: 700;
+      color: light-dark(var(--s2-gray-800), var(--s2-gray-100));
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        background-color: light-dark(var(--s2-gray-100), var(--s2-gray-800));
+      }
+    }
+
+    /* Nested operation list — collapsed until the section is open. */
+    > ul {
+      display: none;
+      margin: 2px 0 10px 9px;
+      padding-left: 10px;
+      border-left: 1px solid light-dark(var(--s2-gray-200), var(--s2-gray-800));
+    }
+
+    &.is-open > ul {
+      display: block;
+    }
+
+    &.is-open > .expand-tree {
+      transform: rotate(90deg);
+    }
+  }
+
+  /* Operation rows: method badge + summary. */
+  .sitenav-tree li li {
+    margin-block: 0;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: light-dark(var(--s2-gray-700), var(--s2-gray-300));
+      text-decoration: none;
+      line-height: 1.3;
+
+      &:hover {
+        background-color: light-dark(var(--s2-gray-100), var(--s2-gray-800));
+        text-decoration: none;
+      }
+    }
+  }
+
+  .sitenav-tree a.is-active {
+    background-color: light-dark(var(--s2-blue-200), var(--s2-gray-800));
+    color: light-dark(var(--s2-blue-1300), var(--s2-gray-50));
+    font-weight: 600;
+  }
+
+  .http-method {
+    flex: 0 0 auto;
+    min-width: 46px;
+    text-align: center;
+    font-size: 9px;
+    padding: 3px 4px;
+  }
+
+  .op-summary {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Expand toggle --------------------------------------------------------- */
 
   .expand-tree {
     padding: 0;
-    margin: 0;
+    margin-left: 2px;
     border: none;
     background-color: transparent;
     width: 16px;
     height: 16px;
+    cursor: pointer;
     color: var(--s2-gray-500);
+    vertical-align: middle;
+    transition: transform 0.15s ease;
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
+      display: block;
     }
-  }
-
-  a {
-    flex: 1 1 0%;
-    display: block;
-    margin-right: 16px;
   }
 }
 
 @media (width >= 900px) {
   .sitenav {
     display: block;
-
     width: 300px;
     position: fixed;
     top: 0;

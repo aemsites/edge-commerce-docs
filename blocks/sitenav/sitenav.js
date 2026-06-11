@@ -7,86 +7,59 @@ const EXP_ICON = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xm
 
 const { codeBase } = getConfig();
 
-function generateSiteList(siteData, pathname) {
-  return Object.keys(siteData).map((key) => {
-    const ul = document.createElement('ul');
+// The API reference nav is generated in helix-commerce-api and synced to
+// /docs/nav.html (push-only). It is a plain <nav><ul> tree: each top-level <li>
+// is an API (tag) — a non-link <span class="api-group"> label plus a nested
+// <ul> of operation links. Each operation has its own page (no hash anchors).
+const NAV_PATH = `${codeBase}/docs/nav.html`;
 
-    const inPath = pathname.startsWith(siteData[key].path);
-    if (inPath) ul.classList.add('is-open');
-
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.innerText = siteData[key].title;
-    a.href = siteData[key].path;
-    li.append(a);
-
-    if (Object.keys(siteData[key].children).length > 0) {
-      const btn = document.createElement('button');
-      btn.className = 'expand-tree';
-      btn.setAttribute('aria-label', 'Expand');
-      btn.innerHTML = EXP_ICON;
-      btn.addEventListener('click', () => {
-        btn.closest('ul').classList.toggle('is-open');
-      });
-      const children = generateSiteList(siteData[key].children, pathname);
-      li.append(btn, ...children);
-    }
-    ul.append(li);
-    return ul;
-  });
+/** Compare an href to the current location by pathname only. */
+function samePath(href) {
+  try {
+    return new URL(href, window.location.origin).pathname === window.location.pathname;
+  } catch {
+    return false;
+  }
 }
 
-function formatSiteData(pageData) {
-  // Sort so that index pages (trailing slash) are processed last
-  const sorted = [...pageData].sort((a, b) => {
-    const aIsIndex = a.path.endsWith('/');
-    const bIsIndex = b.path.endsWith('/');
-    if (aIsIndex && !bIsIndex) return 1;
-    if (!aIsIndex && bIsIndex) return -1;
-    return 0;
-  });
+/** Decorate one top-level API entry: add expand toggle + open state. */
+function decorateEntry(li) {
+  const label = li.querySelector(':scope > .api-group');
+  const childList = li.querySelector(':scope > ul');
+  if (!label || !childList) return;
 
-  const root = sorted.reduce((acc, item) => {
-    // Normalize path: remove trailing slash
-    const normalizedPath = item.path.replace(/\/$/, '');
-    const segments = normalizedPath.substring(1).split('/').filter(Boolean);
+  const btn = document.createElement('button');
+  btn.className = 'expand-tree';
+  btn.setAttribute('aria-label', 'Expand');
+  btn.innerHTML = EXP_ICON;
+  const toggle = () => li.classList.toggle('is-open');
+  btn.addEventListener('click', toggle);
+  // The group label is not a link, so let it toggle the section too.
+  label.addEventListener('click', toggle);
+  label.insertAdjacentElement('afterend', btn);
 
-    if (segments.length === 0) return acc;
-
-    let currentNode = acc;
-
-    segments.forEach((segment, index) => {
-      // Create node if it doesn't exist
-      if (!currentNode[segment]) {
-        currentNode[segment] = {
-          children: {},
-          title: segment,
-          path: segments.reduce((segAcc, seg, idx) => {
-            if (idx <= index) return `${segAcc}/${seg}`;
-            return segAcc;
-          }, ''),
-        };
-      }
-
-      // If this is the last segment, set title and path
-      if (index === segments.length - 1) {
-        currentNode[segment].title = item.title;
-        currentNode[segment].path = item.path;
-      }
-
-      currentNode = currentNode[segment].children;
-    });
-
-    return acc;
-  }, {});
-  return root;
+  // Expand the section containing the current page's operation.
+  if ([...childList.querySelectorAll('a')].some((a) => samePath(a.href))) {
+    li.classList.add('is-open');
+  }
 }
 
-async function fetchSiteData() {
-  const resp = await fetch(`${codeBase}/query-index.json`);
-  if (!resp.ok) throw Error('Could not fetch query index');
-  const { data } = await resp.json();
-  return data;
+/** Highlight the operation link matching the current page; keep its section open. */
+function setActive(root) {
+  root.querySelectorAll('a.is-active').forEach((a) => a.classList.remove('is-active'));
+  const active = [...root.querySelectorAll('a')].find((a) => samePath(a.href));
+  if (!active) return;
+  active.classList.add('is-active');
+  active.closest('.sitenav-tree > li')?.classList.add('is-open');
+}
+
+async function fetchNav() {
+  const resp = await fetch(NAV_PATH);
+  if (!resp.ok) throw Error(`Could not fetch ${NAV_PATH}`);
+  const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
+  const list = doc.querySelector('nav ul');
+  if (!list) throw Error('nav.html has no <ul>');
+  return list;
 }
 
 export default async function init(el) {
@@ -94,18 +67,16 @@ export default async function init(el) {
   link.href = '/';
   link.className = 'docket-brand-logo';
   link.setAttribute('aria-label', 'Home');
-
   const svg = await getSvg({ paths: [`${codeBase}/img/logos/site.svg`] });
   link.append(svg[0]);
-
   el.append(link);
 
   try {
-    const { pathname } = window.location;
-    const siteData = await fetchSiteData();
-    const formatted = formatSiteData(siteData);
-    const siteList = generateSiteList(formatted, pathname);
-    el.append(...siteList);
+    const tree = document.importNode(await fetchNav(), true);
+    tree.classList.add('sitenav-tree');
+    tree.querySelectorAll(':scope > li').forEach(decorateEntry);
+    el.append(tree);
+    setActive(tree);
   } catch (e) {
     throw Error(e);
   }

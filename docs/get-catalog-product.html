@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Retrieve a product — Helix Commerce API</title>
+    <meta name="description" content="Returns the stored ProductBus entry for the given path.">
+    <meta name="template" content="docs"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Catalog</p>
+        <h1>Retrieve a product</h1>
+        <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
+        <p>Returns the stored ProductBus entry for the given path.</p>
+        <p class="permissions">Required permissions: <code>catalog:read</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. `/us/en/products/blender-pro-500.json`), or the literal `*` for bulk writes.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge">200</span> The stored product.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+          </table>
+        </div>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>sku</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>urlKey</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>description</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>name</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>metaTitle</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>metaDescription</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>gtin</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>url</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>brand</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>type</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>availability</code></td><td><code>"BackOrder" | "Discontinued" | "InStock" | "InStoreOnly" | "LimitedAvailability" | "MadeToOrder" | "OnlineOnly" | "OutOfStock" | "PreOrder" | "PreSale" | "Reserved" | "SoldOut"</code></td><td>no</td><td></td></tr>
+            <tr><td><code>availabilityDate</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>price</code></td><td><code>object</code></td><td>no</td><td>Price information for a product or variant.</td></tr>
+            <tr><td><code>itemCondition</code></td><td><code>"DamagedCondition" | "NewCondition" | "RefurbishedCondition" | "UsedCondition"</code></td><td>no</td><td></td></tr>
+            <tr><td><code>metadata</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>options</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>aggregateRating</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>specifications</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>images</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>variants</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>jsonld</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>custom</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>jsonldExtensions</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>shipping</code></td><td><code>string | object | object[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>bundleItems</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>feeds</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>weight</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>shippingDimensions</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>taxCode</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>taxData</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>country</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>locale</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge">400</span> The path is malformed.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code.</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message.</td></tr>
+            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · 200</span></div>
+          <pre><code class="language-json">{
+        "sku": "PROD-123",
+        "name": "Blender Pro 500",
+        "path": "/us/en/products/blender-pro-500"
+      }</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <pre><code class="language-json">{
+        "code": "validation_failed",
+        "message": "invalid request",
+        "errors": [
+          {
+            "path": "$.path",
+            "message": "invalid format"
+          }
+        ]
+      }</code></pre>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>
