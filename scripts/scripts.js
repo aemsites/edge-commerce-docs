@@ -32,6 +32,21 @@ function detectTutorial() {
   document.querySelector('main').append(section);
 }
 
+// Early-access notice. Pages opt in with `<meta name="labs" content="...">`; the
+// content names the team (e.g. "Commerce") and is woven into the tagline. We
+// prepend the block to the first section so loadArea decorates + loads it; the
+// block builds its own copy from the `data-labs` value.
+function detectLabs() {
+  const labs = document.querySelector('meta[name="labs"]')?.content;
+  if (!labs) return;
+  const firstSection = document.querySelector('main > div');
+  if (!firstSection) return;
+  const block = document.createElement('div');
+  block.className = 'early-access';
+  block.dataset.labs = labs;
+  firstSection.prepend(block);
+}
+
 const loadNav = async (name) => {
   const position = name === 'sitenav' ? 'beforebegin' : 'afterend';
   const main = document.querySelector('main');
@@ -68,11 +83,12 @@ export async function loadPage() {
 
   setColorScheme();
   detectTutorial();
+  detectLabs();
   setLabPlaceholders();
   loadNav('sitenav');
 
   await loadArea();
   await loadNav('pagenav');
-};
+}
 
 await loadPage();
