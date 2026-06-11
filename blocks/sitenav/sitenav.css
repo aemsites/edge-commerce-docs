@@ -8,12 +8,31 @@
   font-size: 14px;
 
   a.docket-brand-logo {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
     margin-bottom: calc(36px + 12px);
+    color: light-dark(var(--s2-gray-900), var(--s2-gray-50));
+    text-decoration: none;
 
     svg {
       display: block;
+      flex: 0 0 auto;
       height: 28px;
+      width: auto;
+    }
+
+    .docket-brand-name {
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      text-decoration: none;
     }
   }
 

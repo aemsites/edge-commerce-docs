@@ -66,9 +66,13 @@ export default async function init(el) {
   const link = document.createElement('a');
   link.href = '/';
   link.className = 'docket-brand-logo';
-  link.setAttribute('aria-label', 'Home');
+  link.setAttribute('aria-label', 'Edge Commerce home');
   const svg = await getSvg({ paths: [`${codeBase}/img/logos/site.svg`] });
   link.append(svg[0]);
+  const name = document.createElement('span');
+  name.className = 'docket-brand-name';
+  name.textContent = 'Edge Commerce';
+  link.append(name);
   el.append(link);
 
   try {
