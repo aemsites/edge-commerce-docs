@@ -54,7 +54,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> OTP challenge; pass these values to /auth/callback.</h3>
+        <h3><span class="status-badge status-2xx">200</span> OTP challenge; pass these values to /auth/callback.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
@@ -69,7 +69,7 @@
             <tr><td><code>exp</code></td><td><code>number</code></td><td>yes</td><td>Expiry timestamp (ms epoch) of the OTP code.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> Missing/invalid email, country, or locale.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Missing/invalid email, country, or locale.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -78,7 +78,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">401</span> Auth is not enabled for this org/site.</h3>
+        <h3><span class="status-badge status-4xx">401</span> Auth is not enabled for this org/site.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -89,7 +89,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">500</span> Server misconfigured (OTP/JWT secret unset).</h3>
+        <h3><span class="status-badge status-5xx">500</span> Server misconfigured (OTP/JWT secret unset).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -105,45 +105,45 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/auth/login</span></div>
           <pre><code class="language-json">{
-        "email": "user@example.com",
-        "country": "us",
-        "locale": "en-US"
-      }</code></pre>
+  "email": "user@example.com",
+  "country": "us",
+  "locale": "en-US"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 200</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
           <pre><code class="language-json">{
-        "email": "user@example.com",
-        "hash": "a1b2c3...",
-        "exp": 1700000000000
-      }</code></pre>
+  "email": "user@example.com",
+  "hash": "a1b2c3...",
+  "exp": 1700000000000
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
-        "message": "Invalid request",
-        "errors": [
-          {
-            "path": "$.email",
-            "message": "invalid email format"
-          }
-        ]
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
+  "message": "Invalid request",
+  "errors": [
+    {
+      "path": "$.email",
+      "message": "invalid email format"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 401</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">401</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_AUTH_NOT_ENABLED",
-        "message": "auth is not enabled"
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_AUTH_NOT_ENABLED",
+  "message": "auth is not enabled"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 500</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">500</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_MISCONFIGURED",
-        "message": "server misconfigured"
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_MISCONFIGURED",
+  "message": "server misconfigured"
+}</code></pre>
         </div>
       </div>
     </main>

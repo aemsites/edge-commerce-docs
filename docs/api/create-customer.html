@@ -57,8 +57,8 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The created customer.</h3>
-        <h3><span class="status-badge">400</span> The customer failed schema validation.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The created customer.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The customer failed schema validation.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -67,7 +67,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">409</span> A customer with this email already exists.</h3>
+        <h3><span class="status-badge status-4xx">409</span> A customer with this email already exists.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -83,31 +83,31 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/customers</span></div>
           <pre><code class="language-json">{
-        "firstName": "Jane",
-        "lastName": "Doe",
-        "email": "jane@example.com"
-      }</code></pre>
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane@example.com"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid customer",
-        "errors": [
-          {
-            "path": "$.email",
-            "message": "condition 'pattern' failed"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid customer",
+  "errors": [
+    {
+      "path": "$.email",
+      "message": "condition 'pattern' failed"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 409</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">409</span></span></div>
           <pre><code class="language-json">{
-        "code": "already_exists",
-        "message": "customer already exists",
-        "resource": "customer"
-      }</code></pre>
+  "code": "already_exists",
+  "message": "customer already exists",
+  "resource": "customer"
+}</code></pre>
         </div>
       </div>
     </main>

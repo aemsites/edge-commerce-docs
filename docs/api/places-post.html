@@ -46,14 +46,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> For `validate`, a normalized envelope (`action`, `formattedAddress`, `addressComponents`, `uspsDeliverable`). For `autocomplete`/`details`, the proxied Google response.</h3>
+        <h3><span class="status-badge status-2xx">200</span> For `validate`, a normalized envelope (`action`, `formattedAddress`, `addressComponents`, `uspsDeliverable`). For `autocomplete`/`details`, the proxied Google response.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> A required field was missing or invalid (e.g. empty `address.addressLines`).</h3>
+        <h3><span class="status-badge status-4xx">400</span> A required field was missing or invalid (e.g. empty `address.addressLines`).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -62,7 +62,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">403</span> Request Origin is missing or not in the site's allowed origins.</h3>
+        <h3><span class="status-badge status-4xx">403</span> Request Origin is missing or not in the site's allowed origins.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -73,7 +73,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">500</span> The Google Places API key is not configured.</h3>
+        <h3><span class="status-badge status-5xx">500</span> The Google Places API key is not configured.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -84,7 +84,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">502</span> The upstream Google API failed or was unreachable.</h3>
+        <h3><span class="status-badge status-5xx">502</span> The upstream Google API failed or was unreachable.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -100,52 +100,52 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/places/{action}</span></div>
           <pre><code class="language-json">{
-        "address": {
-          "addressLines": [
-            "123 Main St"
-          ],
-          "regionCode": "US"
-        }
-      }</code></pre>
+  "address": {
+    "addressLines": [
+      "123 Main St"
+    ],
+    "regionCode": "US"
+  }
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid request",
-        "errors": [
-          {
-            "path": "$.address.addressLines",
-            "message": "must be a non-empty array"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid request",
+  "errors": [
+    {
+      "path": "$.address.addressLines",
+      "message": "must be a non-empty array"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 403</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">403</span></span></div>
           <pre><code class="language-json">{
-        "code": "forbidden",
-        "message": "forbidden"
-      }</code></pre>
+  "code": "forbidden",
+  "message": "forbidden"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 500</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">500</span></span></div>
           <pre><code class="language-json">{
-        "code": "misconfigured",
-        "message": "misconfigured"
-      }</code></pre>
+  "code": "misconfigured",
+  "message": "misconfigured"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 502</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">502</span></span></div>
           <pre><code class="language-json">{
-        "code": "upstream_error",
-        "message": "google_places error",
-        "retryable": true,
-        "details": {
-          "upstream": "google_places",
-          "status": 502
-        }
-      }</code></pre>
+  "code": "upstream_error",
+  "message": "google_places error",
+  "retryable": true,
+  "details": {
+    "upstream": "google_places",
+    "status": 502
+  }
+}</code></pre>
         </div>
       </div>
     </main>

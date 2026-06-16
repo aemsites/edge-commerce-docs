@@ -66,14 +66,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The created order, wrapped as `{ order }`.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The created order, wrapped as `{ order }`.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> The order failed schema validation, or the estimateToken was invalid/expired/mismatched.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The order failed schema validation, or the estimateToken was invalid/expired/mismatched.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -82,7 +82,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">403</span> Authenticated caller lacks orders:write, has an org/site mismatch, or email mismatch.</h3>
+        <h3><span class="status-badge status-4xx">403</span> Authenticated caller lacks orders:write, has an org/site mismatch, or email mismatch.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -93,7 +93,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">422</span> An unauthorized free ($0) item was requested beyond the estimate token grant.</h3>
+        <h3><span class="status-badge status-4xx">422</span> An unauthorized free ($0) item was requested beyond the estimate token grant.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -109,58 +109,58 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/orders</span></div>
           <pre><code class="language-json">{
-        "customer": {
-          "email": "jane@example.com",
-          "firstName": "Jane",
-          "lastName": "Doe"
-        },
-        "shipping": {
-          "name": "Jane Doe",
-          "email": "jane@example.com",
-          "address1": "123 Main St",
-          "city": "Anytown",
-          "state": "CA",
-          "zip": "12345",
-          "country": "US"
-        },
-        "country": "us",
-        "locale": "en-US",
-        "items": [
-          {
-            "name": "Product 1",
-            "sku": "sku1",
-            "path": "product-1",
-            "quantity": 1,
-            "price": {
-              "final": "100",
-              "currency": "USD"
-            }
-          }
-        ]
-      }</code></pre>
+  "customer": {
+    "email": "jane@example.com",
+    "firstName": "Jane",
+    "lastName": "Doe"
+  },
+  "shipping": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "address1": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zip": "12345",
+    "country": "US"
+  },
+  "country": "us",
+  "locale": "en-US",
+  "items": [
+    {
+      "name": "Product 1",
+      "sku": "sku1",
+      "path": "product-1",
+      "quantity": 1,
+      "price": {
+        "final": "100",
+        "currency": "USD"
+      }
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid order",
-        "errors": [
-          {
-            "path": "$.items",
-            "message": "is required"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid order",
+  "errors": [
+    {
+      "path": "$.items",
+      "message": "is required"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 422</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">422</span></span></div>
           <pre><code class="language-json">{
-        "code": "unprocessable",
-        "message": "unprocessable",
-        "details": {
-          "rule": "unauthorized_free_item"
-        }
-      }</code></pre>
+  "code": "unprocessable",
+  "message": "unprocessable",
+  "details": {
+    "rule": "unauthorized_free_item"
+  }
+}</code></pre>
         </div>
       </div>
     </main>

@@ -47,7 +47,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">403</span> Caller lacks orders:write or has an org/site mismatch.</h3>
+        <h3><span class="status-badge status-4xx">403</span> Caller lacks orders:write or has an org/site mismatch.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -58,7 +58,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">501</span> Order deletion is not implemented.</h3>
+        <h3><span class="status-badge status-5xx">501</span> Order deletion is not implemented.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -72,11 +72,11 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 501</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">501</span></span></div>
           <pre><code class="language-json">{
-        "code": "not_implemented",
-        "message": "not implemented"
-      }</code></pre>
+  "code": "not_implemented",
+  "message": "not implemented"
+}</code></pre>
         </div>
       </div>
     </main>

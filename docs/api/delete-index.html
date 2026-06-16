@@ -47,8 +47,8 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">204</span> Index deleted (no content).</h3>
-        <h3><span class="status-badge">400</span> Path is missing or does not end with `/index.json`.</h3>
+        <h3><span class="status-badge status-2xx">204</span> Index deleted (no content).</h3>
+        <h3><span class="status-badge status-4xx">400</span> Path is missing or does not end with `/index.json`.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -57,7 +57,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">404</span> No index exists at the given path.</h3>
+        <h3><span class="status-badge status-4xx">404</span> No index exists at the given path.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -71,25 +71,25 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid request",
-        "errors": [
-          {
-            "path": "$.path",
-            "message": "must end with /index.json"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid request",
+  "errors": [
+    {
+      "path": "$.path",
+      "message": "must end with /index.json"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 404</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
           <pre><code class="language-json">{
-        "code": "not_found",
-        "message": "index not found",
-        "resource": "index"
-      }</code></pre>
+  "code": "not_found",
+  "message": "index not found",
+  "resource": "index"
+}</code></pre>
         </div>
       </div>
     </main>

@@ -48,8 +48,8 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The address was deleted.</h3>
-        <h3><span class="status-badge">404</span> No such address for this customer.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The address was deleted.</h3>
+        <h3><span class="status-badge status-4xx">404</span> No such address for this customer.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -60,7 +60,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">501</span> Updating an address (POST with a resourceId) is not implemented.</h3>
+        <h3><span class="status-badge status-5xx">501</span> Updating an address (POST with a resourceId) is not implemented.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -74,19 +74,19 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 404</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
           <pre><code class="language-json">{
-        "code": "not_found",
-        "message": "address not found",
-        "resource": "address"
-      }</code></pre>
+  "code": "not_found",
+  "message": "address not found",
+  "resource": "address"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 501</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">501</span></span></div>
           <pre><code class="language-json">{
-        "code": "not_implemented",
-        "message": "not implemented"
-      }</code></pre>
+  "code": "not_implemented",
+  "message": "not implemented"
+}</code></pre>
         </div>
       </div>
     </main>

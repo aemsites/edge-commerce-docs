@@ -65,8 +65,8 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The created address.</h3>
-        <h3><span class="status-badge">400</span> The address failed schema validation.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The created address.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The address failed schema validation.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -80,27 +80,27 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/customers/{email}/{subroute}</span></div>
           <pre><code class="language-json">{
-        "name": "John Doe",
-        "email": "john@example.com",
-        "address1": "123 Main St",
-        "city": "Anytown",
-        "state": "CA",
-        "zip": "12345",
-        "country": "US"
-      }</code></pre>
+  "name": "John Doe",
+  "email": "john@example.com",
+  "address1": "123 Main St",
+  "city": "Anytown",
+  "state": "CA",
+  "zip": "12345",
+  "country": "US"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid address",
-        "errors": [
-          {
-            "path": "$.country",
-            "message": "is required"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid address",
+  "errors": [
+    {
+      "path": "$.country",
+      "message": "is required"
+    }
+  ]
+}</code></pre>
         </div>
       </div>
     </main>

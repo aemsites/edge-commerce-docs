@@ -47,14 +47,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> Deletion results.</h3>
+        <h3><span class="status-badge status-2xx">200</span> Deletion results.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> Wildcard delete attempted, or malformed path.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Wildcard delete attempted, or malformed path.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -68,21 +68,21 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 200</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
           <pre><code class="language-json">[
-        {
-          "sku": "PROD-123",
-          "path": "/us/en/products/blender-pro-500",
-          "status": 200
-        }
-      ]</code></pre>
+  {
+    "sku": "PROD-123",
+    "path": "/us/en/products/blender-pro-500",
+    "status": 200
+  }
+]</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "bad_request",
-        "message": "wildcard delete is not supported"
-      }</code></pre>
+  "code": "bad_request",
+  "message": "wildcard delete is not supported"
+}</code></pre>
         </div>
       </div>
     </main>

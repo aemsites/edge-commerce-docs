@@ -54,7 +54,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> Authenticated; JWT issued in body and `auth_token` cookie.</h3>
+        <h3><span class="status-badge status-2xx">200</span> Authenticated; JWT issued in body and `auth_token` cookie.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
@@ -73,7 +73,7 @@
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> Missing/invalid email, code, hash, or exp.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Missing/invalid email, code, hash, or exp.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -82,7 +82,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">401</span> Invalid/expired/used code, or rate limit exceeded.</h3>
+        <h3><span class="status-badge status-4xx">401</span> Invalid/expired/used code, or rate limit exceeded.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -93,7 +93,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">500</span> Server misconfigured or internal error creating the token.</h3>
+        <h3><span class="status-badge status-5xx">500</span> Server misconfigured or internal error creating the token.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -104,7 +104,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">503</span> Rate-limit bookkeeping temporarily unavailable; retryable.</h3>
+        <h3><span class="status-badge status-5xx">503</span> Rate-limit bookkeeping temporarily unavailable; retryable.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -120,59 +120,59 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/auth/callback</span></div>
           <pre><code class="language-json">{
-        "email": "user@example.com",
-        "code": "123456",
-        "hash": "a1b2c3...",
-        "exp": 1700000000000
-      }</code></pre>
+  "email": "user@example.com",
+  "code": "123456",
+  "hash": "a1b2c3...",
+  "exp": 1700000000000
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 200</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
           <pre><code class="language-json">{
-        "success": true,
-        "token": "eyJhbGci...",
-        "email": "user@example.com",
-        "roles": [
-          "user"
-        ],
-        "org": "org",
-        "site": "site"
-      }</code></pre>
+  "success": true,
+  "token": "eyJhbGci...",
+  "email": "user@example.com",
+  "roles": [
+    "user"
+  ],
+  "org": "org",
+  "site": "site"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
-        "message": "Invalid request",
-        "errors": [
-          {
-            "path": "$.code",
-            "message": "missing or invalid"
-          }
-        ]
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
+  "message": "Invalid request",
+  "errors": [
+    {
+      "path": "$.code",
+      "message": "missing or invalid"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 401</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">401</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_INVALID_CODE",
-        "message": "invalid code"
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_INVALID_CODE",
+  "message": "invalid code"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 500</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">500</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_MISCONFIGURED",
-        "message": "server misconfigured"
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_MISCONFIGURED",
+  "message": "server misconfigured"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 503</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">503</span></span></div>
           <pre><code class="language-json">{
-        "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
-        "message": "service temporarily unavailable",
-        "retryable": true
-      }</code></pre>
+  "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+  "message": "service temporarily unavailable",
+  "retryable": true
+}</code></pre>
         </div>
       </div>
     </main>

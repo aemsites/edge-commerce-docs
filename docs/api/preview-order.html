@@ -66,14 +66,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The estimate: subtotal, tax, shipping method, discounts, total, lineItems, and a signed estimateToken.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The estimate: subtotal, tax, shipping method, discounts, total, lineItems, and a signed estimateToken.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -82,7 +82,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">422</span> An unauthorized free ($0) item was requested with no matching free-item grant.</h3>
+        <h3><span class="status-badge status-4xx">422</span> An unauthorized free ($0) item was requested with no matching free-item grant.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -98,49 +98,49 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/orders/preview</span></div>
           <pre><code class="language-json">{
-        "items": [
-          {
-            "sku": "sku1",
-            "path": "product-1",
-            "quantity": 1,
-            "price": {
-              "final": "100",
-              "currency": "USD"
-            }
-          }
-        ],
-        "shipping": {
-          "country": "US",
-          "state": "CA",
-          "zip": "12345"
-        },
-        "shippingMethod": {
-          "id": "standard-us"
-        }
-      }</code></pre>
+  "items": [
+    {
+      "sku": "sku1",
+      "path": "product-1",
+      "quantity": 1,
+      "price": {
+        "final": "100",
+        "currency": "USD"
+      }
+    }
+  ],
+  "shipping": {
+    "country": "US",
+    "state": "CA",
+    "zip": "12345"
+  },
+  "shippingMethod": {
+    "id": "standard-us"
+  }
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid order",
-        "errors": [
-          {
-            "path": "$.shippingMethod.id",
-            "message": "is required"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid order",
+  "errors": [
+    {
+      "path": "$.shippingMethod.id",
+      "message": "is required"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 422</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">422</span></span></div>
           <pre><code class="language-json">{
-        "code": "unprocessable",
-        "message": "unprocessable",
-        "details": {
-          "rule": "unauthorized_free_item"
-        }
-      }</code></pre>
+  "code": "unprocessable",
+  "message": "unprocessable",
+  "details": {
+    "rule": "unauthorized_free_item"
+  }
+}</code></pre>
         </div>
       </div>
     </main>

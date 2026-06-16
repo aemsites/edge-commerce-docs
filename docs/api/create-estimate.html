@@ -39,14 +39,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The computed estimate. Body shape varies by `estimateType`.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The computed estimate. Body shape varies by `estimateType`.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> The request failed schema validation or `country` could not be resolved.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The request failed schema validation or `country` could not be resolved.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -55,7 +55,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">404</span> Unknown `estimateType`.</h3>
+        <h3><span class="status-badge status-4xx">404</span> Unknown `estimateType`.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -71,43 +71,43 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/estimate/{estimateType}</span></div>
           <pre><code class="language-json">{
-        "country": "US",
-        "shipping": {
-          "country": "US",
-          "state": "CA"
-        },
-        "items": [
-          {
-            "sku": "SKU-1",
-            "quantity": 1,
-            "price": {
-              "final": "10.00",
-              "currency": "USD"
-            }
-          }
-        ]
-      }</code></pre>
+  "country": "US",
+  "shipping": {
+    "country": "US",
+    "state": "CA"
+  },
+  "items": [
+    {
+      "sku": "SKU-1",
+      "quantity": 1,
+      "price": {
+        "final": "10.00",
+        "currency": "USD"
+      }
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid request",
-        "errors": [
-          {
-            "path": "$.country",
-            "message": "is required"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid request",
+  "errors": [
+    {
+      "path": "$.country",
+      "message": "is required"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 404</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
           <pre><code class="language-json">{
-        "code": "not_found",
-        "message": "route not found",
-        "resource": "route"
-      }</code></pre>
+  "code": "not_found",
+  "message": "route not found",
+  "resource": "route"
+}</code></pre>
         </div>
       </div>
     </main>

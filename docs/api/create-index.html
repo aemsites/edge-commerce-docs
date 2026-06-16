@@ -47,8 +47,8 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">201</span> Index created (no content).</h3>
-        <h3><span class="status-badge">400</span> Path is missing, does not end with `/index.json`, or is otherwise invalid.</h3>
+        <h3><span class="status-badge status-2xx">201</span> Index created (no content).</h3>
+        <h3><span class="status-badge status-4xx">400</span> Path is missing, does not end with `/index.json`, or is otherwise invalid.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -57,7 +57,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">409</span> Index already exists, or the registry was modified concurrently.</h3>
+        <h3><span class="status-badge status-4xx">409</span> Index already exists, or the registry was modified concurrently.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -68,7 +68,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">502</span> Registry or index storage update failed.</h3>
+        <h3><span class="status-badge status-5xx">502</span> Registry or index storage update failed.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -82,33 +82,33 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid request",
-        "errors": [
-          {
-            "path": "$.path",
-            "message": "must end with /index.json"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid request",
+  "errors": [
+    {
+      "path": "$.path",
+      "message": "must end with /index.json"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 409</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">409</span></span></div>
           <pre><code class="language-json">{
-        "code": "already_exists",
-        "message": "index already exists",
-        "resource": "index"
-      }</code></pre>
+  "code": "already_exists",
+  "message": "index already exists",
+  "resource": "index"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 502</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">502</span></span></div>
           <pre><code class="language-json">{
-        "code": "upstream_error",
-        "message": "upstream error",
-        "retryable": true
-      }</code></pre>
+  "code": "upstream_error",
+  "message": "upstream error",
+  "retryable": true
+}</code></pre>
         </div>
       </div>
     </main>

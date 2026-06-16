@@ -60,7 +60,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The stored configuration (echoed back).</h3>
+        <h3><span class="status-badge status-2xx">200</span> The stored configuration (echoed back).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -73,7 +73,7 @@
             <tr><td><code>friendlyId</code></td><td><code>object</code></td><td>no</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> The configuration failed schema validation.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The configuration failed schema validation.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -82,7 +82,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">500</span> Storage error.</h3>
+        <h3><span class="status-badge status-5xx">500</span> Storage error.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -98,37 +98,37 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/config</span></div>
           <pre><code class="language-json">{
-        "allowedOrigins": [
-          "https://example.com"
-        ],
-        "auth": {
-          "enabled": true
-        }
-      }</code></pre>
+  "allowedOrigins": [
+    "https://example.com"
+  ],
+  "auth": {
+    "enabled": true
+  }
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 200</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
           <pre><code class="language-json">{
-        "allowedOrigins": [
-          "https://example.com"
-        ],
-        "auth": {
-          "enabled": true
-        }
-      }</code></pre>
+  "allowedOrigins": [
+    "https://example.com"
+  ],
+  "auth": {
+    "enabled": true
+  }
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid config",
-        "errors": [
-          {
-            "path": "$.allowedOrigins[0]",
-            "message": "condition 'pattern' failed"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid config",
+  "errors": [
+    {
+      "path": "$.allowedOrigins[0]",
+      "message": "condition 'pattern' failed"
+    }
+  ]
+}</code></pre>
         </div>
       </div>
     </main>

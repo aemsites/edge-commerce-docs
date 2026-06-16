@@ -57,14 +57,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge">200</span> The provider result (terminal charge outcome or a requires_action redirect).</h3>
+        <h3><span class="status-badge status-2xx">200</span> The provider result (terminal charge outcome or a requires_action redirect).</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">400</span> Missing required body field, unknown provider, or provider-specific input validation failure.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Missing required body field, unknown provider, or provider-specific input validation failure.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -73,7 +73,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">404</span> No order with this id.</h3>
+        <h3><span class="status-badge status-4xx">404</span> No order with this id.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -84,7 +84,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">422</span> Order not payable (not pending), provider not configured, max attempts exceeded, or provider rejection.</h3>
+        <h3><span class="status-badge status-4xx">422</span> Order not payable (not pending), provider not configured, max attempts exceeded, or provider rejection.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -95,7 +95,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">500</span> PAYMENT_ENCRYPTION_KEY is not configured (misconfigured).</h3>
+        <h3><span class="status-badge status-5xx">500</span> PAYMENT_ENCRYPTION_KEY is not configured (misconfigured).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -106,7 +106,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">502</span> The payment provider returned an upstream error.</h3>
+        <h3><span class="status-badge status-5xx">502</span> The payment provider returned an upstream error.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -117,7 +117,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge">503</span> Attempt persistence failed after retries for a redirect provider; retry with the same idempotencyKey.</h3>
+        <h3><span class="status-badge status-5xx">503</span> Attempt persistence failed after retries for a redirect provider; retry with the same idempotencyKey.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -133,43 +133,43 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/orders/{orderId}/payments</span></div>
           <pre><code class="language-json">{
-        "provider": "chase",
-        "paymentMethod": "card",
-        "idempotencyKey": "idem-9f2c1a"
-      }</code></pre>
+  "provider": "chase",
+  "paymentMethod": "card",
+  "idempotencyKey": "idem-9f2c1a"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 400</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-        "code": "validation_failed",
-        "message": "invalid request",
-        "errors": [
-          {
-            "path": "$",
-            "message": "missing provider"
-          }
-        ]
-      }</code></pre>
+  "code": "validation_failed",
+  "message": "invalid request",
+  "errors": [
+    {
+      "path": "$",
+      "message": "missing provider"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 404</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
           <pre><code class="language-json">{
-        "code": "not_found",
-        "message": "order not found",
-        "resource": "order"
-      }</code></pre>
+  "code": "not_found",
+  "message": "order not found",
+  "resource": "order"
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · 422</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">422</span></span></div>
           <pre><code class="language-json">{
-        "code": "unprocessable",
-        "message": "unprocessable",
-        "retryable": false,
-        "details": {
-          "rule": "order_not_payable",
-          "state": "payment_completed"
-        }
-      }</code></pre>
+  "code": "unprocessable",
+  "message": "unprocessable",
+  "retryable": false,
+  "details": {
+    "rule": "order_not_payable",
+    "state": "payment_completed"
+  }
+}</code></pre>
         </div>
       </div>
     </main>
