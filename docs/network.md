@@ -176,7 +176,7 @@ AEM Network has been used for following common scenarios: e-commerce integration
 
 ### 1. E-commerce integration
 Route product pages and checkout to commerce platform, keep marketing content on AEM:
-```
+```text
 /products/**     → Product Pipeline Backend
 /checkout/**     → Commerce Backend
 /cart/**         → Commerce Backend
@@ -188,7 +188,7 @@ Note that Commerce backend support is still in development.
 
 ### 2. Microservices architecture
 Combine multiple microservices under a single domain:
-```
+```text
 /api/products/**   → Product Pipeline
 /api/users/**      → User Service
 /api/orders/**     → Order Service
@@ -197,7 +197,7 @@ default            → Edge Delivery Site
 
 ### 3. Multi-region content
 Route to different backends based on geographic structure:
-```
+```text
 /us/**             → US Content Origin
 /eu/**             → EU Content Origin
 /asia/**           → Asia Content Origin
@@ -206,7 +206,7 @@ Route to different backends based on geographic structure:
 ## URL structure
 
 All `aem.network` requests follow this pattern:
-```
+```text
 https://{ref}--{site}--{org}.aem.network/{path}
 ```
 
@@ -215,7 +215,7 @@ https://{ref}--{site}--{org}.aem.network/{path}
 - `{org}`: Your organization identifier
 - `{path}`: The request path to be routed
 
-```
+```text
 https://main--mystore--acme.aem.network/products/mens-shoes
         └──┘  └─────┘  └──┘
          ref    site   org

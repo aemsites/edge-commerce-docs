@@ -91,7 +91,7 @@ Product indices update asynchronously. The indexer runs every 10 minutes, so you
 
 You can check if your products appear in the index by visiting:
 
-```
+```text
 https://main--{site}--{org}.aem.network/us/en/index.json
 https://main--{site}--{org}.aem.network/us/en/sitemap.xml
 https://main--{site}--{org}.aem.network/us/en/merchant-center-feed.xml

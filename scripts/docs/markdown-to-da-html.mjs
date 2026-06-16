@@ -9,7 +9,70 @@ const DOCS_DIR = path.join(ROOT, 'docs');
 const OUT_DIR = path.join(ROOT, '.da', 'docs');
 const MANIFEST_PATH = path.join(ROOT, '.da', 'manifest.json');
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 const renderer = new marked.Renderer();
+
+function rawCodeLanguage(lang) {
+  return String(lang || 'markup').match(/\S+/)?.[0].toLowerCase() || 'markup';
+}
+
+function languageTitle(lang) {
+  const normalized = rawCodeLanguage(lang);
+  const titles = {
+    markup: 'Code',
+    bash: 'Bash',
+    html: 'HTML',
+    javascript: 'JavaScript',
+    js: 'JavaScript',
+    json: 'JSON',
+    markdown: 'Markdown',
+    md: 'Markdown',
+    shell: 'Shell',
+    sh: 'Shell',
+    typescript: 'TypeScript',
+    ts: 'TypeScript',
+    xml: 'XML',
+    yaml: 'YAML',
+    yml: 'YAML',
+  };
+  return titles[normalized] || normalized.toUpperCase();
+}
+
+function normalizeCodeLanguage(lang) {
+  const language = rawCodeLanguage(lang);
+  if (['html', 'plain', 'text', 'txt', 'xml'].includes(language)) return 'markup';
+  return language;
+}
+
+renderer.code = function renderCode({ text, lang, escaped }) {
+  const rawLanguage = rawCodeLanguage(lang);
+  const language = normalizeCodeLanguage(rawLanguage);
+  const code = `${text.replace(/\n$/, '')}\n`;
+  const escapedCode = escaped ? code : escapeHtml(code);
+  const title = languageTitle(rawLanguage);
+
+  return '<div class="code">\n'
+    + '  <div>\n'
+    + '    <div>\n'
+    + '      <ul>\n'
+    + `        <li>${escapeHtml(title)} (${escapeHtml(language)})</li>\n`
+    + '      </ul>\n'
+    + '    </div>\n'
+    + '  </div>\n'
+    + '  <div>\n'
+    + '    <div>\n'
+    + `      <pre><code>${escapedCode}</code></pre>\n`
+    + '    </div>\n'
+    + '  </div>\n'
+    + '</div>\n';
+};
 
 renderer.table = function renderTable(table) {
   const renderCell = (cell) => `<td>${this.parser.parseInline(cell.tokens)}</td>`;
@@ -54,14 +117,6 @@ function parseFrontmatter(input) {
     if (match) data[match[1]] = parseValue(match[2]);
   }
   return [data, body];
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function daPathToSourcePath(daPath) {
@@ -152,14 +207,14 @@ function metadataBlock(frontmatter) {
 function renderDocument(markdown, frontmatter) {
   const content = marked.parse(transformBlockTables(markdown));
   return '<body>\n'
-    + '  <header></header>\n'
-    + '  <main>\n'
-    + `    <div>\n${
-      content.trim().split('\n').map((line) => `      ${line}`).join('\n')
-    }\n      ${metadataBlock(frontmatter).split('\n').join('\n      ')}\n`
-    + '    </div>\n'
-    + '  </main>\n'
-    + '  <footer></footer>\n'
+    + '<header></header>\n'
+    + '<main>\n'
+    + '<div>\n'
+    + `${content.trim()}\n`
+    + `${metadataBlock(frontmatter)}\n`
+    + '</div>\n'
+    + '</main>\n'
+    + '<footer></footer>\n'
     + '</body>\n';
 }
 
@@ -171,9 +226,47 @@ async function markdownFiles() {
     .sort();
 }
 
+function renderHeaderFragment() {
+  return `<body>
+  <header></header>
+  <main>
+    <div>
+      <p><a href="/">Edge Commerce</a></p>
+    </div>
+    <div>
+      <ul>
+        <li><a href="/docs/">Docs</a></li>
+        <li><a href="/docs/api/get-config.html">API reference</a></li>
+      </ul>
+    </div>
+    <div>
+      <p><a href="/tools/widgets/theme">Theme</a></p>
+      <p><a href="https://github.com/aemsites/edge-commerce-docs">GitHub</a></p>
+    </div>
+  </main>
+  <footer></footer>
+</body>
+`;
+}
+
+async function writeHeaderFragment(manifest) {
+  const sourcePath = 'fragments/nav/header.html';
+  const outPath = path.join(ROOT, '.da', sourcePath);
+  await mkdir(path.dirname(outPath), { recursive: true });
+  await writeFile(outPath, renderHeaderFragment());
+  manifest.push({
+    html: path.relative(ROOT, outPath),
+    daPath: '/fragments/nav/header',
+    sourcePath,
+    previewPath: 'fragments/nav/header',
+  });
+}
+
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   const manifest = [];
+
+  await writeHeaderFragment(manifest);
 
   for (const file of await markdownFiles()) {
     const source = await readFile(file, 'utf8');
@@ -196,7 +289,7 @@ async function main() {
   }
 
   await writeFile(MANIFEST_PATH, `${JSON.stringify({ pages: manifest }, null, 2)}\n`);
-  process.stdout.write(`Generated ${manifest.length} DA HTML document(s) in .da/docs\n`);
+  process.stdout.write(`Generated ${manifest.length} DA HTML document(s) in .da\n`);
 }
 
 main().catch((error) => {

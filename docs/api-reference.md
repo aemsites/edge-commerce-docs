@@ -45,7 +45,7 @@ migration:
 ## Base URL structure
 
 All API endpoints share this base pattern:
-```
+```text
 https://api.adobecommerce.live/{org}/sites/{site}/{route}
 ```
 
@@ -80,20 +80,20 @@ Paths must follow these rules:
 ### Path structure examples
 
 Region and locale segments:
-```
+```text
 /us/en/products/blender-pro-500.json          # US English
 /eu/de/produkte/mixer-pro-500.json            # EU German
 /ca/fr/produits/melangeur-pro-500.json        # Canada French
 ```
 
 Product categories:
-```
+```text
 /products/electronics/smartphones/iphone-15.json
 /products/home/kitchen/blender-pro-500.json
 ```
 
 Simple structure:
-```
+```text
 /products/blender-pro-500.json
 /items/sku-12345.json
 ```
@@ -102,7 +102,7 @@ Simple structure:
 
 Region and locale information is embedded directly in the path. The same product can exist at different paths for different markets, and each path contains [locale-specific data](/docs/advanced-topics#multi-store-configuration) like translated names, descriptions, and pricing for SEO.
 
-```
+```text
 # US English version
 /us/en/products/blender-pro-500.json
 

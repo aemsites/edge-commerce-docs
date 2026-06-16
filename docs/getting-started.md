@@ -144,7 +144,7 @@ If the product was created successfully, you'll receive a `200 OK` status code a
 
 With the product stored and routing configured, you can now view the rendered product page in your browser. The Product Pipeline fetches the product data and renders it as HTML with structured data for search engines.
 
-```
+```text
 https://main--{site}--{org}.aem.network/us/en/products/test-product
 ```
 

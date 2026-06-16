@@ -159,7 +159,7 @@ Coupon codes accept uppercase letters, digits, hyphens, and underscores, up to 6
 
 Codes also support an optional tracking suffix separated by `+`. The suffix is stripped before validation and does not affect which code is looked up, but it is preserved in the order's discount record for attribution. This allows a single base code to be distributed across multiple channels while tracking which channel drove each redemption.
 
-```
+```text
 SAVE10+FACEBOOK     → base code: SAVE10, source: FACEBOOK
 SAVE10+EMAIL_JUN26  → base code: SAVE10, source: EMAIL_JUN26
 ```

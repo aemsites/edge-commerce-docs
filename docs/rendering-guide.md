@@ -49,21 +49,21 @@ The Product Pipeline renders product data into five distinct formats. Each forma
 ### 1. HTML pages
 Server-rendered product pages with metadata and JSON-LD for SEO. Client-side JavaScript can enhance the Document Object Model (DOM) for interactivity.
 
-```
+```text
 https://www.example.com/us/en/products/t1000-blender
 ```
 
 ### 2. JSON data
 Complete product data in JSON format for JavaScript applications and mobile apps.
 
-```
+```text
 https://www.example.com/us/en/products/t1000-blender.json
 ```
 
 ### 3. Product indexes
 Searchable product catalog data optimized for frontend search, filtering, and catalog management with pagination support. The Product Indexer automatically maintains two specialized indices that update asynchronously when products change: a configurable product index for frontend applications, and a merchant feed compatible with Google Shopping for product advertising.
 
-```
+```text
 https://www.example.com/us/en/index.json
 https://www.example.com/us/en/index.json?limit=50&offset=0
 ```
@@ -75,7 +75,7 @@ For complete documentation on index configuration, property path syntax, access 
 ### 4. Merchant feeds
 Google Shopping-compatible feeds for product advertising. The Merchant Feed is automatically generated from Product Bus data without requiring configuration.
 
-```
+```text
 https://www.example.com/us/en/merchant-center-feed.xml
 ```
 
@@ -89,7 +89,7 @@ For complete documentation on merchant feed configuration, automatic field extra
 
 XML sitemaps help search engines discover and index your product catalog. The Product Pipeline reads product data from the Product Index and transforms it into the standard sitemap XML format.
 
-```
+```text
 https://www.example.com/us/en/sitemap.xml
 ```
 
@@ -141,7 +141,7 @@ Products are automatically excluded from the sitemap if they have `filters.noind
 #### Using the sitemap
 
 Submit your sitemap URL directly to search engines. In Google Search Console, add the sitemap at Search Console → Sitemaps. In Bing Webmaster Tools, submit via the Sitemaps section. You can also reference the sitemap location in your robots.txt:
-```
+```text
 Sitemap: https://www.example.com/us/en/sitemap.xml
 ```
 
