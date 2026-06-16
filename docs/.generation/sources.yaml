@@ -1,0 +1,47 @@
+# Source repositories that can affect managed documentation.
+# `currentCommit` is a snapshot from the local Helix Commerce workspace at migration time.
+sources:
+  helix-commerce-api:
+    repository: adobe-rnd/helix-commerce-api
+    localPath: ../helix-commerce-api
+    currentCommit: b4da3c4ed354248cd9f47aee05c3f0aceb06c0a5
+  helix-mixer:
+    repository: adobe-rnd/helix-mixer
+    localPath: ../helix-mixer
+    currentCommit: c9592d4fc2c75e3d4ac6e09b1b1a0b13f3375729
+  helix-product-pipeline:
+    repository: adobe-rnd/helix-product-pipeline
+    localPath: ../helix-product-pipeline
+    currentCommit: 893adf95722996bd73c0c47fb0beff5387906bac
+  helix-product-pipeline-worker:
+    repository: adobe-rnd/helix-product-pipeline-worker
+    localPath: ../helix-product-pipeline-worker
+    currentCommit: cb7a756a159af984650e25e2fbfae8c09e7ce6d5
+  helix-product-shared:
+    repository: adobe-rnd/helix-product-shared
+    localPath: ../helix-product-shared
+    currentCommit: 0169dff1f9f3add4f4734b2c87c9de58a0703c37
+  helix-product-indexer:
+    repository: adobe-rnd/helix-product-indexer
+    localPath: ../helix-product-indexer
+    currentCommit: 7f3fc84ada0fe4f454347c7e06e5134b665802eb
+  helix-product-indexer-pump:
+    repository: adobe-rnd/helix-product-indexer-pump
+    localPath: ../helix-product-indexer-pump
+    currentCommit: b745180e91d1313c4fd0f2d5af981e92d916d8f2
+  helix-product-image-collector:
+    repository: adobe-rnd/helix-product-image-collector
+    localPath: ../helix-product-image-collector
+    currentCommit: 56d6f626657ca5eb605b3465eb96e2be3528e701
+  helix-product-journal-writer:
+    repository: adobe-rnd/helix-product-journal-writer
+    localPath: ../helix-product-journal-writer
+    currentCommit: d717ba5c087cd7a2a5c6e8c2fb2ef2d82ef84879
+  commerce-feeds:
+    repository: aemsites/commerce-feeds
+    localPath: ../commerce-feeds
+    currentCommit: d13d19bb48c2088113e7635e2156492d2577778c
+  vitamix:
+    repository: aemsites/vitamix
+    localPath: ../vitamix
+    currentCommit: b8a1f95819084d68e8fa84dfa24b3dd34b5170b6
