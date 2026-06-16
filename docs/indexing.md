@@ -288,5 +288,5 @@ Indexing jobs run automatically and asynchronously. To optimize performance, bat
 ## Next steps
 
 - [AEM Network Configuration](/docs/network): Configure URL routing to serve your product index
-- [Advanced Topics](/docs/advanced-topics): Performance optimization strategies and monitoring
+- [Caching strategy](/docs/caching): Cache behavior, push invalidation, and update propagation
 - [Schema Reference](/docs/schema-reference#productbusentry): Detailed reference for all indexable product fields

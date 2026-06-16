@@ -382,4 +382,4 @@ The path structure is determined when you create products via the Commerce API -
 
 - [Product Indexing Guide](/docs/indexing#product-indexing-configuration): Configure and optimize product indexes for search and feeds
 - [AEM Network Configuration](/docs/network#pattern-based-routing): Set up URL routing and backend configuration
-- [Advanced Topics](/docs/advanced-topics): Performance optimization, caching strategies, and best practices
+- [Caching strategy](/docs/caching): Cache TTLs, push invalidation, and update propagation

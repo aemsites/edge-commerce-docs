@@ -8,7 +8,7 @@ Internal root-level files from the legacy documentation repo, including `*-intro
 |---|---|---|---|
 | `documentation/README.md` | `docs/index.md` | `/docs/` | migrated as-is |
 | `documentation/network.md` | `docs/network.md` | `/docs/network` | migrated as-is |
-| `documentation/advanced-topics.md` | `docs/advanced-topics.md` | `/docs/advanced-topics` | migrated as-is |
+| `documentation/advanced-topics.md` | split into `docs/limits.md`, `docs/multi-store.md`, `docs/custom-data.md`, `docs/caching.md`, `docs/image-processing.md`, `docs/security.md` | `/docs/limits`, `/docs/multi-store`, `/docs/custom-data`, `/docs/caching`, `/docs/image-processing`, `/docs/security` | split for navigation |
 | `documentation/api-reference.md` | `docs/api-reference.md` | `/docs/api-reference` | migrated as-is |
 | `documentation/coupons.md` | `docs/coupons.md` | `/docs/coupons` | migrated as-is |
 | `documentation/data-ingestion.md` | `docs/data-ingestion.md` | `/docs/data-ingestion` | migrated as-is |

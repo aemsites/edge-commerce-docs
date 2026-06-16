@@ -100,7 +100,7 @@ Simple structure:
 
 ### Multi-store and multi-locale
 
-Region and locale information is embedded directly in the path. The same product can exist at different paths for different markets, and each path contains [locale-specific data](/docs/advanced-topics#multi-store-configuration) like translated names, descriptions, and pricing for SEO.
+Region and locale information is embedded directly in the path. The same product can exist at different paths for different markets, and each path contains [locale-specific data](/docs/multi-store) like translated names, descriptions, and pricing for SEO.
 
 ```text
 # US English version
@@ -238,7 +238,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 Each product in the array must include a `path` field that specifies where it should be stored. Unlike single product operations, bulk operations do not automatically infer the path from the URL. Missing `path` fields will return `400 Bad Request`.
 
-The request body is an array of product objects ([max 50 products per request](/docs/advanced-topics#limits-and-guidance)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product.
+The request body is an array of product objects ([max 50 products per request](/docs/limits)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product.
 
 #### Image processing behavior
 
@@ -310,7 +310,7 @@ When you delete a product, several systems are updated:
 
 The product is removed from storage immediately, so direct requests to the product's JSON or HTML endpoints will return `404` right away. However, the product index, merchant feed, and sitemap are updated asynchronously by the Product Indexer, which processes deletion events within its normal indexing cycle.
 
-If you have [push invalidation](/docs/advanced-topics#push-invalidation) enabled, the CDN cache for the deleted product is also purged, ensuring the `404` response propagates immediately. Without push invalidation, cached responses may persist until the CDN TTL expires.
+If you have [push invalidation](/docs/caching#push-invalidation) enabled, the CDN cache for the deleted product is also purged, ensuring the `404` response propagates immediately. Without push invalidation, cached responses may persist until the CDN TTL expires.
 
 ## Authentication API
 
@@ -326,7 +326,7 @@ curl -X POST \
   "https://api.adobecommerce.live/{org}/sites/{site}/auth/token"
 ```
 
-See also [Security best practices](/docs/advanced-topics#security-best-practices) for API key management recommendations.
+See also [Security best practices](/docs/security) for API key management recommendations.
 
 ### Set explicit API key
 
@@ -453,4 +453,4 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/cache" \
 
 - [Schema Reference](/docs/schema-reference#productbusentry): Detailed reference for all product data fields and structures
 - [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Build ETL processes to load product data at scale
-- [Advanced Topics](/docs/advanced-topics#limits-and-guidance): API limits, performance optimization, and best practices
+- [Limits and guidance](/docs/limits): API limits and operational guidance

@@ -113,13 +113,13 @@ Welcome to the Product Bus documentation. This collection of guides provides inf
 - Validation flow and error codes
 - Stacking behavior and usage tracking
 
-**[Advanced Topics](/docs/advanced-topics)** - Advanced Topics and Best Practices
-- Limits and guidance for bulk operations
-- Performance optimization strategies
-- Multi-store configuration
-- Content enrichment strategies
-- Custom data and extensions
-- Security best practices
+**Operations** - Operational guidance and best practices
+- [Limits and guidance](/docs/limits): Bulk operation limits and product data limits
+- [Multi-store configuration](/docs/multi-store): Store and locale structure
+- [Caching strategy](/docs/caching): Cache TTLs, push invalidation, and update propagation
+- [Image processing](/docs/image-processing): How external images are fetched and stored
+- [Security best practices](/docs/security): API key management and data validation
+- [Custom data and extensions](/docs/custom-data): Extending product data with custom fields
 
 ## Suggested reading order
 
@@ -135,7 +135,7 @@ Welcome to the Product Bus documentation. This collection of guides provides inf
 1. **[Data Ingestion Guide](/docs/data-ingestion)** - ETL process and considerations
 2. **[Schema Reference](/docs/schema-reference)** - Required data structures
 3. **[API Reference](/docs/api-reference)** - API endpoints for data loading
-4. **[Advanced Topics](/docs/advanced-topics)** - Performance and best practices
+4. **[Limits and guidance](/docs/limits)** - Bulk operation limits and best practices
 
 ### For frontend developers
 
@@ -149,7 +149,7 @@ Welcome to the Product Bus documentation. This collection of guides provides inf
 1. **[Overview](/docs/overview)** - System architecture
 2. **[Mixer Configuration](/docs/network)** - Traffic routing
 3. **[Rendering Guide](/docs/rendering-guide)** - Caching strategy
-4. **[Advanced Topics](/docs/advanced-topics)** - Security, monitoring, optimization
+4. **[Security best practices](/docs/security)** - API key management and data validation
 
 ## Additional resources
 

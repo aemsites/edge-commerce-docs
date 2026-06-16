@@ -82,7 +82,7 @@ Transform [pricing](/docs/schema-reference#productbusprice), inventory, and [var
 
 #### Handle multi-store configurations
 
-Handle [multi-language and multi-store configurations](/docs/advanced-topics#multi-store-configuration). Pay close attention to path structures, as incorrect store or locale codes in paths are a frequent source of issues. Create separate entries with correct paths for each store rather than duplicating products. Ensure language translations are consistent within each product (don't mix languages), and update product paths when your store structure changes.
+Handle [multi-language and multi-store configurations](/docs/multi-store). Pay close attention to path structures, as incorrect store or locale codes in paths are a frequent source of issues. Create separate entries with correct paths for each store rather than duplicating products. Ensure language translations are consistent within each product (don't mix languages), and update product paths when your store structure changes.
 
 #### Implement error handling
 
@@ -147,6 +147,6 @@ By implementing these verification steps, you can catch integration issues early
 ## Next steps
 
 - [Getting Started](/docs/getting-started#your-first-product-ingestion): Quick example of creating your first product
-- [Advanced Topics](/docs/advanced-topics#limits-and-guidance): Bulk operation limits and performance best practices
+- [Limits and guidance](/docs/limits): Bulk operation limits and operational guidance
 - [Schema Reference](/docs/schema-reference#productbusentry): Detailed reference for the target Product Bus schema
 - [API Reference](/docs/api-reference#bulk-create-or-update-products): API endpoints and methods for loading product data

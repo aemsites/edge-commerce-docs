@@ -238,4 +238,4 @@ For assistance with custom routing configurations, consult with the Adobe team.
 
 - [Getting Started](/docs/getting-started#step-1-configure-url-patterns-and-routing): Step-by-step guide for configuring network routing with Product Pipeline
 - [Rendering Guide](/docs/rendering-guide#url-pattern-configuration): Learn how network and pipeline work together to render products
-- [Advanced Topics](/docs/advanced-topics#security-best-practices): Security best practices, performance optimization, and monitoring
+- [Security best practices](/docs/security): API key management and data validation
