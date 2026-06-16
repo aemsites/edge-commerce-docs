@@ -63,8 +63,8 @@ The request body is a `CatalogPriceRules` object with a single `promotions` arra
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | ✅ Yes | Unique promotion identifier |
-| `name` | string | ✅ Yes | Human-readable promotion name |
+| `id` | string | Yes | Unique promotion identifier |
+| `name` | string | Yes | Human-readable promotion name |
 | `rules` | array | No | Price override rules (see below) |
 | `country` | string | No | ISO 3166-1 alpha-2 country code. When set, the promotion is only applied for requests from that country |
 | `locale` | string | No | Locale string (e.g., `"en-US"`). When set, limits the promotion to that locale |
@@ -74,8 +74,8 @@ Each `CatalogPriceRule` within `rules`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `path` | string | ✅ Yes | Product URL path this rule applies to (e.g., `"/us/en/products/blender-pro-500"`) |
-| `price` | string | ✅ Yes | Discounted price to use when this rule is active |
+| `path` | string | Yes | Product URL path this rule applies to (e.g., `"/us/en/products/blender-pro-500"`) |
+| `price` | string | Yes | Discounted price to use when this rule is active |
 | `start` | string | No | ISO 8601 timestamp. Rule is inactive before this time |
 | `end` | string | No | ISO 8601 timestamp. Rule is inactive after this time |
 | `variants` | object | No | Per-SKU price overrides. Keys are variant SKUs, values are `VariantPriceRule` objects (see below) |
@@ -84,8 +84,8 @@ Each `CatalogPriceRule` within `rules`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `sku` | string | ✅ Yes | Variant SKU |
-| `price` | string | ✅ Yes | Discounted price for this variant |
+| `sku` | string | Yes | Variant SKU |
+| `price` | string | Yes | Discounted price for this variant |
 | `start` | string | No | ISO 8601 timestamp. Variant rule is inactive before this time |
 | `end` | string | No | ISO 8601 timestamp. Variant rule is inactive after this time |
 
@@ -211,11 +211,11 @@ Each object in the array is a `CartPriceRule`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | ✅ Yes | Unique rule identifier |
-| `name` | string | ✅ Yes | Display name shown in the discount breakdown |
-| `priority` | integer | ✅ Yes | Evaluation order. Lower numbers are evaluated first |
-| `conditions` | object | ✅ Yes | Conditions that must be met for the rule to apply (see below) |
-| `actions` | object | ✅ Yes | Discount to apply when conditions are met (see below) |
+| `id` | string | Yes | Unique rule identifier |
+| `name` | string | Yes | Display name shown in the discount breakdown |
+| `priority` | integer | Yes | Evaluation order. Lower numbers are evaluated first |
+| `conditions` | object | Yes | Conditions that must be met for the rule to apply (see below) |
+| `actions` | object | Yes | Discount to apply when conditions are met (see below) |
 | `stackable` | boolean | No | Whether this rule can apply alongside other discounts (default `true`) |
 | `incompatibleTypes` | string[] | No | Coupon type IDs that suppress this rule when active |
 | `country` | string | No | ISO 3166-1 alpha-2 code. Rule applies only when the order country matches |

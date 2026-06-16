@@ -48,10 +48,10 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | ✅ Yes | Unique identifier for this type. Immutable after creation |
-| `name` | string | ✅ Yes | Human-readable name shown in the order discount breakdown |
-| `discountType` | string | ✅ Yes | `"percentage"` or `"fixed"` |
-| `discountValue` | number | ✅ Yes | Discount magnitude: a percentage (e.g., `10` for 10%) or a fixed currency amount |
+| `id` | string | Yes | Unique identifier for this type. Immutable after creation |
+| `name` | string | Yes | Human-readable name shown in the order discount breakdown |
+| `discountType` | string | Yes | `"percentage"` or `"fixed"` |
+| `discountValue` | number | Yes | Discount magnitude: a percentage (e.g., `10` for 10%) or a fixed currency amount |
 | `minimumOrderAmount` | number | No | Minimum eligible subtotal required to apply the coupon. Defaults to `0` |
 | `maximumDiscountAmount` | number | No | Cap on the discount for percentage types. `null` means no cap |
 | `freeShipping` | boolean | No | When `true`, removes shipping charges in addition to any price discount |
