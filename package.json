@@ -11,7 +11,9 @@
     "test:file": "wtr --node-resolve --port=2000 --coverage",
     "test:file:watch": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage --watch",
     "docs:da:build": "node scripts/docs/markdown-to-da-html.mjs",
-    "docs:da:push": "npm run docs:da:build && node scripts/docs/push-da.mjs"
+    "docs:da:push": "npm run docs:da:build && node scripts/docs/push-da.mjs",
+    "docs:schema:generate": "node scripts/docs/generate-schema-reference.mjs",
+    "docs:schema:check": "node scripts/docs/generate-schema-reference.mjs --check"
   },
   "repository": {
     "type": "git",

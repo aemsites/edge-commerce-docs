@@ -1,6 +1,35 @@
-# Markdown to DA publishing
+# Documentation generation and DA publishing
 
 The public documentation source lives as Markdown in `/docs`. The DA publishing pipeline converts those Markdown files into DA-compatible HTML body fragments and can upload them to Adobe Document Authoring (DA).
+
+## Generate schema reference sections
+
+`docs/schema-reference.md` contains generated schema regions that are updated from the local `helix-commerce-api` checkout.
+
+```bash
+npm run docs:schema:generate
+```
+
+The generator reads:
+
+```text
+../helix-commerce-api/src/schemas/ProductBus.js
+../helix-commerce-api/src/schemas/Shipping.js
+```
+
+Set `HELIX_COMMERCE_API_PATH` to override the source repo location:
+
+```bash
+HELIX_COMMERCE_API_PATH=/path/to/helix-commerce-api npm run docs:schema:generate
+```
+
+Check for drift without writing:
+
+```bash
+npm run docs:schema:check
+```
+
+Only content between `<!-- GENERATED: ... -->` markers is rewritten. Surrounding narrative remains human-authored.
 
 ## Build DA HTML
 
@@ -12,6 +41,7 @@ This writes reviewable generated HTML into:
 
 ```text
 .da/docs/*.html
+.da/fragments/nav/header.html
 .da/manifest.json
 ```
 
@@ -22,6 +52,7 @@ The generated HTML follows the DA/Edge Delivery Services content contract:
 - no `<!DOCTYPE>`, `<html>`, `<head>`, `<script>`, or inline styles
 - metadata emitted as a canonical `<div class="metadata">` block
 - supported Markdown block tables, such as `Pagination (Contained)`, converted to canonical div-form EDS blocks
+- fenced Markdown code blocks converted to the canonical `code` block used by the docs template
 
 ## Push to DA
 
@@ -37,7 +68,7 @@ DA_REPO=edge-commerce-docs
 DA_BRANCH=main
 ```
 
-`docs:da:push` runs `docs:da:build`, uploads each generated HTML file to `admin.da.live/source`, and triggers preview via `admin.hlx.page/preview`.
+`docs:da:push` runs `docs:da:build`, uploads each generated HTML file and the shared header fragment to `admin.da.live/source`, and triggers preview via `admin.hlx.page/preview`.
 
 Optional flags can be passed after `--`:
 
