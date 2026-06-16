@@ -233,14 +233,14 @@ Products are automatically excluded from the merchant feed if they have `filters
 Index endpoints:
 ```bash
 # Returns only indexable products (excludes products with filters.noindex)
-GET https://www.example.com/us/en/index.json
+curl "https://www.example.com/us/en/index.json"
 
 # Include all products (including noindex products) — both forms are equivalent
-GET https://www.example.com/us/en/index.json?include=all
-GET https://www.example.com/us/en/index.json?sheet=all
+curl "https://www.example.com/us/en/index.json?include=all"
+curl "https://www.example.com/us/en/index.json?sheet=all"
 
 # Include only noindex products
-GET https://www.example.com/us/en/index.json?include=noindex
+curl "https://www.example.com/us/en/index.json?include=noindex"
 ```
 
 #### Pagination
@@ -249,10 +249,10 @@ Product indexes support `limit` and `offset` query parameters for paginated acce
 
 ```bash
 # First 50 products
-GET https://www.example.com/us/en/index.json?limit=50&offset=0
+curl "https://www.example.com/us/en/index.json?limit=50&offset=0"
 
 # Next 50 products
-GET https://www.example.com/us/en/index.json?limit=50&offset=50
+curl "https://www.example.com/us/en/index.json?limit=50&offset=50"
 ```
 
 Results are sorted deterministically by SKU for consistent pagination across requests. When any pagination parameter is provided, the default limit is 1000. When no pagination parameters are provided, all results are returned.
@@ -278,7 +278,7 @@ The response includes pagination metadata:
 
 Merchant feed endpoint:
 ```bash
-GET https://www.example.com/us/en/merchant-center-feed.xml
+curl "https://www.example.com/us/en/merchant-center-feed.xml"
 ```
 
 ### Indexing performance

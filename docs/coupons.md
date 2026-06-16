@@ -27,19 +27,18 @@ A coupon type describes what discount is granted when a matching code is applied
 ### Creating a coupon type
 
 ```bash
-POST https://api.adobecommerce.live/{org}/sites/{site}/coupons/types
-Authorization: Bearer {your-api-key}
-Content-Type: application/json
-
-{
-  "id": "summer10",
-  "name": "10% Off Summer",
-  "discountType": "percentage",
-  "discountValue": 10,
-  "minimumOrderAmount": 25,
-  "stackable": true,
-  "allowManualEntry": true
-}
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/coupons/types" \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "summer10",
+    "name": "10% Off Summer",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "minimumOrderAmount": 25,
+    "stackable": true,
+    "allowManualEntry": true
+  }'
 ```
 
 To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/sites/{site}/coupons/types/{typeId}`. A type cannot be deleted while coupon codes still reference it.
@@ -86,16 +85,15 @@ A coupon code is a string that a customer enters at checkout. It references a ty
 ### Creating a single code
 
 ```bash
-POST https://api.adobecommerce.live/{org}/sites/{site}/coupons
-Authorization: Bearer {your-api-key}
-Content-Type: application/json
-
-{
-  "code": "SUMMER10",
-  "typeId": "summer10",
-  "usageLimit": 500,
-  "expiresAt": "2026-08-31T23:59:59Z"
-}
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/coupons" \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "SUMMER10",
+    "typeId": "summer10",
+    "usageLimit": 500,
+    "expiresAt": "2026-08-31T23:59:59Z"
+  }'
 ```
 
 ### Batch-generating codes
@@ -103,17 +101,16 @@ Content-Type: application/json
 For campaigns that require many unique codes, the batch endpoint generates up to 500 codes in a single request. Each code is a random 8-character alphanumeric suffix appended to an optional prefix.
 
 ```bash
-POST https://api.adobecommerce.live/{org}/sites/{site}/coupons/batch
-Authorization: Bearer {your-api-key}
-Content-Type: application/json
-
-{
-  "typeId": "summer10",
-  "count": 200,
-  "prefix": "SUM26",
-  "usageLimit": 1,
-  "expiresAt": "2026-08-31T23:59:59Z"
-}
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/coupons/batch" \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "typeId": "summer10",
+    "count": 200,
+    "prefix": "SUM26",
+    "usageLimit": 1,
+    "expiresAt": "2026-08-31T23:59:59Z"
+  }'
 ```
 
 This creates 200 codes like `SUM26-A3B7CX9Z`. The response includes the full list of generated codes:
@@ -142,13 +139,16 @@ This creates 200 codes like `SUM26-A3B7CX9Z`. The response includes the full lis
 
 ```bash
 # List all codes for the site (paginated)
-GET https://api.adobecommerce.live/{org}/sites/{site}/coupons?limit=100
+curl "https://api.adobecommerce.live/{org}/sites/{site}/coupons?limit=100" \
+  -H "Authorization: Bearer {your-api-key}"
 
 # Filter by type
-GET https://api.adobecommerce.live/{org}/sites/{site}/coupons?type=summer10
+curl "https://api.adobecommerce.live/{org}/sites/{site}/coupons?type=summer10" \
+  -H "Authorization: Bearer {your-api-key}"
 
 # Filter by active status
-GET https://api.adobecommerce.live/{org}/sites/{site}/coupons?active=true
+curl "https://api.adobecommerce.live/{org}/sites/{site}/coupons?active=true" \
+  -H "Authorization: Bearer {your-api-key}"
 ```
 
 The response includes a `cursor` field for pagination. Pass `cursor` as a query parameter in the next request to retrieve the following page.
@@ -169,19 +169,18 @@ SAVE10+EMAIL_JUN26  → base code: SAVE10, source: EMAIL_JUN26
 The storefront includes the coupon code in the body of an estimate request. The estimate endpoint validates the code and, if it passes all checks, applies the discount to the cart and returns the breakdown.
 
 ```bash
-POST https://api.adobecommerce.live/{org}/sites/{site}/estimate/shipping
-Authorization: Bearer {your-api-key}
-Content-Type: application/json
-
-{
-  "items": [
-    { "sku": "BLENDER-RED", "path": "/us/en/products/blender-pro-500", "quantity": 1,
-      "price": { "final": "29.99", "currency": "USD" } }
-  ],
-  "shipping": { "country": "US", "state": "CA" },
-  "couponCode": "SAVE10",
-  "couponSource": "manual"
-}
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/shipping" \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      { "sku": "BLENDER-RED", "path": "/us/en/products/blender-pro-500", "quantity": 1,
+        "price": { "final": "29.99", "currency": "USD" } }
+    ],
+    "shipping": { "country": "US", "state": "CA" },
+    "couponCode": "SAVE10",
+    "couponSource": "manual"
+  }'
 ```
 
 `couponSource` should be `"manual"` when the customer typed the code, and `"auto"` when the storefront applied it programmatically (for example, from an auto-apply type). Codes belonging to a type with `allowManualEntry: false` are rejected when `couponSource` is `"manual"`.

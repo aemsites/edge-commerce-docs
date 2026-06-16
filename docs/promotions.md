@@ -33,26 +33,25 @@ Catalog promotions define product-level price overrides grouped into named campa
 Catalog promotions are stored as a single document per site and replaced in full with each write.
 
 ```bash
-PUT https://api.adobecommerce.live/{org}/sites/{site}/price-rules/catalog
-Authorization: Bearer {your-api-key}
-Content-Type: application/json
-
-{
-  "promotions": [
-    {
-      "id": "summer-sale",
-      "name": "Summer Sale 2026",
-      "rules": [
-        {
-          "path": "/us/en/products/blender-pro-500",
-          "price": "29.99",
-          "start": "2026-06-01T00:00:00Z",
-          "end": "2026-08-31T23:59:59Z"
-        }
-      ]
-    }
-  ]
-}
+curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/catalog" \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "promotions": [
+      {
+        "id": "summer-sale",
+        "name": "Summer Sale 2026",
+        "rules": [
+          {
+            "path": "/us/en/products/blender-pro-500",
+            "price": "29.99",
+            "start": "2026-06-01T00:00:00Z",
+            "end": "2026-08-31T23:59:59Z"
+          }
+        ]
+      }
+    ]
+  }'
 ```
 
 To read the current catalog promotions, use `GET` on the same endpoint. Authentication is required for both reads and writes.
@@ -177,32 +176,31 @@ Cart rules are automatic discounts applied at checkout based on the contents or 
 Cart rules are stored as an array and replaced in full with each write.
 
 ```bash
-PUT https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart
-Authorization: Bearer {your-api-key}
-Content-Type: application/json
-
-[
-  {
-    "id": "free-shipping-50",
-    "name": "Free shipping on orders over $50",
-    "priority": 10,
-    "conditions": {
-      "minimumSubtotal": 50
-    },
-    "actions": {
-      "freeShipping": true
-    },
-    "stackable": true,
-    "incompatibleTypes": []
-  }
-]
+curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart" \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '[
+    {
+      "id": "free-shipping-50",
+      "name": "Free shipping on orders over $50",
+      "priority": 10,
+      "conditions": {
+        "minimumSubtotal": 50
+      },
+      "actions": {
+        "freeShipping": true
+      },
+      "stackable": true,
+      "incompatibleTypes": []
+    }
+  ]'
 ```
 
 To read the current cart rules, use `GET` on the same endpoint. Authenticated reads return all rules. Unauthenticated reads with the `?active=true` query parameter return only currently active rules, which allows the storefront to display promotion banners without requiring API credentials.
 
 ```bash
 # Public read — returns active rules only
-GET https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart?active=true
+curl "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart?active=true"
 ```
 
 ### Cart rule schema
