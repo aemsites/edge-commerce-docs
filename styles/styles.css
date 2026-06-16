@@ -320,7 +320,7 @@ div[data-status] {
 
 /* ===========================================================================
    API reference (docs template)
-   Pages are generated in helix-commerce-api and synced to /docs/api/*.html; this
+   Pages are generated in helix-commerce-api and synced to /api/*.html; this
    styles their generated markup (method badges, endpoint headers, parameter
    tables) for a three-column API reference look.
    ========================================================================= */

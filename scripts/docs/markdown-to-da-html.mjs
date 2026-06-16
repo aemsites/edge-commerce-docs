@@ -241,8 +241,8 @@ function renderHeaderFragment() {
     </div>
     <div>
       <ul>
-        <li><a href="/docs/">Docs</a></li>
-        <li><a href="/docs/api/get-config.html">API reference</a></li>
+        <li><a href="/">Docs</a></li>
+        <li><a href="/api/get-config.html">API reference</a></li>
       </ul>
     </div>
     <div>
@@ -278,7 +278,7 @@ async function main() {
     const source = await readFile(file, 'utf8');
     const [frontmatter, markdown] = parseFrontmatter(source);
     const stem = path.basename(file, '.md');
-    const daPath = frontmatter.daPath || `/docs/${stem === 'index' ? '' : stem}`;
+    const daPath = frontmatter.daPath || `/${stem === 'index' ? '' : stem}`;
     const sourcePath = daPathToSourcePath(daPath);
     const previewPath = daPathToPreviewPath(daPath);
     const outPath = path.join(ROOT, '.da', sourcePath);

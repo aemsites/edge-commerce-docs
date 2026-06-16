@@ -1,7 +1,7 @@
 ---
 title: "Product Bus Documentation"
 description: "Navigation and reading paths for Edge Delivery Commerce documentation."
-daPath: "/docs/"
+daPath: "/"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -48,25 +48,25 @@ Welcome to the Product Bus documentation. This collection of guides provides inf
 
 ### Core documentation
 
-**[Overview](/docs/overview)** - Edge Delivery Commerce Overview
+**[Overview](/overview)** - Edge Delivery Commerce Overview
 - System architecture and key components
 - Data flow explanation
 - Introduction to Product Bus, Commerce API, Product Pipeline, Product Indexer, and Helix Mixer
 
-**[Getting Started](/docs/getting-started)** - Getting Started with Product Bus
+**[Getting Started](/getting-started)** - Getting Started with Product Bus
 - Prerequisites and obtaining an API key
 - Your first product ingestion (4-step walkthrough)
 - URL pattern and mixer configuration
 - Product indexing setup
 
-**[API Reference](/docs/api-reference)** - Product Bus API Reference
+**[API Reference](/api-reference)** - Product Bus API Reference
 - Path-based product storage
 - Complete API endpoint documentation
 - Product CRUD operations
 - Authentication and cache management APIs
 - Error response formats
 
-**[Schema Reference](/docs/schema-reference)** - Product Bus Schema Reference
+**[Schema Reference](/schema-reference)** - Product Bus Schema Reference
 - ProductBusEntry (main product schema)
 - ProductBusVariant (variant schema)
 - ProductBusPrice, ProductBusMedia, ProductBusOption
@@ -75,38 +75,38 @@ Welcome to the Product Bus documentation. This collection of guides provides inf
 
 ### Specialized guides
 
-**[Data Ingestion Guide](/docs/data-ingestion)** - Product Data Ingestion Guide
+**[Data Ingestion Guide](/data-ingestion)** - Product Data Ingestion Guide
 - ETL process overview and best practices
 - Common ETL approaches (batch, event-driven, hybrid)
 - Path-based storage and URL considerations
 - ETL implementation considerations
 
-**[Rendering Guide](/docs/rendering-guide)** - Product Rendering Guide
+**[Rendering Guide](/rendering-guide)** - Product Rendering Guide
 - Five output formats: HTML, JSON, indexes, merchant feeds, sitemaps
 - Data rendering locations (head metadata, JSON-LD, body content)
 - Dual content sources (Product Bus + AEM Edge Delivery)
 - URL pattern configuration
 - Multi-CDN caching strategy
 
-**[Product Indexing Guide](/docs/indexing)** - Product Indexing Guide
+**[Product Indexing Guide](/indexing)** - Product Indexing Guide
 - Product Index configuration and property mapping
 - Merchant Feed automatic generation
 - Index access patterns and endpoints
 - Performance optimization and troubleshooting
 
-**[AEM Network Configuration](/docs/network)** - AEM Network Configuration Guide
+**[AEM Network Configuration](/network)** - AEM Network Configuration Guide
 - Pattern-based routing with glob patterns
 - Backend configuration options
 - Performance optimizations (resource inlining)
 - Common use cases and URL structure
 
-**[Promotions guide](/docs/promotions)** - Promotions Guide
+**[Promotions guide](/promotions)** - Promotions Guide
 - Catalog promotions: product-level price overrides with date ranges and variant-specific pricing
 - Conditional promotions: free-product grants evaluated at cart time
 - Cart rules: automatic checkout discounts (percentage, fixed, free shipping)
 - Stacking, priority, and country scoping
 
-**[Coupons guide](/docs/coupons)** - Coupons Guide
+**[Coupons guide](/coupons)** - Coupons Guide
 - Coupon types: discount templates with eligibility and restriction rules
 - Coupon codes: individual redemption codes with usage limits and expiry
 - Batch code generation
@@ -114,42 +114,42 @@ Welcome to the Product Bus documentation. This collection of guides provides inf
 - Stacking behavior and usage tracking
 
 **Operations** - Operational guidance and best practices
-- [Limits and guidance](/docs/limits): Bulk operation limits and product data limits
-- [Multi-store configuration](/docs/multi-store): Store and locale structure
-- [Caching strategy](/docs/caching): Cache TTLs, push invalidation, and update propagation
-- [Image processing](/docs/image-processing): How external images are fetched and stored
-- [Security best practices](/docs/security): API key management and data validation
-- [Custom data and extensions](/docs/custom-data): Extending product data with custom fields
+- [Limits and guidance](/limits): Bulk operation limits and product data limits
+- [Multi-store configuration](/multi-store): Store and locale structure
+- [Caching strategy](/caching): Cache TTLs, push invalidation, and update propagation
+- [Image processing](/image-processing): How external images are fetched and stored
+- [Security best practices](/security): API key management and data validation
+- [Custom data and extensions](/custom-data): Extending product data with custom fields
 
 ## Suggested reading order
 
 ### For first-time users
 
-1. **[Overview](/docs/overview)** - Understand the ecosystem and architecture
-2. **[Getting Started](/docs/getting-started)** - Set up your first product
-3. **[Schema Reference](/docs/schema-reference)** - Learn the data structure
-4. **[API Reference](/docs/api-reference)** - Explore available operations
+1. **[Overview](/overview)** - Understand the ecosystem and architecture
+2. **[Getting Started](/getting-started)** - Set up your first product
+3. **[Schema Reference](/schema-reference)** - Learn the data structure
+4. **[API Reference](/api-reference)** - Explore available operations
 
 ### For developers building ETL
 
-1. **[Data Ingestion Guide](/docs/data-ingestion)** - ETL process and considerations
-2. **[Schema Reference](/docs/schema-reference)** - Required data structures
-3. **[API Reference](/docs/api-reference)** - API endpoints for data loading
-4. **[Limits and guidance](/docs/limits)** - Bulk operation limits and best practices
+1. **[Data Ingestion Guide](/data-ingestion)** - ETL process and considerations
+2. **[Schema Reference](/schema-reference)** - Required data structures
+3. **[API Reference](/api-reference)** - API endpoints for data loading
+4. **[Limits and guidance](/limits)** - Bulk operation limits and best practices
 
 ### For frontend developers
 
-1. **[Rendering Guide](/docs/rendering-guide)** - How products are rendered
-2. **[Product Indexing Guide](/docs/indexing)** - Search and catalog data
-3. **[Schema Reference](/docs/schema-reference)** - Available product fields
-4. **[Mixer Configuration](/docs/network)** - URL routing configuration
+1. **[Rendering Guide](/rendering-guide)** - How products are rendered
+2. **[Product Indexing Guide](/indexing)** - Search and catalog data
+3. **[Schema Reference](/schema-reference)** - Available product fields
+4. **[Mixer Configuration](/network)** - URL routing configuration
 
 ### For system administrators
 
-1. **[Overview](/docs/overview)** - System architecture
-2. **[Mixer Configuration](/docs/network)** - Traffic routing
-3. **[Rendering Guide](/docs/rendering-guide)** - Caching strategy
-4. **[Security best practices](/docs/security)** - API key management and data validation
+1. **[Overview](/overview)** - System architecture
+2. **[Mixer Configuration](/network)** - Traffic routing
+3. **[Rendering Guide](/rendering-guide)** - Caching strategy
+4. **[Security best practices](/security)** - API key management and data validation
 
 ## Additional resources
 

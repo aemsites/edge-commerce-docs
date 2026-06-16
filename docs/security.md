@@ -18,5 +18,5 @@ Validate all product data before ingestion to catch issues early. Sanitize HTML 
 
 ## Next steps
 
-- [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Validation during the ETL process
-- [API Reference](/docs/api-reference#authentication): Authentication and authorization
+- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Validation during the ETL process
+- [API Reference](/api-reference#authentication): Authentication and authorization

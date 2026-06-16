@@ -1,7 +1,7 @@
 ---
 title: "Promotions guide"
 description: "Promotion models for catalog, cart, and conditional discounts."
-daPath: "/docs/promotions"
+daPath: "/promotions"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -256,6 +256,6 @@ The estimate endpoint applies each discount layer in sequence. First, catalog pr
 
 ## Next steps
 
-- [Coupons guide](/docs/coupons): Create and manage coupon codes that customers enter at checkout
-- [Rendering guide](/docs/rendering-guide#catalog-price-rules): How catalog promotions affect rendered product pages and indexes
-- [API reference](/docs/api-reference): Complete API endpoint reference
+- [Coupons guide](/coupons): Create and manage coupon codes that customers enter at checkout
+- [Rendering guide](/rendering-guide#catalog-price-rules): How catalog promotions affect rendered product pages and indexes
+- [API reference](/api-reference): Complete API endpoint reference

@@ -1,7 +1,7 @@
 ---
 title: "Product Bus schema reference"
 description: "Reference for the Product Bus product schema."
-daPath: "/docs/schema-reference"
+daPath: "/schema-reference"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -91,7 +91,7 @@ The main product schema supports rich product data with HTML content, variants, 
 
 The `url` field controls how product URLs appear in XML sitemaps. When `url` is present, it is used directly in the sitemap (highest priority). When `url` is absent, URLs are constructed from the product's `path` field.
 
-This gives you control over exact URLs when needed, such as for products with custom routing or special URL requirements. See the [Rendering Guide](/docs/rendering-guide#xml-sitemaps-for-seo) for more details on sitemap URL resolution.
+This gives you control over exact URLs when needed, such as for products with custom routing or special URL requirements. See the [Rendering Guide](/rendering-guide#xml-sitemaps-for-seo) for more details on sitemap URL resolution.
 
 ### HTML support
 
@@ -123,11 +123,11 @@ The `metadata` object allows you to add custom meta tags to the product page HTM
 </head>
 ```
 
-See the [Rendering Guide](/docs/rendering-guide#custom-metadata) for more details on how metadata is rendered in HTML output.
+See the [Rendering Guide](/rendering-guide#custom-metadata) for more details on how metadata is rendered in HTML output.
 
 ### Custom JSON-LD override
 
-The `jsonld` field allows you to provide custom schema.org structured data that will be injected verbatim into the HTML output. By default, [the pipeline generates base JSON-LD](/docs/rendering-guide#json-ld-structured-data) with standard product fields (name, SKU, price, availability, etc.). Use this field for complex product schemas beyond the standard fields, industry-specific structured data requirements, or advanced SEO optimizations.
+The `jsonld` field allows you to provide custom schema.org structured data that will be injected verbatim into the HTML output. By default, [the pipeline generates base JSON-LD](/rendering-guide#json-ld-structured-data) with standard product fields (name, SKU, price, availability, etc.). Use this field for complex product schemas beyond the standard fields, industry-specific structured data requirements, or advanced SEO optimizations.
 
 ## ProductBusVariant
 
@@ -226,7 +226,7 @@ Media asset (image or video) associated with a product.
 
 **Image processing:**
 
-When you provide external image URLs, they are fetched and stored in the media bus. Images are deduplicated using SHA-1 hashing and transformed to relative paths after processing. Processing is asynchronous for [bulk operations exceeding thresholds](/docs/limits).
+When you provide external image URLs, they are fetched and stored in the media bus. Images are deduplicated using SHA-1 hashing and transformed to relative paths after processing. Processing is asynchronous for [bulk operations exceeding thresholds](/limits).
 
 The `filename` field controls the human-readable segment of the rendered media URL. When provided, the rendered URL becomes `./media_{hash}/{filename}.{ext}` (e.g., `./media_abc123.../blender-pro-front.jpg`). When omitted, the URL is `./media_{hash}.{ext}`. The filename must contain only letters, digits, hyphens, and underscores — no dots, slashes, or spaces. Invalid filenames are silently ignored and the URL is left without a filename segment.
 
@@ -322,6 +322,6 @@ Product condition using schema.org vocabulary. These values are rendered in the 
 
 ## Next steps
 
-- [API Reference](/docs/api-reference#create-or-update-a-product): Use the API to create and manage products with this schema
-- [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Transform your source data into this schema format
-- [Rendering Guide](/docs/rendering-guide#data-rendering-locations): Learn how schema fields are rendered in HTML and JSON output
+- [API Reference](/api-reference#create-or-update-a-product): Use the API to create and manage products with this schema
+- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Transform your source data into this schema format
+- [Rendering Guide](/rendering-guide#data-rendering-locations): Learn how schema fields are rendered in HTML and JSON output

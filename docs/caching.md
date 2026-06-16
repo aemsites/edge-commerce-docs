@@ -44,5 +44,5 @@ Product indexes and merchant feeds update asynchronously through the Product Ind
 
 ## Next steps
 
-- [Rendering Guide](/docs/rendering-guide#data-rendering-locations): Output formats and where data is rendered
-- [Indexing](/docs/indexing): How indexes and feeds update
+- [Rendering Guide](/rendering-guide#data-rendering-locations): Output formats and where data is rendered
+- [Indexing](/indexing): How indexes and feeds update

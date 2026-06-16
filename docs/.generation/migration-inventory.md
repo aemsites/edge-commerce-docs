@@ -6,18 +6,18 @@ Internal root-level files from the legacy documentation repo, including `*-intro
 
 | Legacy file | Destination | DA path | Status |
 |---|---|---|---|
-| `documentation/README.md` | `docs/index.md` | `/docs/` | migrated as-is |
-| `documentation/network.md` | `docs/network.md` | `/docs/network` | migrated as-is |
-| `documentation/advanced-topics.md` | split into `docs/limits.md`, `docs/multi-store.md`, `docs/custom-data.md`, `docs/caching.md`, `docs/image-processing.md`, `docs/security.md` | `/docs/limits`, `/docs/multi-store`, `/docs/custom-data`, `/docs/caching`, `/docs/image-processing`, `/docs/security` | split for navigation |
-| `documentation/api-reference.md` | `docs/api-reference.md` | `/docs/api-reference` | migrated as-is |
-| `documentation/coupons.md` | `docs/coupons.md` | `/docs/coupons` | migrated as-is |
-| `documentation/data-ingestion.md` | `docs/data-ingestion.md` | `/docs/data-ingestion` | migrated as-is |
-| `documentation/getting-started.md` | `docs/getting-started.md` | `/docs/getting-started` | migrated as-is |
-| `documentation/indexing.md` | `docs/indexing.md` | `/docs/indexing` | migrated as-is |
-| `documentation/overview.md` | `docs/overview.md` | `/docs/overview` | migrated as-is |
-| `documentation/promotions.md` | `docs/promotions.md` | `/docs/promotions` | migrated as-is |
-| `documentation/rendering-guide.md` | `docs/rendering-guide.md` | `/docs/rendering-guide` | migrated as-is |
-| `documentation/schema-reference.md` | `docs/schema-reference.md` | `/docs/schema-reference` | migrated as-is |
+| `documentation/README.md` | `docs/index.md` | `/` | migrated as-is |
+| `documentation/network.md` | `docs/network.md` | `/network` | migrated as-is |
+| `documentation/advanced-topics.md` | split into `docs/limits.md`, `docs/multi-store.md`, `docs/custom-data.md`, `docs/caching.md`, `docs/image-processing.md`, `docs/security.md` | `/limits`, `/multi-store`, `/custom-data`, `/caching`, `/image-processing`, `/security` | split for navigation |
+| `documentation/api-reference.md` | `docs/api-reference.md` | `/api-reference` | migrated as-is |
+| `documentation/coupons.md` | `docs/coupons.md` | `/coupons` | migrated as-is |
+| `documentation/data-ingestion.md` | `docs/data-ingestion.md` | `/data-ingestion` | migrated as-is |
+| `documentation/getting-started.md` | `docs/getting-started.md` | `/getting-started` | migrated as-is |
+| `documentation/indexing.md` | `docs/indexing.md` | `/indexing` | migrated as-is |
+| `documentation/overview.md` | `docs/overview.md` | `/overview` | migrated as-is |
+| `documentation/promotions.md` | `docs/promotions.md` | `/promotions` | migrated as-is |
+| `documentation/rendering-guide.md` | `docs/rendering-guide.md` | `/rendering-guide` | migrated as-is |
+| `documentation/schema-reference.md` | `docs/schema-reference.md` | `/schema-reference` | migrated as-is |
 
 ## Follow-up work
 

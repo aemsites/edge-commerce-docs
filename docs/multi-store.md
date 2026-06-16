@@ -29,5 +29,5 @@ As a result, you will have an API structure like this, with each store/view comb
 
 ## Next steps
 
-- [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Map source data to per-store paths
-- [API Reference](/docs/api-reference#path-structure): Path structure and routing rules
+- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Map source data to per-store paths
+- [API Reference](/api-reference#path-structure): Path structure and routing rules

@@ -21,5 +21,5 @@ In addition to the [standard limits for AEM](https://main--helix-website--adobe.
 
 ## Next steps
 
-- [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Bulk operation strategies and ETL best practices
-- [API Reference](/docs/api-reference#bulk-create-or-update-products): Endpoint documentation including limits and error handling
+- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Bulk operation strategies and ETL best practices
+- [API Reference](/api-reference#bulk-create-or-update-products): Endpoint documentation including limits and error handling

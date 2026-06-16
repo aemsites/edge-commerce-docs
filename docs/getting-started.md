@@ -1,7 +1,7 @@
 ---
 title: "Getting Started with Product Bus"
 description: "Set up Product Bus and ingest the first product."
-daPath: "/docs/getting-started"
+daPath: "/getting-started"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -57,7 +57,7 @@ Each site requires a unique API key (sitekey) that provides access to an org/sit
 
 To obtain a sitekey for initial setup, reach out to the Adobe team on Slack or contact your Adobe representative.
 
-Once you have a sitekey, you can manage it (rotate, set) using the Authentication API endpoints described in the [Product Bus API Reference](/docs/api-reference#authentication-api).
+Once you have a sitekey, you can manage it (rotate, set) using the Authentication API endpoints described in the [Product Bus API Reference](/api-reference#authentication-api).
 
 ## Your first product ingestion
 
@@ -92,7 +92,7 @@ When you submit this request, the API will return the updated configuration obje
 
 This configuration tells the AEM Network how to handle your product URLs. The `patterns` section routes any URL matching `/us/en/products/*` to the `adobe_productbus` backend. The `backends` section then defines where that backend lives (the Product Pipeline origin) and sets up the path prefix (remember to replace `{org}` and `{site}` with your actual values).
 
-For more details about URL pattern configuration, see the [AEM Network Configuration Reference](/docs/network#pattern-based-routing).
+For more details about URL pattern configuration, see the [AEM Network Configuration Reference](/network#pattern-based-routing).
 
 When a request arrives at `https://www.example.com/us/en/products/blender-pro-500`, the AEM Network matches the pattern `/us/en/products/*` and routes to the Product Pipeline backend. The Pipeline loads the product from Product Bus at `/us/en/products/blender-pro-500` and renders it as HTML with metadata and JSON-LD.
 
@@ -152,11 +152,11 @@ You will see an HTML page with the product information, including metadata in th
 
 ## Next steps
 
-- [Rendering Guide](/docs/rendering-guide#multiple-output-formats): Learn how products are rendered in different formats
-- [Product Indexing Guide](/docs/indexing#product-indexing-configuration): Configure and optimize product indexing
-- [API Reference](/docs/api-reference#product-operations): Explore all available API endpoints and operations
-- [Schema Reference](/docs/schema-reference#productbusentry): Detailed documentation of all product data fields
+- [Rendering Guide](/rendering-guide#multiple-output-formats): Learn how products are rendered in different formats
+- [Product Indexing Guide](/indexing#product-indexing-configuration): Configure and optimize product indexing
+- [API Reference](/api-reference#product-operations): Explore all available API endpoints and operations
+- [Schema Reference](/schema-reference#productbusentry): Detailed documentation of all product data fields
 
 | Pagination (Contained) |                |
 |------------------------|----------------|
-| :icon-arrow: Previous <br> [Product Bus Overview](/docs/overview)                       | Up Next :icon-arrow:<br>[Data ingestion guide](/docs/data-ingestion) |
+| :icon-arrow: Previous <br> [Product Bus Overview](/overview)                       | Up Next :icon-arrow:<br>[Data ingestion guide](/data-ingestion) |

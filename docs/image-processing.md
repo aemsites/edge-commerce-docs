@@ -49,5 +49,5 @@ To ensure reliable image processing, use publicly accessible image URLs without 
 
 ## Next steps
 
-- [Schema Reference](/docs/schema-reference#productbusmedia): The media schema and image fields
-- [Caching strategy](/docs/caching#push-invalidation): How updated images propagate through the CDN
+- [Schema Reference](/schema-reference#productbusmedia): The media schema and image fields
+- [Caching strategy](/caching#push-invalidation): How updated images propagate through the CDN

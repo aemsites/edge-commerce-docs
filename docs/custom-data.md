@@ -33,5 +33,5 @@ When working with the `custom` object, focus on using it for integration-specifi
 
 ## Next steps
 
-- [Schema Reference](/docs/schema-reference#productbusentry): Standard product fields and the `custom` field
-- [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Transform source data into the product schema
+- [Schema Reference](/schema-reference#productbusentry): Standard product fields and the `custom` field
+- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Transform source data into the product schema

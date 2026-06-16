@@ -1,7 +1,7 @@
 ---
 title: "Product data ingestion guide"
 description: "ETL patterns and data ingestion guidance for Product Bus."
-daPath: "/docs/data-ingestion"
+daPath: "/data-ingestion"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -49,8 +49,8 @@ Before you can use the Product Bus, you need to transform your product data from
 ### ETL process overview
 
 1. Extract: Retrieve product data from your source systems (Product Information Management (PIM), Enterprise Resource Planning (ERP), Commerce platform, or other databases)
-2. Transform: Convert your data format into the Product Bus schema (see [Schema Reference](/docs/schema-reference#productbusentry) for complete reference)
-3. Load: Send transformed data to the [Commerce API via HTTP PUT requests](/docs/api-reference#create-or-update-a-product)
+2. Transform: Convert your data format into the Product Bus schema (see [Schema Reference](/schema-reference#productbusentry) for complete reference)
+3. Load: Send transformed data to the [Commerce API via HTTP PUT requests](/api-reference#create-or-update-a-product)
 
 ### Your responsibility
 
@@ -66,7 +66,7 @@ Event-driven updates are the most efficient approach for ongoing product synchro
 
 #### Map your source data fields
 
-[Map your source data fields to Product Bus schema fields](/docs/schema-reference#productbusentry). Watch out for missing required fields like `sku`, `name`, and `path`, which cause API rejections. Avoid mapping the wrong source field to Product Bus fields. Don't use internal product codes instead of customer-facing SKUs. Don't ignore optional but important fields like `metaDescription` and `metaTitle` that affect SEO performance.
+[Map your source data fields to Product Bus schema fields](/schema-reference#productbusentry). Watch out for missing required fields like `sku`, `name`, and `path`, which cause API rejections. Avoid mapping the wrong source field to Product Bus fields. Don't use internal product codes instead of customer-facing SKUs. Don't ignore optional but important fields like `metaDescription` and `metaTitle` that affect SEO performance.
 
 #### Handle data type conversions
 
@@ -74,19 +74,19 @@ Be careful with price formatting. Sending prices as strings (`"99.99"`) instead 
 
 #### Manage product images
 
-[Manage product images](/docs/schema-reference#productbusmedia) using external URLs or pre-uploaded assets. Ensure all image URLs are publicly accessible from the internet, as internal CDN URLs that require authentication will fail. Handle missing images gracefully rather than sending null or broken URLs.
+[Manage product images](/schema-reference#productbusmedia) using external URLs or pre-uploaded assets. Ensure all image URLs are publicly accessible from the internet, as internal CDN URLs that require authentication will fail. Handle missing images gracefully rather than sending null or broken URLs.
 
 #### Transform pricing and variant data
 
-Transform [pricing](/docs/schema-reference#productbusprice), inventory, and [variant data](/docs/schema-reference#productbusvariant). Currency codes must match ISO 4217 standards (use "USD" not "dollars"). Make sure to correctly distinguish between regular price and final/sale price, and verify that availability status accurately reflects inventory (avoid showing out-of-stock items as available).
+Transform [pricing](/schema-reference#productbusprice), inventory, and [variant data](/schema-reference#productbusvariant). Currency codes must match ISO 4217 standards (use "USD" not "dollars"). Make sure to correctly distinguish between regular price and final/sale price, and verify that availability status accurately reflects inventory (avoid showing out-of-stock items as available).
 
 #### Handle multi-store configurations
 
-Handle [multi-language and multi-store configurations](/docs/multi-store). Pay close attention to path structures, as incorrect store or locale codes in paths are a frequent source of issues. Create separate entries with correct paths for each store rather than duplicating products. Ensure language translations are consistent within each product (don't mix languages), and update product paths when your store structure changes.
+Handle [multi-language and multi-store configurations](/multi-store). Pay close attention to path structures, as incorrect store or locale codes in paths are a frequent source of issues. Create separate entries with correct paths for each store rather than duplicating products. Ensure language translations are consistent within each product (don't mix languages), and update product paths when your store structure changes.
 
 #### Implement error handling
 
-Implement [error handling and retry logic](/docs/api-reference#error-handling). Never assume all requests succeeded. Always check HTTP status codes. Implement retry logic for temporary failures like network timeouts and rate limits. Log failed products with enough detail for debugging and recovery, and consider implementing a dead letter queue for products that consistently fail validation.
+Implement [error handling and retry logic](/api-reference#error-handling). Never assume all requests succeeded. Always check HTTP status codes. Implement retry logic for temporary failures like network timeouts and rate limits. Log failed products with enough detail for debugging and recovery, and consider implementing a dead letter queue for products that consistently fail validation.
 
 Once your ETL process is in place, you can begin ingesting products into the Product Bus.
 
@@ -146,7 +146,7 @@ By implementing these verification steps, you can catch integration issues early
 
 ## Next steps
 
-- [Getting Started](/docs/getting-started#your-first-product-ingestion): Quick example of creating your first product
-- [Limits and guidance](/docs/limits): Bulk operation limits and operational guidance
-- [Schema Reference](/docs/schema-reference#productbusentry): Detailed reference for the target Product Bus schema
-- [API Reference](/docs/api-reference#bulk-create-or-update-products): API endpoints and methods for loading product data
+- [Getting Started](/getting-started#your-first-product-ingestion): Quick example of creating your first product
+- [Limits and guidance](/limits): Bulk operation limits and operational guidance
+- [Schema Reference](/schema-reference#productbusentry): Detailed reference for the target Product Bus schema
+- [API Reference](/api-reference#bulk-create-or-update-products): API endpoints and methods for loading product data

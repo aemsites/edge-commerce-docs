@@ -1,7 +1,7 @@
 ---
 title: "Coupons guide"
 description: "Coupon data model, validation, and redemption flows."
-daPath: "/docs/coupons"
+daPath: "/coupons"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -218,6 +218,6 @@ After a successful order payment, the system asynchronously increments `usageCou
 
 ## Next steps
 
-- [Promotions guide](/docs/promotions): Set up automatic catalog and cart discounts that apply without a code
-- [Rendering guide](/docs/rendering-guide#catalog-price-rules): How promotions affect rendered product pages and indexes
-- [API reference](/docs/api-reference): Complete API endpoint reference
+- [Promotions guide](/promotions): Set up automatic catalog and cart discounts that apply without a code
+- [Rendering guide](/rendering-guide#catalog-price-rules): How promotions affect rendered product pages and indexes
+- [API reference](/api-reference): Complete API endpoint reference

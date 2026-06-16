@@ -8,9 +8,11 @@ const EXP_ICON = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xm
 const { codeBase } = getConfig();
 
 // The docs nav is owned by edge-commerce-docs. The API reference subtree is
-// generated in helix-commerce-api and synced to /docs/api/nav.html (push-only).
+// generated in helix-commerce-api and synced to /api/nav.html (push-only).
+// nav.html stays under /docs in the repo (a code-bus asset fetched by this
+// block); the published pages live at the site root.
 const DOCS_NAV_PATH = `${codeBase}/docs/nav.html`;
-const API_NAV_PATH = `${codeBase}/docs/api/nav.html`;
+const API_NAV_PATH = `${codeBase}/api/nav.html`;
 
 /** Normalize paths so extensionless content links match generated/static pages. */
 function normalizePath(pathname) {

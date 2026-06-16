@@ -1,7 +1,7 @@
 ---
 title: "Product Indexing Guide"
 description: "Configure product indexes, merchant feeds, and sitemap outputs."
-daPath: "/docs/indexing"
+daPath: "/indexing"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -170,7 +170,7 @@ Metadata properties:
 
 ### Prices in index responses
 
-The stored index contains the prices written by the Product Indexer at indexing time. When the pipeline serves an index response, it fetches and applies any active catalog price rules before returning the data, so the `price` values a browser or application sees may be lower than what was originally indexed. See the [Rendering Guide](/docs/rendering-guide#catalog-price-rules) for details on how catalog price rules work.
+The stored index contains the prices written by the Product Indexer at indexing time. When the pipeline serves an index response, it fetches and applies any active catalog price rules before returning the data, so the `price` values a browser or application sees may be lower than what was originally indexed. See the [Rendering Guide](/rendering-guide#catalog-price-rules) for details on how catalog price rules work.
 
 ### Configuration best practices
 
@@ -287,6 +287,6 @@ Indexing jobs run automatically and asynchronously. To optimize performance, bat
 
 ## Next steps
 
-- [AEM Network Configuration](/docs/network): Configure URL routing to serve your product index
-- [Caching strategy](/docs/caching): Cache behavior, push invalidation, and update propagation
-- [Schema Reference](/docs/schema-reference#productbusentry): Detailed reference for all indexable product fields
+- [AEM Network Configuration](/network): Configure URL routing to serve your product index
+- [Caching strategy](/caching): Cache behavior, push invalidation, and update propagation
+- [Schema Reference](/schema-reference#productbusentry): Detailed reference for all indexable product fields

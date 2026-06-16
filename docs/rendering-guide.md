@@ -1,7 +1,7 @@
 ---
 title: "Product rendering guide"
 description: "Render product data as HTML, JSON, indexes, feeds, and sitemaps."
-daPath: "/docs/rendering-guide"
+daPath: "/rendering-guide"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -70,7 +70,7 @@ https://www.example.com/us/en/index.json?limit=50&offset=0
 
 The Product Index is highly customizable - you control exactly which product properties are extracted and indexed using your site's `public` config. Results are sorted deterministically by SKU for consistent pagination. The response includes `total`, `offset`, and `limit` fields.
 
-For complete documentation on index configuration, property path syntax, access patterns, and troubleshooting, see the [Product Indexing Guide](/docs/indexing).
+For complete documentation on index configuration, property path syntax, access patterns, and troubleshooting, see the [Product Indexing Guide](/indexing).
 
 ### 4. Merchant feeds
 Google Shopping-compatible feeds for product advertising. The Merchant Feed is automatically generated from Product Bus data without requiring configuration.
@@ -83,7 +83,7 @@ The merchant feed is available at the same path as your product index, using `me
 
 The feed extracts standard Google Merchant Center fields including title, description, price, images, and availability. You can submit the feed URL directly to Google Merchant Center for product advertising.
 
-For complete documentation on merchant feed configuration, automatic field extraction, and Google Merchant Center integration, see the [Product Indexing Guide](/docs/indexing#merchant-feed-configuration).
+For complete documentation on merchant feed configuration, automatic field extraction, and Google Merchant Center integration, see the [Product Indexing Guide](/indexing#merchant-feed-configuration).
 
 ### 5. XML sitemaps
 
@@ -281,7 +281,7 @@ The body is structured with the following rendering logic.
 
 The main section includes an `<h1>` with the product `name`. For price display, if `price.final < price.regular`, it shows `{final} ({regular})` with the regular price as strikethrough; otherwise it shows `{final}` only. The media gallery renders each image as an optimized picture element. If media has a `video` property, the image is shown with a video link below. Images use `url`, `label`, and `title` from each media object in the `images` array.
 
-Before rendering, the pipeline transforms each image URL to incorporate the `filename` field. When a media entry has a `filename`, the URL `./media_{hash}.{ext}` becomes `./media_{hash}/{filename}.{ext}`. This applies to both product images and variant images. See [ProductBusMedia](/docs/schema-reference#productbusmedia) for filename format requirements.
+Before rendering, the pipeline transforms each image URL to incorporate the `filename` field. When a media entry has a `filename`, the URL `./media_{hash}.{ext}` becomes `./media_{hash}/{filename}.{ext}`. This applies to both product images and variant images. See [ProductBusMedia](/schema-reference#productbusmedia) for filename format requirements.
 
 #### Product content section
 
@@ -380,6 +380,6 @@ The path structure is determined when you create products via the Commerce API -
 
 ## Next steps
 
-- [Product Indexing Guide](/docs/indexing#product-indexing-configuration): Configure and optimize product indexes for search and feeds
-- [AEM Network Configuration](/docs/network#pattern-based-routing): Set up URL routing and backend configuration
-- [Caching strategy](/docs/caching): Cache TTLs, push invalidation, and update propagation
+- [Product Indexing Guide](/indexing#product-indexing-configuration): Configure and optimize product indexes for search and feeds
+- [AEM Network Configuration](/network#pattern-based-routing): Set up URL routing and backend configuration
+- [Caching strategy](/caching): Cache TTLs, push invalidation, and update propagation

@@ -1,7 +1,7 @@
 ---
 title: "AEM Edge Network"
 description: "Configure AEM Network routing for Edge Delivery Commerce sites."
-daPath: "/docs/network"
+daPath: "/network"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -236,6 +236,6 @@ For assistance with custom routing configurations, consult with the Adobe team.
 
 ## Next steps
 
-- [Getting Started](/docs/getting-started#step-1-configure-url-patterns-and-routing): Step-by-step guide for configuring network routing with Product Pipeline
-- [Rendering Guide](/docs/rendering-guide#url-pattern-configuration): Learn how network and pipeline work together to render products
-- [Security best practices](/docs/security): API key management and data validation
+- [Getting Started](/getting-started#step-1-configure-url-patterns-and-routing): Step-by-step guide for configuring network routing with Product Pipeline
+- [Rendering Guide](/rendering-guide#url-pattern-configuration): Learn how network and pipeline work together to render products
+- [Security best practices](/security): API key management and data validation

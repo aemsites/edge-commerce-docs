@@ -1,7 +1,7 @@
 ---
 title: "Helix Commerce API reference"
 description: "Human-readable API reference for Product Bus operations."
-daPath: "/docs/api-reference"
+daPath: "/api-reference"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -100,7 +100,7 @@ Simple structure:
 
 ### Multi-store and multi-locale
 
-Region and locale information is embedded directly in the path. The same product can exist at different paths for different markets, and each path contains [locale-specific data](/docs/multi-store) like translated names, descriptions, and pricing for SEO.
+Region and locale information is embedded directly in the path. The same product can exist at different paths for different markets, and each path contains [locale-specific data](/multi-store) like translated names, descriptions, and pricing for SEO.
 
 ```text
 # US English version
@@ -145,7 +145,7 @@ Body: { "sku": "123", "path": "/us/en/products/mixer", ... }
 # Error: 400 Bad Request
 ```
 
-The request body should be a product object (see [Schema Reference](/docs/schema-reference#productbusentry)).
+The request body should be a product object (see [Schema Reference](/schema-reference#productbusentry)).
 
 When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid.
 
@@ -228,9 +228,9 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
   }'
 ```
 
-**Note:** The `description` field supports [HTML markup](/docs/schema-reference#html-support) for rich formatting.
+**Note:** The `description` field supports [HTML markup](/schema-reference#html-support) for rich formatting.
 
-**Note:** When providing a `price` object, the `final` and `currency` fields are required. The `regular` field is optional. See [ProductBusPrice](/docs/schema-reference#productbusprice) for details.
+**Note:** When providing a `price` object, the `final` and `currency` fields are required. The `regular` field is optional. See [ProductBusPrice](/schema-reference#productbusprice) for details.
 
 ### Bulk create or update products
 
@@ -238,13 +238,13 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 Each product in the array must include a `path` field that specifies where it should be stored. Unlike single product operations, bulk operations do not automatically infer the path from the URL. Missing `path` fields will return `400 Bad Request`.
 
-The request body is an array of product objects ([max 50 products per request](/docs/limits)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product.
+The request body is an array of product objects ([max 50 products per request](/limits)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product.
 
 #### Image processing behavior
 
 Image processing is synchronous when you submit 10 or fewer products with 10 or fewer total images. For larger requests, images are queued for asynchronous background processing. When processed asynchronously, products initially point to the external URLs you provided in the request. After processing completes, image URLs are transformed to relative paths (e.g., `./media_{image-hash}.png`). External images are fetched, deduplicated via SHA-1 hashing, and stored in the media bus.
 
-Learn more about [image handling](/docs/schema-reference#productbusmedia) in the schema reference.
+Learn more about [image handling](/schema-reference#productbusmedia) in the schema reference.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/*" \
@@ -310,7 +310,7 @@ When you delete a product, several systems are updated:
 
 The product is removed from storage immediately, so direct requests to the product's JSON or HTML endpoints will return `404` right away. However, the product index, merchant feed, and sitemap are updated asynchronously by the Product Indexer, which processes deletion events within its normal indexing cycle.
 
-If you have [push invalidation](/docs/caching#push-invalidation) enabled, the CDN cache for the deleted product is also purged, ensuring the `404` response propagates immediately. Without push invalidation, cached responses may persist until the CDN TTL expires.
+If you have [push invalidation](/caching#push-invalidation) enabled, the CDN cache for the deleted product is also purged, ensuring the `404` response propagates immediately. Without push invalidation, cached responses may persist until the CDN TTL expires.
 
 ## Authentication API
 
@@ -326,7 +326,7 @@ curl -X POST \
   "https://api.adobecommerce.live/{org}/sites/{site}/auth/token"
 ```
 
-See also [Security best practices](/docs/security) for API key management recommendations.
+See also [Security best practices](/security) for API key management recommendations.
 
 ### Set explicit API key
 
@@ -451,6 +451,6 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/cache" \
 
 ## Next steps
 
-- [Schema Reference](/docs/schema-reference#productbusentry): Detailed reference for all product data fields and structures
-- [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview): Build ETL processes to load product data at scale
-- [Limits and guidance](/docs/limits): API limits and operational guidance
+- [Schema Reference](/schema-reference#productbusentry): Detailed reference for all product data fields and structures
+- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Build ETL processes to load product data at scale
+- [Limits and guidance](/limits): API limits and operational guidance

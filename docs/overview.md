@@ -1,7 +1,7 @@
 ---
 title: "Edge Delivery Commerce"
 description: "Overview of Edge Delivery Commerce components and data flow."
-daPath: "/docs/overview"
+daPath: "/overview"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -54,33 +54,33 @@ The architecture consists of five main components: the Product Bus (central stor
 
 #### Product Bus (storage layer)
 
-The Product Bus serves as the central storage layer, containing product data from one or more sources such as PIM systems, Enterprise Resource Planning (ERP) platforms, and commerce backends, aggregated into a single [unified data model](/docs/schema-reference#productbusentry). It provides low-latency retrieval with global availability, while rendered content is cached globally via the customers CDN for optimal performance.
+The Product Bus serves as the central storage layer, containing product data from one or more sources such as PIM systems, Enterprise Resource Planning (ERP) platforms, and commerce backends, aggregated into a single [unified data model](/schema-reference#productbusentry). It provides low-latency retrieval with global availability, while rendered content is cached globally via the customers CDN for optimal performance.
 
-Learn more: [Getting Started](/docs/getting-started#your-first-product-ingestion) | [Schema Reference](/docs/schema-reference#productbusentry)
+Learn more: [Getting Started](/getting-started#your-first-product-ingestion) | [Schema Reference](/schema-reference#productbusentry)
 
 #### Helix Commerce API (management layer)
 
-The Helix Commerce API is a REST API that provides globally available, low-latency access to product data. It handles all [product Create, Read, Update, Delete (CRUD) operations](/docs/api-reference#product-operations), [bulk updates](/docs/api-reference#bulk-create-or-update-products), and [cache management](/docs/api-reference#cache-management-api), while also managing [authentication](/docs/api-reference#authentication-api), validation, and asynchronous image processing to ensure data integrity and performance.
+The Helix Commerce API is a REST API that provides globally available, low-latency access to product data. It handles all [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk updates](/api-reference#bulk-create-or-update-products), and [cache management](/api-reference#cache-management-api), while also managing [authentication](/api-reference#authentication-api), validation, and asynchronous image processing to ensure data integrity and performance.
 
-Learn more: [Data Ingestion Guide](/docs/data-ingestion#etl-process-overview) | [API Reference](/docs/api-reference#product-operations)
+Learn more: [Data Ingestion Guide](/data-ingestion#etl-process-overview) | [API Reference](/api-reference#product-operations)
 
 #### Product Pipeline (rendering layer)
 
-The Product Pipeline transforms product data into [multiple output formats](/docs/rendering-guide#multiple-output-formats) including HTML pages, JSON data, product indexes, merchant feeds, and XML sitemaps. It uses a [dual-source model](/docs/rendering-guide#dual-content-sources) that blends Product Bus data with optional authored Edge Delivery content, rendering server-side for SEO and Large Language Model (LLM) crawler performance.
+The Product Pipeline transforms product data into [multiple output formats](/rendering-guide#multiple-output-formats) including HTML pages, JSON data, product indexes, merchant feeds, and XML sitemaps. It uses a [dual-source model](/rendering-guide#dual-content-sources) that blends Product Bus data with optional authored Edge Delivery content, rendering server-side for SEO and Large Language Model (LLM) crawler performance.
 
-Learn more: [Rendering Guide](/docs/rendering-guide#multiple-output-formats) | [URL Pattern Configuration](/docs/rendering-guide#url-pattern-configuration)
+Learn more: [Rendering Guide](/rendering-guide#multiple-output-formats) | [URL Pattern Configuration](/rendering-guide#url-pattern-configuration)
 
 #### Product Indexer (search & feed layer)
 
-The Product Indexer automatically builds and updates product indices asynchronously after Product Bus changes. It produces three outputs: a [configurable index](/docs/indexing#product-indexing-configuration) for frontend search and filtering, a product sitemap and a Google Shopping compatible [Merchant Feed](/docs/indexing#merchant-feed-configuration) for advertising.
+The Product Indexer automatically builds and updates product indices asynchronously after Product Bus changes. It produces three outputs: a [configurable index](/indexing#product-indexing-configuration) for frontend search and filtering, a product sitemap and a Google Shopping compatible [Merchant Feed](/indexing#merchant-feed-configuration) for advertising.
 
-Learn more: [Product Indexing Guide](/docs/indexing#product-indexing-configuration) | [Index Access Patterns](/docs/indexing#index-access-patterns)
+Learn more: [Product Indexing Guide](/indexing#product-indexing-configuration) | [Index Access Patterns](/indexing#index-access-patterns)
 
 #### Network (routing layer)
 
-The AEM Network is a reverse proxy that provides [pattern-based URL routing](/docs/network#pattern-based-routing) to direct requests to different backends. The Network is entirely [configuration-driven](/docs/network#backend-configuration), allowing routing updates without requiring any code deployments.
+The AEM Network is a reverse proxy that provides [pattern-based URL routing](/network#pattern-based-routing) to direct requests to different backends. The Network is entirely [configuration-driven](/network#backend-configuration), allowing routing updates without requiring any code deployments.
 
-Learn more: [Common Use Cases](/docs/network#common-use-cases) | [AEM Network Configuration](/docs/network#pattern-based-routing)
+Learn more: [Common Use Cases](/network#common-use-cases) | [AEM Network Configuration](/network#pattern-based-routing)
 
 ### Data flow
 
@@ -90,10 +90,10 @@ When a user requests a product page, their request first hits your CDN. The AEM 
 
 ## Next steps
 
-- [Getting Started with Product Bus](/docs/getting-started): Learn how to set up and create your first product
-- [API Reference](/docs/api-reference): Complete API documentation for product operations
-- [Schema Reference](/docs/schema-reference): Detailed schema documentation for all product data structures
+- [Getting Started with Product Bus](/getting-started): Learn how to set up and create your first product
+- [API Reference](/api-reference): Complete API documentation for product operations
+- [Schema Reference](/schema-reference): Detailed schema documentation for all product data structures
 
 | Pagination (Contained) |                |
 |------------------------|----------------|
-|                        | Up Next :icon-arrow:<br>[Getting Started with Product Bus](/docs/getting-started) |
+|                        | Up Next :icon-arrow:<br>[Getting Started with Product Bus](/getting-started) |
