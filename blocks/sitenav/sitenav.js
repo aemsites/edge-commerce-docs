@@ -7,26 +7,35 @@ const EXP_ICON = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xm
 
 const { codeBase } = getConfig();
 
-// The API reference nav is generated in helix-commerce-api and synced to
-// /docs/api/nav.html (push-only). It is a plain <nav><ul> tree: each top-level <li>
-// is an API (tag) — a non-link <span class="api-group"> label plus a nested
-// <ul> of operation links. Each operation has its own page (no hash anchors).
-const NAV_PATH = `${codeBase}/docs/api/nav.html`;
+// The docs nav is owned by edge-commerce-docs. The API reference subtree is
+// generated in helix-commerce-api and synced to /docs/api/nav.html (push-only).
+const DOCS_NAV_PATH = `${codeBase}/docs/nav.html`;
+const API_NAV_PATH = `${codeBase}/docs/api/nav.html`;
+
+/** Normalize paths so extensionless content links match generated/static pages. */
+function normalizePath(pathname) {
+  return pathname
+    .replace(/\/index\.html$/, '/')
+    .replace(/\.html$/, '')
+    .replace(/\/$/, '') || '/';
+}
 
 /** Compare an href to the current location by pathname only. */
 function samePath(href) {
   try {
-    return new URL(href, window.location.origin).pathname === window.location.pathname;
+    const linkPath = normalizePath(new URL(href, window.location.origin).pathname);
+    const currentPath = normalizePath(window.location.pathname);
+    return linkPath === currentPath;
   } catch {
     return false;
   }
 }
 
-/** Decorate one top-level API entry: add expand toggle + open state. */
+/** Decorate one expandable entry: add expand toggle + open state. */
 function decorateEntry(li) {
   const label = li.querySelector(':scope > .api-group');
   const childList = li.querySelector(':scope > ul');
-  if (!label || !childList) return;
+  if (!label || !childList || li.querySelector(':scope > .expand-tree')) return;
 
   const btn = document.createElement('button');
   btn.className = 'expand-tree';
@@ -38,28 +47,42 @@ function decorateEntry(li) {
   label.addEventListener('click', toggle);
   label.insertAdjacentElement('afterend', btn);
 
-  // Expand the section containing the current page's operation.
+  // Expand the section containing the current page.
   if ([...childList.querySelectorAll('a')].some((a) => samePath(a.href))) {
     li.classList.add('is-open');
   }
 }
 
-/** Highlight the operation link matching the current page; keep its section open. */
+/** Highlight the matching link and keep all ancestor sections open. */
 function setActive(root) {
   root.querySelectorAll('a.is-active').forEach((a) => a.classList.remove('is-active'));
   const active = [...root.querySelectorAll('a')].find((a) => samePath(a.href));
   if (!active) return;
   active.classList.add('is-active');
-  active.closest('.sitenav-tree > li')?.classList.add('is-open');
+  let section = active.closest('li');
+  while (section) {
+    section.classList.add('is-open');
+    section = section.parentElement?.closest('li');
+  }
 }
 
-async function fetchNav() {
-  const resp = await fetch(NAV_PATH);
-  if (!resp.ok) throw Error(`Could not fetch ${NAV_PATH}`);
+async function fetchNav(path) {
+  const resp = await fetch(path);
+  if (!resp.ok) throw Error(`Could not fetch ${path}`);
   const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
   const list = doc.querySelector('nav ul');
-  if (!list) throw Error('nav.html has no <ul>');
+  if (!list) throw Error(`${path} has no <ul>`);
   return list;
+}
+
+async function buildNavTree() {
+  const docsTree = document.importNode(await fetchNav(DOCS_NAV_PATH), true);
+  const apiSlot = docsTree.querySelector('[data-api-nav]');
+  if (apiSlot) {
+    const apiTree = document.importNode(await fetchNav(API_NAV_PATH), true);
+    apiSlot.append(...apiTree.children);
+  }
+  return docsTree;
 }
 
 export default async function init(el) {
@@ -76,9 +99,9 @@ export default async function init(el) {
   el.append(link);
 
   try {
-    const tree = document.importNode(await fetchNav(), true);
+    const tree = await buildNavTree();
     tree.classList.add('sitenav-tree');
-    tree.querySelectorAll(':scope > li').forEach(decorateEntry);
+    tree.querySelectorAll('li').forEach(decorateEntry);
     el.append(tree);
     setActive(tree);
   } catch (e) {

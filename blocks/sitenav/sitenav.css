@@ -46,10 +46,26 @@
     box-sizing: border-box;
   }
 
-  .sitenav-tree > li {
+  .sitenav-tree li {
     margin-top: 2px;
 
-    /* Top-level (API/tag) row: group label + expand toggle on one line. */
+    > a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: light-dark(var(--s2-gray-700), var(--s2-gray-300));
+      text-decoration: none;
+      line-height: 1.3;
+
+      &:hover {
+        background-color: light-dark(var(--s2-gray-100), var(--s2-gray-800));
+        text-decoration: none;
+      }
+    }
+
+    /* Expandable group row: group label + expand toggle on one line. */
     > .api-group {
       display: inline-block;
       font-weight: 700;
@@ -64,7 +80,7 @@
       }
     }
 
-    /* Nested operation list — collapsed until the section is open. */
+    /* Nested lists are collapsed until the section is open. */
     > ul {
       display: none;
       margin: 2px 0 10px 9px;
@@ -78,27 +94,6 @@
 
     &.is-open > .expand-tree {
       transform: rotate(90deg);
-    }
-  }
-
-  /* Operation rows: method badge + summary. */
-  .sitenav-tree li li {
-    margin-block: 0;
-
-    a {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 8px;
-      border-radius: 6px;
-      color: light-dark(var(--s2-gray-700), var(--s2-gray-300));
-      text-decoration: none;
-      line-height: 1.3;
-
-      &:hover {
-        background-color: light-dark(var(--s2-gray-100), var(--s2-gray-800));
-        text-decoration: none;
-      }
     }
   }
 
