@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.40.3",
+    "version": "2.40.4",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -4010,11 +4010,7 @@
                 "description": "Original price before any discount, as a decimal string.",
                 "type": "string"
               }
-            },
-            "required": [
-              "final",
-              "currency"
-            ]
+            }
           },
           "itemCondition": {
             "type": "string",
@@ -4149,11 +4145,7 @@
                       "description": "Original price before any discount, as a decimal string.",
                       "type": "string"
                     }
-                  },
-                  "required": [
-                    "final",
-                    "currency"
-                  ]
+                  }
                 },
                 "url": {
                   "type": "string"
@@ -4671,11 +4663,7 @@
                       "description": "Original price before any discount, as a decimal string.",
                       "type": "string"
                     }
-                  },
-                  "required": [
-                    "final",
-                    "currency"
-                  ]
+                  }
                 },
                 "shippingDimensions": {
                   "type": "object",
@@ -4771,11 +4759,7 @@
                             "description": "Original price before any discount, as a decimal string.",
                             "type": "string"
                           }
-                        },
-                        "required": [
-                          "final",
-                          "currency"
-                        ]
+                        }
                       }
                     },
                     "required": [
@@ -4950,11 +4934,7 @@
                       "description": "Original price before any discount, as a decimal string.",
                       "type": "string"
                     }
-                  },
-                  "required": [
-                    "final",
-                    "currency"
-                  ]
+                  }
                 },
                 "shippingDimensions": {
                   "type": "object",
@@ -5050,11 +5030,7 @@
                             "description": "Original price before any discount, as a decimal string.",
                             "type": "string"
                           }
-                        },
-                        "required": [
-                          "final",
-                          "currency"
-                        ]
+                        }
                       }
                     },
                     "required": [

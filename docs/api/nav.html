@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>API Reference</title></head>
+<body>
+  <nav>
+    <ul>
+    <li>
+      <span class="api-group">Config</span>
+      <ul>
+        <li><a href="/docs/api/get-config.html"><span class="http-method http-get">GET</span><span class="op-summary">Retrieve site configuration</span></a></li>
+        <li><a href="/docs/api/update-config.html"><span class="http-method http-post">POST</span><span class="op-summary">Create or replace site configuration</span></a></li>
+        <li><a href="/docs/api/delete-config.html"><span class="http-method http-delete">DELETE</span><span class="op-summary">Delete site configuration</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Catalog</span>
+      <ul>
+        <li><a href="/docs/api/list-catalog-products.html"><span class="http-method http-get">GET</span><span class="op-summary">List catalog products</span></a></li>
+        <li><a href="/docs/api/get-catalog-product.html"><span class="http-method http-get">GET</span><span class="op-summary">Retrieve a product</span></a></li>
+        <li><a href="/docs/api/bulk-upsert-catalog-products.html"><span class="http-method http-post">POST</span><span class="op-summary">Bulk create/replace products</span></a></li>
+        <li><a href="/docs/api/upsert-catalog-product.html"><span class="http-method http-put">PUT</span><span class="op-summary">Create or replace a product</span></a></li>
+        <li><a href="/docs/api/delete-catalog-product.html"><span class="http-method http-delete">DELETE</span><span class="op-summary">Delete a product</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Indices</span>
+      <ul>
+        <li><a href="/docs/api/list-indices.html"><span class="http-method http-get">GET</span><span class="op-summary">List query indices</span></a></li>
+        <li><a href="/docs/api/create-index.html"><span class="http-method http-post">POST</span><span class="op-summary">Create a query index</span></a></li>
+        <li><a href="/docs/api/delete-index.html"><span class="http-method http-delete">DELETE</span><span class="op-summary">Delete a query index</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Orders</span>
+      <ul>
+        <li><a href="/docs/api/list-orders.html"><span class="http-method http-get">GET</span><span class="op-summary">List orders</span></a></li>
+        <li><a href="/docs/api/create-order.html"><span class="http-method http-post">POST</span><span class="op-summary">Create an order</span></a></li>
+        <li><a href="/docs/api/get-order.html"><span class="http-method http-get">GET</span><span class="op-summary">Retrieve an order</span></a></li>
+        <li><a href="/docs/api/delete-order.html"><span class="http-method http-delete">DELETE</span><span class="op-summary">Delete an order</span></a></li>
+        <li><a href="/docs/api/preview-order.html"><span class="http-method http-post">POST</span><span class="op-summary">Estimate an order</span></a></li>
+        <li><a href="/docs/api/update-order-custom.html"><span class="http-method http-patch">PATCH</span><span class="op-summary">Patch order custom data</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Payments</span>
+      <ul>
+        <li><a href="/docs/api/initiate-payment.html"><span class="http-method http-post">POST</span><span class="op-summary">Initiate a payment</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Customers</span>
+      <ul>
+        <li><a href="/docs/api/list-customers.html"><span class="http-method http-get">GET</span><span class="op-summary">List customers</span></a></li>
+        <li><a href="/docs/api/create-customer.html"><span class="http-method http-post">POST</span><span class="op-summary">Create a customer</span></a></li>
+        <li><a href="/docs/api/get-customer.html"><span class="http-method http-get">GET</span><span class="op-summary">Retrieve a customer</span></a></li>
+        <li><a href="/docs/api/delete-customer.html"><span class="http-method http-delete">DELETE</span><span class="op-summary">Delete a customer</span></a></li>
+        <li><a href="/docs/api/list-customer-subresources.html"><span class="http-method http-get">GET</span><span class="op-summary">List addresses or orders</span></a></li>
+        <li><a href="/docs/api/create-customer-address.html"><span class="http-method http-post">POST</span><span class="op-summary">Create an address</span></a></li>
+        <li><a href="/docs/api/get-customer-subresource.html"><span class="http-method http-get">GET</span><span class="op-summary">Retrieve an address or order</span></a></li>
+        <li><a href="/docs/api/delete-customer-address.html"><span class="http-method http-delete">DELETE</span><span class="op-summary">Delete an address</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Estimate</span>
+      <ul>
+        <li><a href="/docs/api/create-estimate.html"><span class="http-method http-post">POST</span><span class="op-summary">Compute an estimate</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Places</span>
+      <ul>
+        <li><a href="/docs/api/places-get.html"><span class="http-method http-get">GET</span><span class="op-summary">Autocomplete or place details (GET)</span></a></li>
+        <li><a href="/docs/api/places-post.html"><span class="http-method http-post">POST</span><span class="op-summary">Autocomplete, details, or address validation (POST)</span></a></li>
+      </ul>
+    </li>
+    <li>
+      <span class="api-group">Auth</span>
+      <ul>
+        <li><a href="/docs/api/auth-login.html"><span class="http-method http-post">POST</span><span class="op-summary">Request an OTP login code</span></a></li>
+        <li><a href="/docs/api/auth-callback.html"><span class="http-method http-post">POST</span><span class="op-summary">Verify an OTP code and obtain a session token</span></a></li>
+        <li><a href="/docs/api/auth-logout.html"><span class="http-method http-post">POST</span><span class="op-summary">Log out and clear the session cookie</span></a></li>
+      </ul>
+    </li>
+    </ul>
+  </nav>
+</body>
+</html>
