@@ -8,10 +8,10 @@ const EXP_ICON = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xm
 const { codeBase } = getConfig();
 
 // The API reference nav is generated in helix-commerce-api and synced to
-// /docs/nav.html (push-only). It is a plain <nav><ul> tree: each top-level <li>
+// /docs/api/nav.html (push-only). It is a plain <nav><ul> tree: each top-level <li>
 // is an API (tag) — a non-link <span class="api-group"> label plus a nested
 // <ul> of operation links. Each operation has its own page (no hash anchors).
-const NAV_PATH = `${codeBase}/docs/nav.html`;
+const NAV_PATH = `${codeBase}/docs/api/nav.html`;
 
 /** Compare an href to the current location by pathname only. */
 function samePath(href) {
