@@ -15,15 +15,13 @@
   margin: 0 auto;
 }
 
-
-
 .section .section-container > .content {
   width: 100%;
 }
 
 /* Gap */
 .section.gap-medium .section-container {
-    gap: var(--spacing-large)
+  gap: var(--spacing-large);
 }
 
 .section.gap-400 .section-container {
@@ -142,7 +140,6 @@
   width: 100%;
 }
 
-
 /* Custom Disney Stuff */
 .section.section-background-color-light {
   background: #cbe1e7;
@@ -177,19 +174,20 @@
   display: inline-block;
   text-decoration: none;
   border-radius: 6px;
-  color: #FFF;
+  color: #fff;
   margin-top: 20px;
-  padding: 12px 12px;
+  padding: 12px;
   background-color: var(--brand-teal);
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .section.has-heading .section-container .content > h2 {
   font-weight: 800;
 }
 
 .section.has-heading .section-container .content > h2 em {
   font-style: normal;
-  color: #069ED7;
+  color: #069ed7;
 }
 
 .section.spacing-bottom-large .section-container > *:last-child {
@@ -198,8 +196,8 @@
 
 @media (width > 600px) {
   .section.overlay {
-    background: rgb(215,240,250);
-    background: linear-gradient(90deg, rgba(215,240,250,1) 50%, rgba(196,233,248,1) 50%);
+    background: rgb(215 240 250);
+    background: linear-gradient(90deg, rgb(215 240 250 / 100%) 50%, rgb(196 233 248 / 100%) 50%);
   }
 
   .section.has-heading .section-container:first-of-type .content {
@@ -215,9 +213,10 @@
   }
 
   .section.grid-3.section.has-heading .section-container {
-    grid-template-areas: 'title title title'
-                         'card1 card2 card2'
-                         'title2 title2 title2';
+    grid-template-areas:
+      "title title title"
+      "card1 card2 card2"
+      "title2 title2 title2";
   }
 
   .section.grid-3.section.has-heading .section-container .content:first-of-type {
@@ -228,6 +227,7 @@
     grid-area: title2;
   }
 
+  /* stylelint-disable-next-line no-descending-specificity */
   .section.grid-4 .section-container {
     grid-template-columns: repeat(4, 1fr);
   }

@@ -73,10 +73,12 @@ header .actions-section {
   }
 }
 
-/* DocSearch styles */
+/* DocSearch styles. Selectors use Algolia DocSearch's own class names, which
+   are PascalCase and can't be renamed, so disable the kebab-case rule here. */
+/* stylelint-disable selector-class-pattern */
 body.DocSearch--active .DocSearch-Modal,
 button.DocSearch-Button {
-  --docsearch-modal-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  --docsearch-modal-shadow: 0 0 0 1px rgb(0 0 0 / 10%);
   --docsearch-modal-background: light-dark(var(--light-color), var(--dark-color));
   --docsearch-footer-background: light-dark(var(--light-color), var(--dark-color));
   --docsearch-muted-color: light-dark(var(--s2-gray-600), var(--s2-gray-500));
@@ -101,7 +103,7 @@ body.DocSearch--active .DocSearch-Modal .DocSearch-Form {
 }
 
 body.DocSearch--active .DocSearch-Modal .DocSearch-Footer {
-  width: unset;  
+  width: unset;
 }
 
 body.DocSearch--active .DocSearch-Modal .DocSearch-Hit a {
@@ -121,8 +123,9 @@ button.DocSearch-Button {
   border-radius: 0.5rem;
 }
 
-@media (width >=900px) {
+@media (width >= 900px) {
   body.DocSearch--active .DocSearch-Modal {
     border-radius: 0.5rem;
   }
 }
+/* stylelint-enable selector-class-pattern */

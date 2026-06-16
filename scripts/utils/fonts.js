@@ -2,10 +2,14 @@ import { getConfig, loadStyle } from '../nx.js';
 
 const KITS = { en: 'cks7hcz.css' };
 
-// A gently modified version of the dynamic subsetting loader from Adobe Fonts
+// A gently modified version of the dynamic subsetting loader from Adobe Fonts.
+// Kept close to the upstream minified form on purpose, so disable the lint
+// rules that don't apply to this vendor snippet.
 function dynamicTypekit(kitId, d = document) {
   const config = { kitId, scriptTimeout: 3000, async: true };
+  /* eslint-disable no-multi-assign, func-names, no-mixed-operators, eqeqeq, no-undef, no-empty */
   const h = d.documentElement; const t = setTimeout(() => { h.className = `${h.className.replace(/\bwf-loading\b/g, '')} wf-inactive`; }, config.scriptTimeout); const tk = d.createElement('script'); let f = false; const s = d.getElementsByTagName('script')[0]; let a; h.className += ' wf-loading'; tk.src = `https://use.typekit.net/${config.kitId}.js`; tk.async = true; tk.onload = tk.onreadystatechange = function () { a = this.readyState; if (f || a && a != 'complete' && a != 'loaded') return; f = true; clearTimeout(t); try { Typekit.load(config); } catch (e) {} }; s.parentNode.insertBefore(tk, s);
+  /* eslint-enable no-multi-assign, func-names, no-mixed-operators, eqeqeq, no-undef, no-empty */
   return h;
 }
 
