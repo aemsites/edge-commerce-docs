@@ -51,14 +51,20 @@ function normalizeCodeLanguage(lang) {
   return language;
 }
 
+// Plain-text blocks (no language, or `text`/`plain`/`txt`) carry no useful
+// language label, so they render without the tab. The `code-plain` class lets
+// the `code` block hide the tab row.
+const PLAIN_CODE_LANGUAGES = ['markup', 'text', 'plain', 'txt'];
+
 renderer.code = function renderCode({ text, lang, escaped }) {
   const rawLanguage = rawCodeLanguage(lang);
   const language = normalizeCodeLanguage(rawLanguage);
   const code = `${text.replace(/\n$/, '')}\n`;
   const escapedCode = escaped ? code : escapeHtml(code);
   const title = languageTitle(rawLanguage);
+  const blockClass = PLAIN_CODE_LANGUAGES.includes(rawLanguage) ? 'code code-plain' : 'code';
 
-  return '<div class="code">\n'
+  return `<div class="${blockClass}">\n`
     + '  <div>\n'
     + '    <div>\n'
     + '      <ul>\n'
