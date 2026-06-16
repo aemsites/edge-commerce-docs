@@ -25,6 +25,15 @@ header {
   .main-nav-section ul {
     display: none;
   }
+
+  /* Reset the global list/paragraph margins so the nav links don't inflate the
+     header row. */
+  .main-nav-section li,
+  .main-nav-section p,
+  .main-nav-section a {
+    margin: 0;
+    line-height: var(--body-line-height);
+  }
 }
 
 header .actions-section {
@@ -56,6 +65,7 @@ header .actions-section {
 
   header .main-nav-section ul {
     display: flex;
+    align-items: center;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -112,7 +122,7 @@ button.DocSearch-Button {
 }
 
 @media (width >=900px) {
-  body.DocSearch--active .DocSearch-Modal
+  body.DocSearch--active .DocSearch-Modal {
     border-radius: 0.5rem;
   }
 }

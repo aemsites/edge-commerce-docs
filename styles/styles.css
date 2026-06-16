@@ -356,14 +356,14 @@ div[data-status] {
    --------------------------------------------------------------------------- */
 
 @media (width >= 1200px) {
-  body.docs-template {
+  body.docs-template:has(.code-rail) {
     grid-template:
       "sitenav header" auto
       "sitenav main" 1fr
       "sitenav footer" auto / 300px minmax(0, 1fr);
   }
 
-  body.docs-template .pagenav {
+  body.docs-template:has(.code-rail) .pagenav {
     display: none;
   }
 
@@ -387,6 +387,12 @@ body.docs-template main {
   max-width: 920px;
 }
 
+@media (width >= 1200px) {
+  body.docs-template:not(:has(.code-rail)) main {
+    max-width: none;
+  }
+}
+
 /* The eyebrow above the title (the API/tag name). */
 body.docs-template .api-eyebrow {
   margin: 0 0 6px;
@@ -397,9 +403,24 @@ body.docs-template .api-eyebrow {
   color: light-dark(var(--s2-blue-900), var(--s2-blue-200));
 }
 
-body.docs-template h1 {
+body.docs-template:has(.code-rail) h1 {
   margin: 0 0 18px;
   font-size: 32px;
+  line-height: 1.2;
+}
+
+body.docs-template:not(:has(.code-rail)) h1 {
+  font-size: clamp(40px, 5vw, 48px);
+  line-height: 1.1;
+}
+
+body.docs-template:not(:has(.code-rail)) h2 {
+  font-size: clamp(30px, 3vw, 36px);
+  line-height: 1.15;
+}
+
+body.docs-template:not(:has(.code-rail)) h3 {
+  font-size: clamp(24px, 2.2vw, 28px);
   line-height: 1.2;
 }
 
@@ -427,7 +448,7 @@ body.docs-template .http-path {
 }
 
 /* Section labels: Path parameters / Request body / Response. */
-body.docs-template h2 {
+body.docs-template:has(.code-rail) h2 {
   margin-top: 36px;
   margin-bottom: 12px;
   padding-bottom: 8px;
@@ -439,8 +460,14 @@ body.docs-template h2 {
   color: light-dark(var(--s2-gray-700), var(--s2-gray-300));
 }
 
+/* The API-docs headings use their own border-bottom (above), so suppress the
+   general decorative h2 underline to avoid a doubled line. */
+body.docs-template:has(.code-rail) .default-content > h2::after {
+  display: none;
+}
+
 /* Per-status response heading. */
-body.docs-template h3 {
+body.docs-template:has(.code-rail) h3 {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -453,11 +480,34 @@ body.docs-template h3 {
 body.docs-template .status-badge {
   font-family: var(--body-font-family-mono, ui-monospace, monospace);
   font-weight: 700;
-  font-size: 13px;
-  padding: 2px 8px;
+  font-size: 15px;
+  padding: 3px 10px;
   border-radius: 5px;
+
+  /* Neutral fallback for any uncategorized code. */
+  background-color: light-dark(var(--s2-gray-200), var(--s2-gray-800));
+  color: light-dark(var(--s2-gray-800), var(--s2-gray-200));
+}
+
+/* Color the badge by status class (success / redirect / client / server). */
+body.docs-template .status-badge.status-2xx {
   background-color: light-dark(var(--s2-green-200), var(--s2-green-1100));
   color: light-dark(var(--s2-green-1100), var(--s2-green-200));
+}
+
+body.docs-template .status-badge.status-3xx {
+  background-color: light-dark(var(--s2-blue-200), var(--s2-blue-1200));
+  color: light-dark(var(--s2-blue-1200), var(--s2-blue-200));
+}
+
+body.docs-template .status-badge.status-4xx {
+  background-color: light-dark(var(--s2-yellow-100), var(--s2-orange-700));
+  color: light-dark(var(--s2-orange-700), var(--s2-yellow-100));
+}
+
+body.docs-template .status-badge.status-5xx {
+  background-color: light-dark(var(--s2-red-200), var(--s2-red-1000));
+  color: light-dark(var(--s2-red-1000), var(--s2-red-200));
 }
 
 body.docs-template .permissions {
@@ -466,6 +516,34 @@ body.docs-template .permissions {
 }
 
 /* Permissions / summary lines render as plain paragraphs; tighten spacing. */
-body.docs-template .default-content p {
+body.docs-template:has(.code-rail) main .default-content p {
   margin-block: 6px;
+}
+
+body.docs-template:not(:has(.code-rail)) main .default-content > p {
+  margin-block: 0 1.35em;
+}
+
+/* Deep-linkable headings: offset for sticky header and reveal anchor on hover. */
+body.docs-template .default-content :is(h2, h3, h4)[id] {
+  position: relative;
+  scroll-margin-top: 90px;
+}
+
+body.docs-template .default-content :is(h2, h3, h4)[id] a.heading-anchor {
+  color: inherit;
+  text-decoration: none;
+}
+
+body.docs-template .default-content :is(h2, h3, h4)[id] a.heading-anchor::after {
+  content: "#";
+  margin-inline-start: 0.4em;
+  color: var(--s2-gray-500);
+  opacity: 0;
+  transition: opacity 0.12s ease-in-out;
+}
+
+body.docs-template .default-content :is(h2, h3, h4)[id]:hover a.heading-anchor::after,
+body.docs-template .default-content :is(h2, h3, h4)[id] a.heading-anchor:focus-visible::after {
+  opacity: 1;
 }
