@@ -9,7 +9,9 @@
     "test": "wtr \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage --concurrent-browsers 4",
     "test:watch": "npm test -- --watch",
     "test:file": "wtr --node-resolve --port=2000 --coverage",
-    "test:file:watch": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage --watch"
+    "test:file:watch": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage --watch",
+    "docs:da:build": "node scripts/docs/markdown-to-da-html.mjs",
+    "docs:da:push": "npm run docs:da:build && node scripts/docs/push-da.mjs"
   },
   "repository": {
     "type": "git",
@@ -35,6 +37,7 @@
     "eslint-plugin-compat": "^4.0.2",
     "eslint-plugin-ecmalist": "^1.0.8",
     "eslint-plugin-import": "2.29.1",
+    "marked": "^18.0.5",
     "sinon": "13.0.2",
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.5",
