@@ -56,8 +56,34 @@ The generated HTML follows the DA/Edge Delivery Services content contract:
 
 ## Push to DA
 
+### Get a DA token
+
+Pushing calls the DA admin API, which needs a valid Adobe IMS token. Tokens last ~1 hour, so you'll need to refresh when it expires (`DA token expired …`).
+
+The simplest way to authenticate is to run the AEM CLI's `content clone` against this repo's DA org/site. It opens a browser login and caches the token to `~/.aem/da-token.json`, which the push script reads automatically (lookup order below):
+
+```bash
+npx -y @adobe/aem-cli content clone --path /
+```
+
+Complete the Adobe IMS login in the browser, then run the push normally:
+
+```bash
+npm run docs:da:push
+```
+
+If you already have a raw token (for CI or a one-off), set it directly instead — `DA_TOKEN` takes precedence over the cache:
+
 ```bash
 DA_TOKEN={your-token} npm run docs:da:push
+```
+
+### Run the push
+
+With a cached token (from the step above) this is all you need:
+
+```bash
+npm run docs:da:push
 ```
 
 Defaults:
