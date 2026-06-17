@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Log out and clear the session cookie — Helix Commerce API</title>
+    <meta name="description" content="Log out and clear the session cookie">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Auth</p>
+        <h1>Log out and clear the session cookie</h1>
+        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/auth/logout</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Optional bearer token to revoke. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>Cookie</code></td><td><code>string</code></td><td>no</td><td>Optional `auth_token` cookie to revoke.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">204</span> Logged out (cookie cleared). No content.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Set-Cookie</code></td><td>auth_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

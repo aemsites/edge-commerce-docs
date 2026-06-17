@@ -47,6 +47,30 @@ function detectLabs() {
   firstSection.prepend(block);
 }
 
+// Make content headings deep-linkable. Each heading with an id gets an anchor
+// link so clicking it updates the URL hash (and copies a sharable link).
+function decorateHeadingAnchors() {
+  if (!document.body.classList.contains('docs-template')) return;
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  const headings = main.querySelectorAll(
+    '.default-content h2[id], .default-content h3[id], .default-content h4[id]',
+  );
+  headings.forEach((heading) => {
+    if (heading.querySelector('a.heading-anchor')) return;
+    const anchor = document.createElement('a');
+    anchor.className = 'heading-anchor';
+    anchor.href = `#${heading.id}`;
+    anchor.setAttribute('aria-label', `Link to ${heading.textContent}`);
+    // Wrap the existing heading content so the whole heading is clickable.
+    // The trailing # affordance is added via CSS so it never leaks into
+    // textContent (the pagenav builds its labels from heading.textContent).
+    while (heading.firstChild) anchor.append(heading.firstChild);
+    heading.append(anchor);
+  });
+}
+
 const loadNav = async (name) => {
   const position = name === 'sitenav' ? 'beforebegin' : 'afterend';
   const main = document.querySelector('main');
@@ -88,6 +112,7 @@ export async function loadPage() {
   loadNav('sitenav');
 
   await loadArea();
+  decorateHeadingAnchors();
   await loadNav('pagenav');
 }
 

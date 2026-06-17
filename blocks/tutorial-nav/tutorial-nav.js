@@ -37,7 +37,7 @@ function buildCard(direction, entry) {
 function getMainNext(pageList, pathname) {
   // Determine if the tree is index based (page-name/) or name base (page-name)
   const sanitizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-  let nextEntry = pageList.find((page) => page.path === `${sanitizedPath}/1`);
+  const nextEntry = pageList.find((page) => page.path === `${sanitizedPath}/1`);
   if (!nextEntry) {
     return null;
   }
@@ -60,7 +60,7 @@ function getNumNextPrev(pageList, pathSplit, pagenum) {
   if (prevEntry) cards.push(buildCard('Previous', prevEntry));
 
   const nextPath = `${basePath}/${pagenum + 1}`;
-  let nextEntry = pageList.find((page) => page.path === nextPath || page.path === `${basePath}/conclusion`);
+  const nextEntry = pageList.find((page) => page.path === nextPath || page.path === `${basePath}/conclusion`);
   if (nextEntry) cards.push(buildCard('Next', nextEntry));
 
   const cardCountClass = cards.length === 1 ? 'one-card' : '';
@@ -82,7 +82,7 @@ export default async function init(el) {
   const pathSplit = toSplit.split('/');
 
   const pagename = pathSplit.pop();
-  
+
   const pagenum = getNumber(pagename);
   const nav = pagenum
     ? getNumNextPrev(pageList, pathSplit, pagenum)

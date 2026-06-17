@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Verify an OTP code and obtain a session token — Helix Commerce API</title>
+    <meta name="description" content="Verify an OTP code and obtain a session token">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Auth</p>
+        <h1>Verify an OTP code and obtain a session token</h1>
+        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/auth/callback</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+          </table>
+        </div>
+        <h2>Request body</h2>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>The OTP code the user received by email.</td></tr>
+            <tr><td><code>hash</code></td><td><code>string</code></td><td>yes</td><td>The `hash` returned by /login.</td></tr>
+            <tr><td><code>exp</code></td><td><code>number</code></td><td>yes</td><td>The `exp` returned by /login.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">200</span> Authenticated; JWT issued in body and `auth_token` cookie.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+            <tr><td><code>Set-Cookie</code></td><td>auth_token=&lt;jwt&gt;; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400</td></tr>
+          </table>
+        </div>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>success</code></td><td><code>boolean</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>token</code></td><td><code>string</code></td><td>yes</td><td>Signed session JWT (24h).</td></tr>
+            <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>roles</code></td><td><code>string[]</code></td><td>yes</td><td>e.g. `["user"]`, `["admin"]`.</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">400</span> Missing/invalid email, code, hash, or exp.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code.</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message.</td></tr>
+            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">401</span> Invalid/expired/used code, or rate limit exceeded.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-5xx">500</span> Server misconfigured or internal error creating the token.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-5xx">503</span> Rate-limit bookkeeping temporarily unavailable; retryable.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/auth/callback</span></div>
+          <pre><code class="language-json">{
+  "email": "user@example.com",
+  "code": "123456",
+  "hash": "a1b2c3...",
+  "exp": 1700000000000
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
+          <pre><code class="language-json">{
+  "success": true,
+  "token": "eyJhbGci...",
+  "email": "user@example.com",
+  "roles": [
+    "user"
+  ],
+  "org": "org",
+  "site": "site"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
+  "message": "Invalid request",
+  "errors": [
+    {
+      "path": "$.code",
+      "message": "missing or invalid"
+    }
+  ]
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">401</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_INVALID_CODE",
+  "message": "invalid code"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">500</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_MISCONFIGURED",
+  "message": "server misconfigured"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">503</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+  "message": "service temporarily unavailable",
+  "retryable": true
+}</code></pre>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

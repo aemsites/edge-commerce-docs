@@ -1,0 +1,5264 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Helix Commerce API",
+    "version": "2.40.4",
+    "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
+  },
+  "servers": [
+    {
+      "url": "https://commerce.adobe.io",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Config",
+      "description": "Per-site configuration: allowed origins, delivery sites, auth toggle, and reCAPTCHA settings. One config document per org/site."
+    },
+    {
+      "name": "Catalog",
+      "description": "Retrieve, create/replace, or delete a product by path. The literal path `/*` selects bulk mode: POST an array of products (max 50 per request)."
+    },
+    {
+      "name": "Indices",
+      "description": "Create or delete a query index identified by a path ending in `/index.json`. Creating an index queues existing products under that path for indexing."
+    },
+    {
+      "name": "Orders",
+      "description": "Merge-patch the order custom data map. Each key/value is capped at 2048 characters; a null value removes the property."
+    },
+    {
+      "name": "Payments",
+      "description": "Initiate a payment for an order. Entry point for starting a payment flow — the client picks a provider/payment method and supplies an idempotency key. Guest checkout is supported (no auth required)."
+    },
+    {
+      "name": "Customers",
+      "description": "A single address or order belonging to a customer."
+    },
+    {
+      "name": "Estimate",
+      "description": "Computes a cart estimate. `estimateType` selects the calculation: `tax` (tax rate for an address), `shipping` (available shipping rates), `price` (promotions + coupon + auto-rule discounts), or `order` (per-method totals including tax and shipping). No authentication required."
+    },
+    {
+      "name": "Places",
+      "description": "Origin-gated proxy to Google Places (New) and the Address Validation API. `action` selects the operation: `autocomplete`, `details`, or `validate`. Access is allowed only for requests whose Origin matches the site config."
+    },
+    {
+      "name": "Auth",
+      "description": "Clears the `auth_token` cookie and revokes the token if a valid one is presented (via cookie or bearer header). Always responds 204, even when no/invalid token is presented."
+    }
+  ],
+  "paths": {
+    "/{org}/sites/{site}/config": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "getConfig",
+        "summary": "Retrieve site configuration",
+        "description": "Returns the stored configuration document for the org/site.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The site configuration document.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Config"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "allowedOrigins": [
+                        "https://example.com"
+                      ],
+                      "allowedDeliverySites": [
+                        "main--site--org"
+                      ],
+                      "auth": {
+                        "enabled": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No configuration exists for this org/site.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "config not found",
+                      "resource": "config"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "config:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Config"
+        ]
+      },
+      "post": {
+        "operationId": "updateConfig",
+        "summary": "Create or replace site configuration",
+        "description": "Validates and stores the configuration document, replacing any existing one.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored configuration (echoed back).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Config"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "allowedOrigins": [
+                        "https://example.com"
+                      ],
+                      "auth": {
+                        "enabled": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The configuration failed schema validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid config",
+                      "errors": [
+                        {
+                          "path": "$.allowedOrigins[0]",
+                          "message": "condition 'pattern' failed"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Storage error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "config:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The full configuration document to store.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Config"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "allowedOrigins": [
+                      "https://example.com"
+                    ],
+                    "auth": {
+                      "enabled": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Config"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteConfig",
+        "summary": "Delete site configuration",
+        "description": "Removes the configuration document for the org/site.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Configuration deleted (no content)."
+          },
+          "500": {
+            "description": "Storage error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "config:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Config"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/catalog": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "listCatalogProducts",
+        "summary": "List catalog products",
+        "description": "Returns a page of product summaries (sku, name, path). Pass a `cursor` (from a prior truncated response) to page through results.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of product summaries.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "A page of catalog product summaries.",
+                  "type": "object",
+                  "properties": {
+                    "products": {
+                      "description": "Product summaries for this page.",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sku": {
+                            "description": "Product SKU.",
+                            "type": "string"
+                          },
+                          "name": {
+                            "description": "Product display name.",
+                            "type": "string"
+                          },
+                          "path": {
+                            "description": "Product path (without the .json suffix).",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "sku",
+                          "name",
+                          "path"
+                        ]
+                      }
+                    },
+                    "truncated": {
+                      "description": "Whether more results are available beyond this page.",
+                      "type": "boolean"
+                    },
+                    "cursor": {
+                      "description": "Opaque cursor for the next page; present only when truncated.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "products",
+                    "truncated"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "products": [
+                        {
+                          "sku": "PROD-123",
+                          "name": "Blender Pro 500",
+                          "path": "/us/en/products/blender-pro-500"
+                        }
+                      ],
+                      "truncated": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "method_not_allowed",
+                      "message": "method not allowed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "catalog:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Catalog"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/catalog/{path}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Product path (e.g. `/us/en/products/blender-pro-500.json`), or the literal `*` for bulk writes."
+        }
+      ],
+      "get": {
+        "operationId": "getCatalogProduct",
+        "summary": "Retrieve a product",
+        "description": "Returns the stored ProductBus entry for the given path.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored product.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductBus"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "sku": "PROD-123",
+                      "name": "Blender Pro 500",
+                      "path": "/us/en/products/blender-pro-500"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The path is malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.path",
+                          "message": "invalid format"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "catalog:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Catalog"
+        ]
+      },
+      "post": {
+        "operationId": "bulkUpsertCatalogProducts",
+        "summary": "Bulk create/replace products",
+        "description": "Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Write results.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Write result. `product` is set for single-item writes, `products` for bulk writes.",
+                  "type": "object",
+                  "properties": {
+                    "product": {
+                      "description": "Outcome of a single product write or delete.",
+                      "type": "object",
+                      "properties": {
+                        "sku": {
+                          "description": "Product SKU.",
+                          "type": "string"
+                        },
+                        "path": {
+                          "description": "Product path.",
+                          "type": "string"
+                        },
+                        "status": {
+                          "description": "Per-product HTTP status (200 unchanged, 201 written).",
+                          "type": "number"
+                        },
+                        "message": {
+                          "description": "Optional human-readable detail.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "path",
+                        "status"
+                      ]
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "description": "Outcome of a single product write or delete.",
+                        "type": "object",
+                        "properties": {
+                          "sku": {
+                            "description": "Product SKU.",
+                            "type": "string"
+                          },
+                          "path": {
+                            "description": "Product path.",
+                            "type": "string"
+                          },
+                          "status": {
+                            "description": "Per-product HTTP status (200 unchanged, 201 written).",
+                            "type": "number"
+                          },
+                          "message": {
+                            "description": "Optional human-readable detail.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "status"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "products": [
+                        {
+                          "sku": "PROD-123",
+                          "path": "/us/en/products/blender-pro-500",
+                          "status": 201
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: not an array, too many products, missing path, or invalid product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$",
+                          "message": "too many products",
+                          "details": "maximum 50 per request"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed at this path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "method_not_allowed",
+                      "message": "method not allowed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "catalog:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Array of products to upsert. Each entry must include `path`.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProductBus"
+                }
+              },
+              "examples": {
+                "example": {
+                  "value": [
+                    {
+                      "sku": "PROD-123",
+                      "name": "Blender Pro 500",
+                      "path": "/us/en/products/blender-pro-500"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Catalog"
+        ]
+      },
+      "put": {
+        "operationId": "upsertCatalogProduct",
+        "summary": "Create or replace a product",
+        "description": "Validates the product against the ProductBus schema and writes it. The `path` in the body, if present, must match the URL path.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Write result.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Write result. `product` is set for single-item writes, `products` for bulk writes.",
+                  "type": "object",
+                  "properties": {
+                    "product": {
+                      "description": "Outcome of a single product write or delete.",
+                      "type": "object",
+                      "properties": {
+                        "sku": {
+                          "description": "Product SKU.",
+                          "type": "string"
+                        },
+                        "path": {
+                          "description": "Product path.",
+                          "type": "string"
+                        },
+                        "status": {
+                          "description": "Per-product HTTP status (200 unchanged, 201 written).",
+                          "type": "number"
+                        },
+                        "message": {
+                          "description": "Optional human-readable detail.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "path",
+                        "status"
+                      ]
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "description": "Outcome of a single product write or delete.",
+                        "type": "object",
+                        "properties": {
+                          "sku": {
+                            "description": "Product SKU.",
+                            "type": "string"
+                          },
+                          "path": {
+                            "description": "Product path.",
+                            "type": "string"
+                          },
+                          "status": {
+                            "description": "Per-product HTTP status (200 unchanged, 201 written).",
+                            "type": "number"
+                          },
+                          "message": {
+                            "description": "Optional human-readable detail.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "status"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "product": {
+                        "sku": "PROD-123",
+                        "path": "/us/en/products/blender-pro-500",
+                        "status": 201
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure or body/URL path mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid product",
+                      "errors": [
+                        {
+                          "path": "$.sku",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "catalog:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The product to store.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductBus"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "sku": "PROD-123",
+                    "name": "Blender Pro 500",
+                    "path": "/us/en/products/blender-pro-500"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Catalog"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCatalogProduct",
+        "summary": "Delete a product",
+        "description": "Deletes the product at the given path. The literal `/*` path is rejected.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion results.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "description": "Outcome of a single product write or delete.",
+                    "type": "object",
+                    "properties": {
+                      "sku": {
+                        "description": "Product SKU.",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "Product path.",
+                        "type": "string"
+                      },
+                      "status": {
+                        "description": "Per-product HTTP status (200 unchanged, 201 written).",
+                        "type": "number"
+                      },
+                      "message": {
+                        "description": "Optional human-readable detail.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "status"
+                    ]
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": [
+                      {
+                        "sku": "PROD-123",
+                        "path": "/us/en/products/blender-pro-500",
+                        "status": 200
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wildcard delete attempted, or malformed path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "bad_request",
+                      "message": "wildcard delete is not supported"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "catalog:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Catalog"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/index": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "listIndices",
+        "summary": "List query indices",
+        "description": "Returns the registry of query indices, each with its last-modified timestamp.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The index registry.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The registry of query indices for a site.",
+                  "type": "object",
+                  "properties": {
+                    "indices": {
+                      "description": "Registered indices.",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "description": "Index registry key (e.g. `/us/index.json`).",
+                            "type": "string"
+                          },
+                          "lastModified": {
+                            "description": "ISO-8601 timestamp of the last modification.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "lastModified"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "indices"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "indices": [
+                        {
+                          "path": "/index.json",
+                          "lastModified": "2026-01-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "index:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Indices"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/index/{path}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Index path, must end with `/index.json` (e.g. `/us/index.json`)."
+        }
+      ],
+      "post": {
+        "operationId": "createIndex",
+        "summary": "Create a query index",
+        "description": "Creates a query index for the given path. The index path is the directory portion of the URL (the trailing `/index.json` is stripped). No request body.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Index created (no content)."
+          },
+          "400": {
+            "description": "Path is missing, does not end with `/index.json`, or is otherwise invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.path",
+                          "message": "must end with /index.json"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Index already exists, or the registry was modified concurrently.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "already_exists",
+                      "message": "index already exists",
+                      "resource": "index"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Registry or index storage update failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "upstream_error",
+                      "message": "upstream error",
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "index:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Indices"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteIndex",
+        "summary": "Delete a query index",
+        "description": "Deletes the query index for the given path and removes it from the registry.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Index deleted (no content)."
+          },
+          "400": {
+            "description": "Path is missing or does not end with `/index.json`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.path",
+                          "message": "must end with /index.json"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No index exists at the given path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "index not found",
+                      "resource": "index"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "index:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Indices"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "listOrders",
+        "summary": "List orders",
+        "description": "Returns orders for the org/site, optionally filtered by creation time range and state. Admin-only.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`. Must carry the `admin` role.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching orders.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller lacks the orders:read permission, the admin role, or org/site mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "orders:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      },
+      "post": {
+        "operationId": "createOrder",
+        "summary": "Create an order",
+        "description": "Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. reCAPTCHA-gated for unauthenticated callers.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Bearer token. `Bearer <jwt>`. Optional — guest checkout is supported.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Recaptcha-Token",
+            "in": "header",
+            "required": false,
+            "description": "reCAPTCHA Enterprise token; required for unauthenticated callers.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The created order, wrapped as `{ order }`.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The order failed schema validation, or the estimateToken was invalid/expired/mismatched.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid order",
+                      "errors": [
+                        {
+                          "path": "$.items",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated caller lacks orders:write, has an org/site mismatch, or email mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "An unauthorized free ($0) item was requested beyond the estimate token grant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "unprocessable",
+                      "message": "unprocessable",
+                      "details": {
+                        "rule": "unauthorized_free_item"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "orders:write"
+        ],
+        "requestBody": {
+          "description": "The order to create.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Order"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "customer": {
+                      "email": "jane@example.com",
+                      "firstName": "Jane",
+                      "lastName": "Doe"
+                    },
+                    "shipping": {
+                      "name": "Jane Doe",
+                      "email": "jane@example.com",
+                      "address1": "123 Main St",
+                      "city": "Anytown",
+                      "state": "CA",
+                      "zip": "12345",
+                      "country": "US"
+                    },
+                    "country": "us",
+                    "locale": "en-US",
+                    "items": [
+                      {
+                        "name": "Product 1",
+                        "sku": "sku1",
+                        "path": "product-1",
+                        "quantity": 1,
+                        "price": {
+                          "final": "100",
+                          "currency": "USD"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders/{orderId}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Order identifier (full or friendly id)."
+        }
+      ],
+      "get": {
+        "operationId": "getOrder",
+        "summary": "Retrieve an order",
+        "description": "Returns the order. Non-admin/non-service callers may only read their own order (matched on customer email).",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order, wrapped as `{ order }`.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller lacks orders:read, org/site mismatch, or email mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No order with this id (visible to the caller).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "order not found",
+                      "resource": "order"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "orders:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteOrder",
+        "summary": "Delete an order",
+        "description": "Not implemented — always returns 501.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Caller lacks orders:write or has an org/site mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Order deletion is not implemented.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_implemented",
+                      "message": "not implemented"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "orders:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders/preview": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "post": {
+        "operationId": "previewOrder",
+        "summary": "Estimate an order",
+        "description": "Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Bearer token. `Bearer <jwt>`. Optional.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Recaptcha-Token",
+            "in": "header",
+            "required": false,
+            "description": "reCAPTCHA Enterprise token; required for unauthenticated callers.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The estimate: subtotal, tax, shipping method, discounts, total, lineItems, and a signed estimateToken.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid order",
+                      "errors": [
+                        {
+                          "path": "$.shippingMethod.id",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "An unauthorized free ($0) item was requested with no matching free-item grant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "unprocessable",
+                      "message": "unprocessable",
+                      "details": {
+                        "rule": "unauthorized_free_item"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "The cart to estimate. `shippingMethod.id` is required.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewOrder"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "items": [
+                      {
+                        "sku": "sku1",
+                        "path": "product-1",
+                        "quantity": 1,
+                        "price": {
+                          "final": "100",
+                          "currency": "USD"
+                        }
+                      }
+                    ],
+                    "shipping": {
+                      "country": "US",
+                      "state": "CA",
+                      "zip": "12345"
+                    },
+                    "shippingMethod": {
+                      "id": "standard-us"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders/{orderId}/custom": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Order identifier (full or friendly id)."
+        }
+      ],
+      "patch": {
+        "operationId": "updateOrderCustom",
+        "summary": "Patch order custom data",
+        "description": "Merges the request body into the order custom data. Keys with a null value are removed. Each key and value is limited to 2048 characters.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated order, wrapped as `{ order }`.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The custom data failed validation (non-object, non-string value, or over the 2048-char limit).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.custom",
+                          "message": "custom data must be an object"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller lacks orders:write/orders:custom:write or has an org/site mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No order with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "order not found",
+                      "resource": "order"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "orders:write",
+          "orders:custom:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "A flat map of custom keys to string values (or null to delete).",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "giftWrap": "true",
+                    "internalNote": "priority",
+                    "staleKey": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders/{orderId}/payments": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Order identifier (full or friendly id)."
+        }
+      ],
+      "post": {
+        "operationId": "initiatePayment",
+        "summary": "Initiate a payment",
+        "description": "Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result (synchronous charge outcome or a requires_action redirect). No authentication required.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Bearer token. `Bearer <jwt>`. Optional — guest checkout is supported.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The provider result (terminal charge outcome or a requires_action redirect).",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required body field, unknown provider, or provider-specific input validation failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$",
+                          "message": "missing provider"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No order with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "order not found",
+                      "resource": "order"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Order not payable (not pending), provider not configured, max attempts exceeded, or provider rejection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "unprocessable",
+                      "message": "unprocessable",
+                      "retryable": false,
+                      "details": {
+                        "rule": "order_not_payable",
+                        "state": "payment_completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "PAYMENT_ENCRYPTION_KEY is not configured (misconfigured).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The payment provider returned an upstream error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Attempt persistence failed after retries for a redirect provider; retry with the same idempotencyKey.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "Payment initiation request. `provider`, `paymentMethod`, and `idempotencyKey` are required; `fraudToken` is the optional fraud SDK session token.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "description": "Registered provider name (e.g. chase, chase-wallet, paypal, paypal-express, affirm).",
+                    "type": "string"
+                  },
+                  "paymentMethod": {
+                    "description": "Payment method (e.g. card, wallet).",
+                    "type": "string"
+                  },
+                  "idempotencyKey": {
+                    "description": "Caller-supplied idempotency key; replays return the prior result.",
+                    "type": "string"
+                  },
+                  "fraudToken": {
+                    "description": "Optional fraud-provider JS SDK session token.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "provider",
+                  "paymentMethod",
+                  "idempotencyKey"
+                ],
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "provider": "chase",
+                    "paymentMethod": "card",
+                    "idempotencyKey": "idem-9f2c1a"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/customers": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "listCustomers",
+        "summary": "List customers",
+        "description": "Returns customers for the org/site. Paginated via an opaque `cursor` when the R2 page is truncated.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of customers (and an optional pagination cursor).",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "customers:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      },
+      "post": {
+        "operationId": "createCustomer",
+        "summary": "Create a customer",
+        "description": "Validates and stores a new customer. Often called unauthenticated during checkout.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The created customer."
+          },
+          "400": {
+            "description": "The customer failed schema validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid customer",
+                      "errors": [
+                        {
+                          "path": "$.email",
+                          "message": "condition 'pattern' failed"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A customer with this email already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "already_exists",
+                      "message": "customer already exists",
+                      "resource": "customer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "customers:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The customer to create.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Customer"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "firstName": "Jane",
+                    "lastName": "Doe",
+                    "email": "jane@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/customers/{email}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "email",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Customer email address."
+        }
+      ],
+      "get": {
+        "operationId": "getCustomer",
+        "summary": "Retrieve a customer",
+        "description": "Returns the customer. Requires ownership of the email and membership of the org/site (no `customers:read` permission).",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer document."
+          },
+          "404": {
+            "description": "No customer exists for this email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "customer not found",
+                      "resource": "customer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCustomer",
+        "summary": "Delete a customer",
+        "description": "Removes the customer. Admin role required.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer was deleted."
+          },
+          "404": {
+            "description": "No email supplied in the path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "customer not found",
+                      "resource": "customer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/customers/{email}/{subroute}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "email",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Customer email address."
+        },
+        {
+          "name": "subroute",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "addresses",
+              "orders"
+            ]
+          },
+          "description": "Either `addresses` or `orders`."
+        }
+      ],
+      "get": {
+        "operationId": "listCustomerSubresources",
+        "summary": "List addresses or orders",
+        "description": "Lists the customer's addresses (`subroute=addresses`) or orders (`subroute=orders`). Listing orders requires `orders:read`; both require ownership of the email.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of addresses or orders."
+          }
+        },
+        "x-permissions": [
+          "orders:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      },
+      "post": {
+        "operationId": "createCustomerAddress",
+        "summary": "Create an address",
+        "description": "Creates an address for the customer (`subroute=addresses` only). Requires ownership of the email.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The created address."
+          },
+          "400": {
+            "description": "The address failed schema validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid address",
+                      "errors": [
+                        {
+                          "path": "$.country",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The address to create.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Address"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "address1": "123 Main St",
+                    "city": "Anytown",
+                    "state": "CA",
+                    "zip": "12345",
+                    "country": "US"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/customers/{email}/{subroute}/{resourceId}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "email",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Customer email address."
+        },
+        {
+          "name": "subroute",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "addresses",
+              "orders"
+            ]
+          },
+          "description": "Either `addresses` or `orders`."
+        },
+        {
+          "name": "resourceId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Address id or order id."
+        }
+      ],
+      "get": {
+        "operationId": "getCustomerSubresource",
+        "summary": "Retrieve an address or order",
+        "description": "Retrieves a single address (requires ownership of the email) or a single order. Order lookup is intentionally unauthenticated — knowing email + orderId is treated as sufficient proof for guest order-status lookups.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The address or order document."
+          },
+          "404": {
+            "description": "No such address or order for this customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "address not found",
+                      "resource": "address"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCustomerAddress",
+        "summary": "Delete an address",
+        "description": "Deletes a single address (`subroute=addresses`). Requires ownership of the email.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The address was deleted."
+          },
+          "404": {
+            "description": "No such address for this customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "address not found",
+                      "resource": "address"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Updating an address (POST with a resourceId) is not implemented.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_implemented",
+                      "message": "not implemented"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/estimate/{estimateType}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "estimateType",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "tax",
+              "shipping",
+              "price",
+              "order"
+            ]
+          },
+          "description": "Which estimate to compute."
+        }
+      ],
+      "post": {
+        "operationId": "createEstimate",
+        "summary": "Compute an estimate",
+        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`.",
+        "responses": {
+          "200": {
+            "description": "The computed estimate. Body shape varies by `estimateType`.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request failed schema validation or `country` could not be resolved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.country",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown `estimateType`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "route not found",
+                      "resource": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "Estimate request. Shape varies by `estimateType`; see route description.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "country": "US",
+                    "shipping": {
+                      "country": "US",
+                      "state": "CA"
+                    },
+                    "items": [
+                      {
+                        "sku": "SKU-1",
+                        "quantity": 1,
+                        "price": {
+                          "final": "10.00",
+                          "currency": "USD"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Estimate"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/places/{action}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "action",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "autocomplete",
+              "details",
+              "validate"
+            ]
+          },
+          "description": "Which Places operation to invoke."
+        }
+      ],
+      "get": {
+        "operationId": "placesGet",
+        "summary": "Autocomplete or place details (GET)",
+        "description": "For `autocomplete`, provide `input` (and optional `sessiontoken`, `regioncode`). For `details`, provide `place_id` (and optional `sessiontoken`). The proxied Google response is returned verbatim.",
+        "responses": {
+          "200": {
+            "description": "The proxied Google Places response (passed through verbatim).",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Required input (`input` or `place_id`) was missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.input",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request Origin is missing or not in the site's allowed origins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "forbidden",
+                      "message": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The Google Places API key is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "misconfigured",
+                      "message": "misconfigured"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The upstream Google API failed or was unreachable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "upstream_error",
+                      "message": "google_places error",
+                      "retryable": true,
+                      "details": {
+                        "upstream": "google_places",
+                        "status": 502
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Places"
+        ]
+      },
+      "post": {
+        "operationId": "placesPost",
+        "summary": "Autocomplete, details, or address validation (POST)",
+        "description": "Same actions as GET, plus `validate`: provide `address.addressLines` (non-empty array) and optional `address.regionCode`. Returns a normalized verdict envelope.",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "For `validate`, a normalized envelope (`action`, `formattedAddress`, `addressComponents`, `uspsDeliverable`). For `autocomplete`/`details`, the proxied Google response.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required field was missing or invalid (e.g. empty `address.addressLines`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.address.addressLines",
+                          "message": "must be a non-empty array"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request Origin is missing or not in the site's allowed origins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "forbidden",
+                      "message": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The Google Places API key is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "misconfigured",
+                      "message": "misconfigured"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The upstream Google API failed or was unreachable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "upstream_error",
+                      "message": "google_places error",
+                      "retryable": true,
+                      "details": {
+                        "upstream": "google_places",
+                        "status": 502
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "Request body. Shape varies by `action`; see operation description.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "address": {
+                      "addressLines": [
+                        "123 Main St"
+                      ],
+                      "regionCode": "US"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Places"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/auth/login": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "post": {
+        "operationId": "authLogin",
+        "summary": "Request an OTP login code",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Recaptcha-Token",
+            "in": "header",
+            "required": false,
+            "description": "reCAPTCHA Enterprise score-based token (OTP/email-abuse defense).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP challenge; pass these values to /auth/callback.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Opaque OTP challenge — echo `email`, `hash` and `exp` back to the callback.",
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "string"
+                    },
+                    "hash": {
+                      "description": "HMAC of the issued code; must be returned to /callback.",
+                      "type": "string"
+                    },
+                    "exp": {
+                      "description": "Expiry timestamp (ms epoch) of the OTP code.",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "email",
+                    "hash",
+                    "exp"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "email": "user@example.com",
+                      "hash": "a1b2c3...",
+                      "exp": 1700000000000
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing/invalid email, country, or locale.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
+                      "message": "Invalid request",
+                      "errors": [
+                        {
+                          "path": "$.email",
+                          "message": "invalid email format"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Auth is not enabled for this org/site.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_AUTH_NOT_ENABLED",
+                      "message": "auth is not enabled"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server misconfigured (OTP/JWT secret unset).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_MISCONFIGURED",
+                      "message": "server misconfigured"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "Email to send the OTP code to, plus optional locale hints.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "OTP login request. Hand-validated by the handler (no runtime schema).",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "description": "Email address to send the OTP code to.",
+                    "type": "string"
+                  },
+                  "country": {
+                    "description": "Optional ISO country code (default `us`).",
+                    "type": "string"
+                  },
+                  "locale": {
+                    "description": "Optional locale (default `en-US`).",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "email": "user@example.com",
+                    "country": "us",
+                    "locale": "en-US"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/auth/callback": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "post": {
+        "operationId": "authCallback",
+        "summary": "Verify an OTP code and obtain a session token",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated; JWT issued in body and `auth_token` cookie.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "auth_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Issued JWT plus resolved identity. Token is also set as the `auth_token` cookie.",
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "token": {
+                      "description": "Signed session JWT (24h).",
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "roles": {
+                      "description": "e.g. `[\"user\"]`, `[\"admin\"]`.",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "org": {
+                      "type": "string"
+                    },
+                    "site": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "token",
+                    "email",
+                    "roles",
+                    "org",
+                    "site"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "success": true,
+                      "token": "eyJhbGci...",
+                      "email": "user@example.com",
+                      "roles": [
+                        "user"
+                      ],
+                      "org": "org",
+                      "site": "site"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing/invalid email, code, hash, or exp.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_VALIDATION_FAILED",
+                      "message": "Invalid request",
+                      "errors": [
+                        {
+                          "path": "$.code",
+                          "message": "missing or invalid"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid/expired/used code, or rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_INVALID_CODE",
+                      "message": "invalid code"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server misconfigured or internal error creating the token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_MISCONFIGURED",
+                      "message": "server misconfigured"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Rate-limit bookkeeping temporarily unavailable; retryable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+                      "message": "service temporarily unavailable",
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "The code plus the challenge values returned by /auth/login.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "OTP verification request. Hand-validated by the handler (no runtime schema).",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "The OTP code the user received by email.",
+                    "type": "string"
+                  },
+                  "hash": {
+                    "description": "The `hash` returned by /login.",
+                    "type": "string"
+                  },
+                  "exp": {
+                    "description": "The `exp` returned by /login.",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "email",
+                  "code",
+                  "hash",
+                  "exp"
+                ],
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "email": "user@example.com",
+                    "code": "123456",
+                    "hash": "a1b2c3...",
+                    "exp": 1700000000000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/auth/logout": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "post": {
+        "operationId": "authLogout",
+        "summary": "Log out and clear the session cookie",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Optional bearer token to revoke. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": false,
+            "description": "Optional `auth_token` cookie to revoke.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Logged out (cookie cleared). No content.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "auth_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Config": {
+        "type": "object",
+        "properties": {
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^https?:\\/\\/[^/?#\\s]+$",
+              "maxLength": 1024
+            }
+          },
+          "allowedDeliverySites": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(\\*|[a-zA-Z0-9-]+)--(\\*|[a-zA-Z0-9-]+)--(\\*|[a-zA-Z0-9-]+)$",
+              "maxLength": 1024
+            }
+          },
+          "auth": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              }
+            }
+          },
+          "recaptcha": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "bypassOrigins": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^https?:\\/\\/[^/?#\\s]+$",
+                  "maxLength": 1024
+                }
+              },
+              "bypassDeliverySites": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^(\\*|[a-zA-Z0-9-]+)--[a-zA-Z0-9-]+--[a-zA-Z0-9-]+$",
+                  "maxLength": 1024
+                }
+              }
+            }
+          },
+          "emails": {
+            "type": "object",
+            "properties": {
+              "branding": {
+                "type": "object",
+                "properties": {
+                  "logoUrl": {
+                    "type": "string",
+                    "pattern": "^https:\\/\\/",
+                    "maxLength": 1024
+                  },
+                  "brandColor": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{3,8}$|^[a-zA-Z]+$",
+                    "maxLength": 20
+                  },
+                  "supportEmail": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "maxLength": 255
+                  },
+                  "supportPhone": {
+                    "type": "string",
+                    "pattern": "^[^<>]*$",
+                    "maxLength": 50
+                  },
+                  "footerAddress": {
+                    "type": "string",
+                    "pattern": "^[^<>]*$",
+                    "maxLength": 500
+                  }
+                }
+              },
+              "otp": {
+                "type": "object",
+                "properties": {
+                  "sender": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "maxLength": 255
+                  },
+                  "fromName": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "replyTo": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "maxLength": 255
+                  }
+                }
+              },
+              "transactional": {
+                "type": "object",
+                "properties": {
+                  "sender": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "maxLength": 255
+                  },
+                  "fromName": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "replyTo": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                    "maxLength": 255
+                  }
+                }
+              }
+            }
+          },
+          "experimentalFlags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "friendlyId": {
+            "type": "object",
+            "properties": {
+              "characters": {
+                "type": "string",
+                "pattern": "^[^/?#&%<> ]+$",
+                "minLength": 2
+              },
+              "length": {
+                "type": "integer",
+                "minimum": 4,
+                "maximum": 32
+              },
+              "prefix": {
+                "type": "string",
+                "pattern": "^[^/?#&%<> ]+$",
+                "minLength": 1,
+                "maxLength": 8
+              }
+            }
+          }
+        }
+      },
+      "ProductBus": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^\\/([a-z0-9_]+([-_][a-z0-9_]+)*\\/)*[a-z0-9]+(-[a-z0-9]+)*$",
+            "maxLength": 900
+          },
+          "urlKey": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "gtin": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "BackOrder",
+              "Discontinued",
+              "InStock",
+              "InStoreOnly",
+              "LimitedAvailability",
+              "MadeToOrder",
+              "OnlineOnly",
+              "OutOfStock",
+              "PreOrder",
+              "PreSale",
+              "Reserved",
+              "SoldOut"
+            ]
+          },
+          "availabilityDate": {
+            "type": "string"
+          },
+          "price": {
+            "description": "Price information for a product or variant.",
+            "type": "object",
+            "properties": {
+              "final": {
+                "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                "type": "string"
+              },
+              "currency": {
+                "description": "ISO 4217 currency code, e.g. \"USD\".",
+                "type": "string"
+              },
+              "regular": {
+                "description": "Original price before any discount, as a decimal string.",
+                "type": "string"
+              }
+            }
+          },
+          "itemCondition": {
+            "type": "string",
+            "enum": [
+              "DamagedCondition",
+              "NewCondition",
+              "RefurbishedCondition",
+              "UsedCondition"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "position": {
+                  "type": "number"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      },
+                      "uid": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "label",
+                "values"
+              ]
+            }
+          },
+          "aggregateRating": {
+            "type": "object",
+            "properties": {
+              "ratingValue": {
+                "type": "string"
+              },
+              "reviewCount": {
+                "type": "string"
+              },
+              "bestRating": {
+                "type": "string"
+              },
+              "worstRating": {
+                "type": "string"
+              }
+            }
+          },
+          "specifications": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "video": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "description": "Price information for a product or variant.",
+                  "type": "object",
+                  "properties": {
+                    "final": {
+                      "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                      "type": "string"
+                    },
+                    "currency": {
+                      "description": "ISO 4217 currency code, e.g. \"USD\".",
+                      "type": "string"
+                    },
+                    "regular": {
+                      "description": "Original price before any discount, as a decimal string.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "url": {
+                  "type": "string"
+                },
+                "images": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "filename": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]+$"
+                      },
+                      "roles": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "video": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url"
+                    ]
+                  }
+                },
+                "gtin": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "availability": {
+                  "type": "string",
+                  "enum": [
+                    "BackOrder",
+                    "Discontinued",
+                    "InStock",
+                    "InStoreOnly",
+                    "LimitedAvailability",
+                    "MadeToOrder",
+                    "OnlineOnly",
+                    "OutOfStock",
+                    "PreOrder",
+                    "PreSale",
+                    "Reserved",
+                    "SoldOut"
+                  ]
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      },
+                      "uid": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ]
+                  }
+                },
+                "itemCondition": {
+                  "type": "string",
+                  "enum": [
+                    "DamagedCondition",
+                    "NewCondition",
+                    "RefurbishedCondition",
+                    "UsedCondition"
+                  ]
+                },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "jsonldExtensions": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "weight": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "kg",
+                        "g",
+                        "lb",
+                        "oz"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "unit"
+                  ]
+                },
+                "shippingDimensions": {
+                  "type": "object",
+                  "properties": {
+                    "weight": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "unit"
+                      ]
+                    },
+                    "height": {
+                      "type": "number"
+                    },
+                    "width": {
+                      "type": "number"
+                    },
+                    "depth": {
+                      "type": "number"
+                    },
+                    "dimensionsUnit": {
+                      "type": "string",
+                      "enum": [
+                        "cm",
+                        "mm",
+                        "in"
+                      ]
+                    }
+                  }
+                }
+              },
+              "required": [
+                "sku",
+                "name",
+                "url",
+                "images"
+              ]
+            }
+          },
+          "jsonld": {
+            "type": "string",
+            "maxLength": 128000
+          },
+          "custom": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "jsonldExtensions": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "shipping": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "country": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "service": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "string"
+                  },
+                  "min_handling_time": {
+                    "type": "string"
+                  },
+                  "max_handling_time": {
+                    "type": "string"
+                  },
+                  "min_transit_time": {
+                    "type": "string"
+                  },
+                  "max_transit_time": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "country": {
+                      "type": "string"
+                    },
+                    "region": {
+                      "type": "string"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "string"
+                    },
+                    "min_handling_time": {
+                      "type": "string"
+                    },
+                    "max_handling_time": {
+                      "type": "string"
+                    },
+                    "min_transit_time": {
+                      "type": "string"
+                    },
+                    "max_transit_time": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "bundleItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "final": {
+                      "type": "string"
+                    },
+                    "regular": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "final"
+                  ]
+                },
+                "variants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sku": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "object",
+                        "properties": {
+                          "final": {
+                            "type": "string"
+                          },
+                          "regular": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "final"
+                        ]
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name"
+                          ]
+                        }
+                      },
+                      "taxCode": {
+                        "type": "string",
+                        "maxLength": 255
+                      },
+                      "taxData": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "required": [
+                      "sku",
+                      "price",
+                      "options"
+                    ]
+                  }
+                },
+                "taxCode": {
+                  "type": "string",
+                  "maxLength": 255
+                },
+                "taxData": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "feeds": {
+            "type": "object",
+            "properties": {
+              "common": {
+                "type": "object",
+                "properties": {
+                  "geoTargetCountries": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "geoStoreCountry": {
+                    "type": "string"
+                  }
+                }
+              },
+              "oai": {
+                "type": "object",
+                "properties": {
+                  "isEligibleForSearch": {
+                    "type": "boolean"
+                  },
+                  "isEligibleForCheckout": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isEligibleForSearch",
+                  "isEligibleForCheckout"
+                ]
+              }
+            }
+          },
+          "weight": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "kg",
+                  "g",
+                  "lb",
+                  "oz"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "unit"
+            ]
+          },
+          "shippingDimensions": {
+            "type": "object",
+            "properties": {
+              "weight": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "kg",
+                      "g",
+                      "lb",
+                      "oz"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit"
+                ]
+              },
+              "height": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "depth": {
+                "type": "number"
+              },
+              "dimensionsUnit": {
+                "type": "string",
+                "enum": [
+                  "cm",
+                  "mm",
+                  "in"
+                ]
+              }
+            }
+          },
+          "taxCode": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "taxData": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "locale": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          }
+        },
+        "required": [
+          "sku",
+          "name",
+          "path"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "shipping": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "billing": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "imageUrl": {
+                  "type": "string"
+                },
+                "productUrl": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "number"
+                },
+                "price": {
+                  "description": "Price information for a product or variant.",
+                  "type": "object",
+                  "properties": {
+                    "final": {
+                      "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                      "type": "string"
+                    },
+                    "currency": {
+                      "description": "ISO 4217 currency code, e.g. \"USD\".",
+                      "type": "string"
+                    },
+                    "regular": {
+                      "description": "Original price before any discount, as a decimal string.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "shippingDimensions": {
+                  "type": "object",
+                  "properties": {
+                    "weight": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "unit"
+                      ]
+                    },
+                    "height": {
+                      "type": "number"
+                    },
+                    "width": {
+                      "type": "number"
+                    },
+                    "depth": {
+                      "type": "number"
+                    },
+                    "dimensionsUnit": {
+                      "type": "string",
+                      "enum": [
+                        "cm",
+                        "mm",
+                        "in"
+                      ]
+                    }
+                  }
+                },
+                "selectedOptions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "value"
+                    ]
+                  }
+                },
+                "bundleItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "sku": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "type": "number"
+                      },
+                      "price": {
+                        "description": "Price information for a product or variant.",
+                        "type": "object",
+                        "properties": {
+                          "final": {
+                            "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                            "type": "string"
+                          },
+                          "currency": {
+                            "description": "ISO 4217 currency code, e.g. \"USD\".",
+                            "type": "string"
+                          },
+                          "regular": {
+                            "description": "Original price before any discount, as a decimal string.",
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "quantity",
+                      "price"
+                    ]
+                  }
+                },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "sku",
+                "path",
+                "quantity",
+                "price"
+              ]
+            }
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "locale": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          },
+          "shippingMethod": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "estimateToken": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "couponCode": {
+            "type": "string"
+          },
+          "giftMessage": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "custom": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        },
+        "required": [
+          "items",
+          "customer",
+          "shipping",
+          "country",
+          "locale"
+        ]
+      },
+      "PreviewOrder": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "shipping": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "company": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "address1": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "address2": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "city": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "state": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "zip": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "country": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "email": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                "maxLength": 255
+              },
+              "isDefault": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "country",
+              "state"
+            ]
+          },
+          "billing": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "imageUrl": {
+                  "type": "string"
+                },
+                "productUrl": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "number"
+                },
+                "price": {
+                  "description": "Price information for a product or variant.",
+                  "type": "object",
+                  "properties": {
+                    "final": {
+                      "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                      "type": "string"
+                    },
+                    "currency": {
+                      "description": "ISO 4217 currency code, e.g. \"USD\".",
+                      "type": "string"
+                    },
+                    "regular": {
+                      "description": "Original price before any discount, as a decimal string.",
+                      "type": "string"
+                    }
+                  }
+                },
+                "shippingDimensions": {
+                  "type": "object",
+                  "properties": {
+                    "weight": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "unit"
+                      ]
+                    },
+                    "height": {
+                      "type": "number"
+                    },
+                    "width": {
+                      "type": "number"
+                    },
+                    "depth": {
+                      "type": "number"
+                    },
+                    "dimensionsUnit": {
+                      "type": "string",
+                      "enum": [
+                        "cm",
+                        "mm",
+                        "in"
+                      ]
+                    }
+                  }
+                },
+                "selectedOptions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "value"
+                    ]
+                  }
+                },
+                "bundleItems": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "sku": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "type": "number"
+                      },
+                      "price": {
+                        "description": "Price information for a product or variant.",
+                        "type": "object",
+                        "properties": {
+                          "final": {
+                            "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                            "type": "string"
+                          },
+                          "currency": {
+                            "description": "ISO 4217 currency code, e.g. \"USD\".",
+                            "type": "string"
+                          },
+                          "regular": {
+                            "description": "Original price before any discount, as a decimal string.",
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "quantity",
+                      "price"
+                    ]
+                  }
+                },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "sku",
+                "path",
+                "quantity",
+                "price"
+              ]
+            }
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "locale": {
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          },
+          "shippingMethod": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "estimateToken": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "couponCode": {
+            "type": "string"
+          },
+          "giftMessage": {
+            "type": "string",
+            "maxLength": 250
+          },
+          "custom": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          },
+          "couponSource": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "shipping"
+        ]
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "maxLength": 255
+          },
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "email"
+        ]
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "address1": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "address2": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "zip": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "country": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+            "maxLength": 255
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "address1",
+          "city",
+          "state",
+          "zip",
+          "country"
+        ]
+      },
+      "ErrorResponse": {
+        "description": "Standard error envelope returned for non-2xx responses.",
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "Machine-readable error code (also sent as the `x-error-code` header).",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable error message (also sent as the `x-error` header).",
+            "type": "string"
+          },
+          "resource": {
+            "description": "The resource type involved, when applicable.",
+            "type": "string"
+          },
+          "retryable": {
+            "description": "Whether the caller may retry the request.",
+            "type": "boolean"
+          },
+          "details": {
+            "description": "Optional structured detail.",
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "ValidationErrorResponse": {
+        "description": "Error envelope returned when the request body fails schema validation.",
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "Machine-readable error code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "errors": {
+            "description": "Per-field validation failures.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "description": "JSON path to the offending value, e.g. `$.allowedOrigins[0]`.",
+                  "type": "string"
+                },
+                "message": {
+                  "description": "What was wrong at this path.",
+                  "type": "string"
+                },
+                "details": {
+                  "description": "Optional extra context.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      }
+    }
+  }
+}

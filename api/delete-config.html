@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Delete site configuration — Helix Commerce API</title>
+    <meta name="description" content="Removes the configuration document for the org/site.">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Config</p>
+        <h1>Delete site configuration</h1>
+        <p class="endpoint"><span class="http-method http-delete">DELETE</span> <code class="http-path">/{org}/sites/{site}/config</code></p>
+        <p>Removes the configuration document for the org/site.</p>
+        <p class="permissions">Required permissions: <code>config:write</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">204</span> Configuration deleted (no content).</h3>
+        <h3><span class="status-badge status-5xx">500</span> Storage error.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

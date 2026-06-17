@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>List customers — Helix Commerce API</title>
+    <meta name="description" content="Returns customers for the org/site. Paginated via an opaque `cursor` when the R2 page is truncated.">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Customers</p>
+        <h1>List customers</h1>
+        <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/customers</code></p>
+        <p>Returns customers for the org/site. Paginated via an opaque `cursor` when the R2 page is truncated.</p>
+        <p class="permissions">Required permissions: <code>customers:read</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">200</span> The list of customers (and an optional pagination cursor).</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>
