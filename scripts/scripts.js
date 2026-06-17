@@ -2,8 +2,8 @@ import { loadArea, loadBlock, setConfig } from './nx.js';
 
 // Supported locales
 const locales = {
-  '': { ietf: 'en', tk: 'etj3wuq.css' },
-  '/de': { ietf: 'de', tk: 'etj3wuq.css' },
+  '': { ietf: 'en' },
+  '/de': { ietf: 'de' },
 };
 
 // Widget patterns to look for

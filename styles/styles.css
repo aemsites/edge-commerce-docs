@@ -1,33 +1,33 @@
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-400.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-400.woff2") format("woff2");
   font-display: optional;
   font-style: normal;
   font-weight: 400;
 }
 
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-400-italic.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-400-italic.woff2") format("woff2");
   font-display: optional;
   font-style: italic;
   font-weight: 400;
 }
 
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-700.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-700.woff2") format("woff2");
   font-display: optional;
   font-style: normal;
   font-weight: 700;
 }
 
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-700-italic.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-900.woff2") format("woff2");
   font-display: optional;
-  font-style: italic;
-  font-weight: 700;
+  font-style: normal;
+  font-weight: 900;
 }
 
 :root {
@@ -89,7 +89,7 @@
   --s2-yellow-600: #d29500;
 
   /* fonts */
-  --font-family: avenir-next-lt-pro, "Trebuchet MS", sans-serif;
+  --font-family: adobe-clean, "adobe-clean", "Trebuchet MS", "Source Sans Pro", -apple-system, system-ui, sans-serif;
 
   /* headings */
   --heading-font-size-xxl: 32.44px;
