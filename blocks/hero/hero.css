@@ -49,18 +49,20 @@
 .hero-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 18px;
-  border-radius: 10px;
-  font-size: 14.5px;
-  font-weight: 600;
+  gap: 6px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
   text-decoration: none;
   border: 1px solid transparent;
 }
 
 .hero-btn-primary {
-  background: var(--doc-accent);
-  color: light-dark(#fff, var(--s2-gray-50));
+  background: var(--doc-accent-strong);
+  color: #fff;
 }
 
 .hero-btn-primary:hover {
@@ -69,7 +71,7 @@
 }
 
 .hero-btn-secondary {
-  background: var(--doc-surface);
+  background: light-dark(#fff, var(--s2-gray-800));
   border-color: var(--doc-border);
   color: var(--doc-text);
 }
@@ -144,7 +146,7 @@
   content: "";
   width: 54px;
   height: 54px;
-  background: var(--doc-accent);
+  background: var(--doc-accent-strong);
   border-radius: 14px;
   transform: rotate(45deg);
   opacity: 0.92;
@@ -159,4 +161,18 @@
   .hero-art {
     order: -1;
   }
+
+  /* Larger, easier touch targets on phones/tablets. */
+  .hero-btn {
+    height: 44px;
+    padding: 0 22px;
+    font-size: 15px;
+  }
+}
+
+.hero-btn .icon,
+.hero-btn .icon img,
+.hero-btn svg {
+  width: 16px;
+  height: 16px;
 }

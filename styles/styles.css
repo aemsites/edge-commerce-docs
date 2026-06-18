@@ -123,9 +123,12 @@ body {
   line-height: var(--body-line-height);
 
   /* Shared tokens for the home-page blocks (hero, cards, link-list, flow).
-     Defined here so all blocks theme consistently in light and dark. */
-  --doc-accent: light-dark(var(--s2-red-900), var(--s2-red-300));
-  --doc-accent-soft: light-dark(var(--s2-red-200), color-mix(in srgb, var(--s2-red-800) 26%, transparent));
+     Defined here so all blocks theme consistently in light and dark.
+     Accent is Adobe Spectrum blue 500 (rgb 3 103 224); a lighter tint is used
+     for text/icons on dark surfaces, and a solid blue for buttons. */
+  --doc-accent: light-dark(rgb(3 103 224), rgb(94 156 255));
+  --doc-accent-strong: rgb(3 103 224);
+  --doc-accent-soft: light-dark(rgb(3 103 224 / 12%), rgb(94 156 255 / 18%));
   --doc-surface: light-dark(var(--s2-gray-50), var(--s2-gray-800));
   --doc-surface-2: light-dark(var(--s2-gray-75), color-mix(in srgb, var(--s2-gray-800) 55%, transparent));
   --doc-border: light-dark(var(--s2-gray-300), var(--s2-gray-700));
