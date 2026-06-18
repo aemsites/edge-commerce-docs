@@ -563,3 +563,11 @@ body.docs-template .default-content :is(h2, h3, h4)[id]:hover a.heading-anchor::
 body.docs-template .default-content :is(h2, h3, h4)[id] a.heading-anchor:focus-visible::after {
   opacity: 1;
 }
+
+/* Home block icons load as <img> (via decorateIcons), so CSS color can't reach
+   them. Recolor to white in dark mode for contrast on the dark icon tiles. */
+body.dark-theme .cards .card-icon img,
+body.dark-theme .flow .flow-icon img,
+body.dark-theme .link-list .link-list-title .icon img {
+  filter: brightness(0) invert(1);
+}
