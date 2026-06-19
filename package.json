@@ -13,7 +13,8 @@
     "docs:da:build": "node scripts/docs/markdown-to-da-html.mjs",
     "docs:da:push": "npm run docs:da:build && node scripts/docs/push-da.mjs",
     "docs:schema:generate": "node scripts/docs/generate-schema-reference.mjs",
-    "docs:schema:check": "node scripts/docs/generate-schema-reference.mjs --check"
+    "docs:schema:check": "node scripts/docs/generate-schema-reference.mjs --check",
+    "test:docs": "node --test test/docs/*.test.mjs"
   },
   "repository": {
     "type": "git",

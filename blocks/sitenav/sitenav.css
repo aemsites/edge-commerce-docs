@@ -75,6 +75,11 @@
       cursor: pointer;
       user-select: none;
 
+      /* API reference is the primary section; make it stand out. */
+      &.api-primary {
+        font-weight: 900;
+      }
+
       &:hover {
         background-color: light-dark(var(--s2-gray-100), var(--s2-gray-800));
       }

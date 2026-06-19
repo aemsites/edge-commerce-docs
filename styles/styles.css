@@ -1,33 +1,33 @@
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-400.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-400.woff2") format("woff2");
   font-display: optional;
   font-style: normal;
   font-weight: 400;
 }
 
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-400-italic.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-400-italic.woff2") format("woff2");
   font-display: optional;
   font-style: italic;
   font-weight: 400;
 }
 
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-700.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-700.woff2") format("woff2");
   font-display: optional;
   font-style: normal;
   font-weight: 700;
 }
 
 @font-face {
-  font-family: avenir-next-lt-pro;
-  src: url("/styles/fonts/avenir-next-700-italic.woff2") format("woff2");
+  font-family: adobe-clean;
+  src: url("/styles/fonts/adobe-clean-900.woff2") format("woff2");
   font-display: optional;
-  font-style: italic;
-  font-weight: 700;
+  font-style: normal;
+  font-weight: 900;
 }
 
 :root {
@@ -47,10 +47,10 @@
 
   --light-color: #fff;
   --light-link: #e6e6e6;
-  --light-main-link: #ea998f;
+  --light-main-link: #0367e0; /* hyperlink: Adobe blue, same in light + dark */
   --dark-color: #0e0e0e;
   --dark-link: #3f3f3f;
-  --dark-main-link: #d73220;
+  --dark-main-link: #0367e0; /* hyperlink: Adobe blue, same in light + dark */
 
   /* Spectrum 2 Colors */
   --s2-cyan-800: #0086b4;
@@ -89,7 +89,7 @@
   --s2-yellow-600: #d29500;
 
   /* fonts */
-  --font-family: avenir-next-lt-pro, "Trebuchet MS", sans-serif;
+  --font-family: adobe-clean, "adobe-clean", "Trebuchet MS", "Source Sans Pro", -apple-system, system-ui, sans-serif;
 
   /* headings */
   --heading-font-size-xxl: 32.44px;
@@ -121,6 +121,22 @@ body {
   font-family: var(--font-family);
   font-size: var(--body-font-size-m);
   line-height: var(--body-line-height);
+
+  /* Shared tokens for the home-page blocks (hero, cards, link-list, flow).
+     Defined here so all blocks theme consistently in light and dark.
+     Accent is Adobe Spectrum blue 500 (rgb 3 103 224); a lighter tint is used
+     for text/icons on dark surfaces, and a solid blue for buttons. */
+  --doc-accent: light-dark(rgb(3 103 224), rgb(94 156 255));
+  --doc-accent-strong: rgb(3 103 224);
+  --doc-accent-soft: light-dark(rgb(3 103 224 / 12%), rgb(94 156 255 / 18%));
+  --doc-surface: light-dark(var(--s2-gray-50), var(--s2-gray-800));
+  --doc-surface-2: light-dark(var(--s2-gray-75), color-mix(in srgb, var(--s2-gray-800) 55%, transparent));
+  --doc-border: light-dark(var(--s2-gray-300), var(--s2-gray-700));
+  --doc-border-soft: light-dark(var(--s2-gray-200), var(--s2-gray-800));
+  --doc-text: light-dark(var(--s2-gray-800), var(--s2-gray-100));
+  --doc-dim: light-dark(var(--s2-gray-700), var(--s2-gray-300));
+  --doc-mute: light-dark(var(--s2-gray-500), var(--s2-gray-500));
+  --doc-radius: 14px;
 
   a {
     text-decoration: none;
@@ -546,4 +562,44 @@ body.docs-template .default-content :is(h2, h3, h4)[id] a.heading-anchor::after 
 body.docs-template .default-content :is(h2, h3, h4)[id]:hover a.heading-anchor::after,
 body.docs-template .default-content :is(h2, h3, h4)[id] a.heading-anchor:focus-visible::after {
   opacity: 1;
+}
+
+/* Home block icons load as <img> (via decorateIcons), so CSS color can't reach
+   them. Recolor to white in dark mode for contrast on the dark icon tiles. */
+body.dark-theme .cards .card-icon img,
+body.dark-theme .flow .flow-icon img,
+body.dark-theme .link-list .link-list-title .icon img {
+  filter: brightness(0) invert(1);
+}
+
+/* Per-page footer on docs pages: "Edit this page on GitHub" (left) +
+   "Last updated" (right). */
+body.docs-template .doc-pagefooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--doc-border-soft);
+  font-size: 12.5px;
+}
+
+body.docs-template .doc-edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: light-dark(var(--dark-main-link), var(--light-main-link));
+}
+
+body.docs-template .doc-edit-icon {
+  width: 15px;
+  height: 15px;
+}
+
+body.docs-template .doc-last-modified {
+  margin: 0 0 0 auto;
+  font-style: italic;
+  color: light-dark(var(--s2-gray-600), var(--s2-gray-500));
 }

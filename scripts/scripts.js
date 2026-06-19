@@ -2,8 +2,8 @@ import { loadArea, loadBlock, setConfig } from './nx.js';
 
 // Supported locales
 const locales = {
-  '': { ietf: 'en', tk: 'etj3wuq.css' },
-  '/de': { ietf: 'de', tk: 'etj3wuq.css' },
+  '': { ietf: 'en' },
+  '/de': { ietf: 'de' },
 };
 
 // Widget patterns to look for
@@ -45,6 +45,52 @@ function detectLabs() {
   block.className = 'early-access';
   block.dataset.labs = labs;
   firstSection.prepend(block);
+}
+
+// GitHub repo that holds the narrative docs source (Markdown under /docs).
+const DOCS_REPO = 'https://github.com/aemsites/edge-commerce-docs';
+
+// "Last updated" line (from document.lastModified) + an "Edit this page on
+// GitHub" link, shown in a small footer at the bottom of docs content.
+function decoratePageFooter() {
+  if (!document.body.classList.contains('docs-template')) return;
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  const footer = document.createElement('div');
+  footer.className = 'doc-pagefooter';
+
+  // Edit link — narrative docs only. API reference pages are generated from
+  // openapi.js (in helix-commerce-api), not Markdown, so they get no edit link.
+  const path = window.location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+  if (path !== '/api' && !path.startsWith('/api/')) {
+    const slug = path.replace(/^\/+/, '').replace(/\/+$/, '') || 'index';
+    const edit = document.createElement('a');
+    edit.className = 'doc-edit-link';
+    edit.href = `${DOCS_REPO}/edit/main/docs/${slug}.md`;
+    edit.target = '_blank';
+    edit.rel = 'noopener';
+    edit.innerHTML = '<svg class="doc-edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      + 'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+      + '<path d="M4 20l3-1 9-9-2-2-9 9z"/><path d="M14 6l2-2 2 2-2 2z"/></svg>'
+      + '<span>Edit this page on GitHub</span>';
+    footer.append(edit);
+  }
+
+  const when = new Date(document.lastModified);
+  if (!Number.isNaN(when.getTime())) {
+    const yyyy = when.getFullYear();
+    const mm = String(when.getMonth() + 1).padStart(2, '0');
+    const dd = String(when.getDate()).padStart(2, '0');
+    const p = document.createElement('p');
+    p.className = 'doc-last-modified';
+    p.innerHTML = `Last updated <time datetime="${when.toISOString()}">${yyyy}-${mm}-${dd}</time>`;
+    footer.append(p);
+  }
+
+  if (!footer.children.length) return;
+  const target = main.querySelector('.section') || main;
+  target.append(footer);
 }
 
 // Make content headings deep-linkable. Each heading with an id gets an anchor
@@ -113,6 +159,7 @@ export async function loadPage() {
 
   await loadArea();
   decorateHeadingAnchors();
+  decoratePageFooter();
   await loadNav('pagenav');
 }
 

@@ -6,41 +6,41 @@ import path from 'node:path';
 const ROOT = path.resolve(new URL('../..', import.meta.url).pathname);
 const MANIFEST_PATH = path.join(ROOT, '.da', 'manifest.json');
 
+// Load a local .env (and .env.local) if present so local pushes can pick up
+// HLX_ADMIN_API_KEY without exporting it in the shell. Both files are
+// gitignored; existing shell env vars take precedence.
+for (const envFile of ['.env', '.env.local']) {
+  try {
+    process.loadEnvFile(path.join(ROOT, envFile));
+  } catch {
+    /* no env file — fine */
+  }
+}
+
 const ORG = process.env.DA_ORG || 'aemsites';
-const REPO = process.env.DA_REPO || 'edge-commerce-docs';
-const BRANCH = process.env.DA_BRANCH || 'main';
-const TOKEN_PATHS = [
-  process.env.DA_TOKEN_PATH,
-  path.join(ROOT, '.hlx', '.da-token.json'),
-  path.join(process.env.HOME || '', '.aem', 'da-token.json'),
-].filter(Boolean);
+const SITE = process.env.DA_SITE || process.env.DA_REPO || 'edge-commerce-docs';
+// Helix 6 unified admin API. Content (source bus), preview, and publish all go
+// through this host, authenticated with a Helix admin API key.
+const API_HOST = process.env.HELIX_API_HOST || 'https://api.aem.live';
 
 const args = new Set(process.argv.slice(2));
 const SHOULD_PUBLISH = args.has('--publish');
 const SKIP_PREVIEW = args.has('--no-preview');
 const DRY_RUN = args.has('--dry-run');
 
-async function readJson(file) {
-  return JSON.parse(await readFile(file, 'utf8'));
+function resolveToken() {
+  const key = process.env.HLX_ADMIN_API_KEY;
+  if (!key) {
+    throw new Error('Set HLX_ADMIN_API_KEY (a Helix admin API key with the publish role). '
+      + 'Add it to a local .env or your CI secrets.');
+  }
+  return key;
 }
 
-async function resolveToken() {
-  if (process.env.DA_TOKEN) return process.env.DA_TOKEN;
-
-  for (const tokenPath of TOKEN_PATHS) {
-    try {
-      const token = await readJson(tokenPath);
-      const expiresAt = typeof token.expires_at === 'number' ? token.expires_at : 0;
-      if (expiresAt && expiresAt <= Date.now()) {
-        throw new Error(`DA token expired at ${new Date(expiresAt).toISOString()}`);
-      }
-      if (token.access_token) return token.access_token;
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-  }
-
-  throw new Error('No DA token found. Set DA_TOKEN or run DA auth first.');
+function mimeForPath(p) {
+  if (p.endsWith('.json')) return 'application/json';
+  if (p.endsWith('.svg')) return 'image/svg+xml';
+  return 'text/html';
 }
 
 async function request(url, options) {
@@ -57,31 +57,27 @@ async function request(url, options) {
 }
 
 async function uploadPage(page, token) {
-  const absPath = path.join(ROOT, page.html);
-  const html = await readFile(absPath);
-  const form = new FormData();
-  form.append('data', new Blob([html], { type: 'text/html' }), path.basename(page.sourcePath));
+  const headers = { 'x-auth-token': token };
+  const html = await readFile(path.join(ROOT, page.html));
 
-  const sourceUrl = `https://admin.da.live/source/${ORG}/${REPO}/${page.sourcePath}`;
-  await request(sourceUrl, {
+  // Source bus: raw-body PUT to /{org}/sites/{site}/source/{path}.
+  await request(`${API_HOST}/${ORG}/sites/${SITE}/source/${page.sourcePath}`, {
     method: 'PUT',
-    headers: { Authorization: `Bearer ${token}` },
-    body: form,
+    headers: { ...headers, 'Content-Type': mimeForPath(page.sourcePath) },
+    body: html,
   });
 
   if (!SKIP_PREVIEW) {
-    const previewUrl = `https://admin.hlx.page/preview/${ORG}/${REPO}/${BRANCH}/${page.previewPath}`;
-    await request(previewUrl, {
+    await request(`${API_HOST}/${ORG}/sites/${SITE}/preview/${page.previewPath}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers,
     });
   }
 
   if (SHOULD_PUBLISH) {
-    const liveUrl = `https://admin.hlx.page/live/${ORG}/${REPO}/${BRANCH}/${page.previewPath}`;
-    await request(liveUrl, {
+    await request(`${API_HOST}/${ORG}/sites/${SITE}/live/${page.previewPath}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers,
     });
   }
 
@@ -89,10 +85,10 @@ async function uploadPage(page, token) {
 }
 
 async function main() {
-  const manifest = await readJson(MANIFEST_PATH);
-  const token = DRY_RUN ? 'dry-run-token' : await resolveToken();
+  const manifest = JSON.parse(await readFile(MANIFEST_PATH, 'utf8'));
+  const token = DRY_RUN ? 'dry-run-token' : resolveToken();
   for (const page of manifest.pages) await uploadPage(page, token);
-  process.stdout.write(`Processed ${manifest.pages.length} DA document(s)\n`);
+  process.stdout.write(`Processed ${manifest.pages.length} document(s) via ${API_HOST}\n`);
 }
 
 main().catch((error) => {

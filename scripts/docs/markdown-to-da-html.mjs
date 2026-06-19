@@ -2,6 +2,7 @@
 
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { marked } from 'marked';
 
 const ROOT = path.resolve(new URL('../..', import.meta.url).pathname);
@@ -127,13 +128,14 @@ function parseFrontmatter(input) {
 
 function daPathToSourcePath(daPath) {
   const normalized = daPath.replace(/^\/+/, '').replace(/\/+$/, '');
-  if (!normalized || normalized === 'docs') return 'docs/index.html';
+  // The site root maps to the DA root index document.
+  if (!normalized) return 'index.html';
   return `${normalized}.html`;
 }
 
 function daPathToPreviewPath(daPath) {
   const normalized = daPath.replace(/^\/+/, '').replace(/\/+$/, '');
-  if (!normalized || normalized === 'docs') return 'docs/';
+  // The root preview/publish path is empty (the admin API addresses it as `/`).
   return normalized;
 }
 
@@ -157,13 +159,25 @@ function isSeparatorRow(line) {
   return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line.trim());
 }
 
+// A block table is a GFM pipe table whose header row names the block: the first
+// cell holds the block name (optionally with a `(variant)` suffix) and every
+// other header cell is empty (padding so the row matches the body's column
+// count). Genuine data tables have multiple non-empty header cells and fall
+// through to the generic `table` block instead.
 function isBlockTableHeader(cells) {
-  return cells.length > 1 && /^Pagination\s*(\([^)]+\))?$/i.test(cells[0]) && cells.slice(1).every((cell) => !cell);
+  return cells.length >= 1 && cells[0] !== '' && cells.slice(1).every((cell) => !cell);
+}
+
+// Replace `:name:` icon tokens with the EDS icon span that scripts.js / nx.js
+// decorate into `/img/icons/<name>.svg`. Restricted to tokens starting with a
+// letter so it never matches time strings (`12:30`) or URLs (`https://`).
+function decorateIconTokens(html) {
+  return html.replace(/:([a-z][a-z0-9_-]*):/g, '<span class="icon icon-$1"></span>');
 }
 
 function tableToBlockHtml(rows) {
   const className = blockClassName(rows[0][0]);
-  const bodyRows = rows.slice(1).map((row) => `  <div>\n${row.map((cell) => `    <div>${marked.parseInline(cell)}</div>`).join('\n')}\n  </div>`);
+  const bodyRows = rows.slice(1).map((row) => `  <div>\n${row.map((cell) => `    <div>${decorateIconTokens(marked.parseInline(cell))}</div>`).join('\n')}\n  </div>`);
   return `<div class="${escapeHtml(className)}">\n${bodyRows.join('\n')}\n</div>`;
 }
 
@@ -298,7 +312,11 @@ async function main() {
   process.stdout.write(`Generated ${manifest.length} DA HTML document(s) in .da\n`);
 }
 
-main().catch((error) => {
-  process.stderr.write(`${error.stack || error.message}\n`);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    process.stderr.write(`${error.stack || error.message}\n`);
+    process.exit(1);
+  });
+}
+
+export { transformBlockTables, blockClassName, isBlockTableHeader, decorateIconTokens };
