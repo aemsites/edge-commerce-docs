@@ -2,34 +2,13 @@
 
 The public documentation source lives as Markdown in `/docs`. The DA publishing pipeline converts those Markdown files into DA-compatible HTML body fragments and can upload them to Adobe Document Authoring (DA).
 
-## Generate schema reference sections
+## Schema reference (generated in helix-commerce-api)
 
-`docs/schema-reference.md` contains generated schema regions that are updated from the local `helix-commerce-api` checkout.
-
-```bash
-npm run docs:schema:generate
-```
-
-The generator reads:
-
-```text
-../helix-commerce-api/src/schemas/ProductBus.js
-../helix-commerce-api/src/schemas/Shipping.js
-```
-
-Set `HELIX_COMMERCE_API_PATH` to override the source repo location:
-
-```bash
-HELIX_COMMERCE_API_PATH=/path/to/helix-commerce-api npm run docs:schema:generate
-```
-
-Check for drift without writing:
-
-```bash
-npm run docs:schema:check
-```
-
-Only content between `<!-- GENERATED: ... -->` markers is rewritten. Surrounding narrative remains human-authored.
+The Product Bus schema tables in `docs/schema-reference.md` (between the
+`<!-- GENERATED: ... -->` markers) are generated from the API's runtime schemas
+in the **`helix-commerce-api`** repo (`npm run docs:schema` there) and synced
+here via PR. Don't hand-edit those regions or regenerate them from this repo;
+the surrounding narrative is human-authored.
 
 ## Build DA HTML
 
