@@ -572,14 +572,34 @@ body.dark-theme .link-list .link-list-title .icon img {
   filter: brightness(0) invert(1);
 }
 
-/* Per-page "Last updated" line (from document.lastModified), shown at the
-   bottom of the content on docs pages. */
-body.docs-template .doc-last-modified {
+/* Per-page footer on docs pages: "Edit this page on GitHub" (left) +
+   "Last updated" (right). */
+body.docs-template .doc-pagefooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-top: 40px;
   padding-top: 16px;
   border-top: 1px solid var(--doc-border-soft);
   font-size: 12.5px;
+}
+
+body.docs-template .doc-edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: light-dark(var(--dark-main-link), var(--light-main-link));
+}
+
+body.docs-template .doc-edit-icon {
+  width: 15px;
+  height: 15px;
+}
+
+body.docs-template .doc-last-modified {
+  margin: 0 0 0 auto;
   font-style: italic;
   color: light-dark(var(--s2-gray-600), var(--s2-gray-500));
-  text-align: right;
 }
