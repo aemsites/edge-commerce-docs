@@ -47,10 +47,10 @@
 
   --light-color: #fff;
   --light-link: #e6e6e6;
-  --light-main-link: #ea998f;
+  --light-main-link: #0367e0; /* hyperlink: Adobe blue, same in light + dark */
   --dark-color: #0e0e0e;
   --dark-link: #3f3f3f;
-  --dark-main-link: #d73220;
+  --dark-main-link: #0367e0; /* hyperlink: Adobe blue, same in light + dark */
 
   /* Spectrum 2 Colors */
   --s2-cyan-800: #0086b4;
@@ -570,4 +570,16 @@ body.dark-theme .cards .card-icon img,
 body.dark-theme .flow .flow-icon img,
 body.dark-theme .link-list .link-list-title .icon img {
   filter: brightness(0) invert(1);
+}
+
+/* Per-page "Last updated" line (from document.lastModified), shown at the
+   bottom of the content on docs pages. */
+body.docs-template .doc-last-modified {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--doc-border-soft);
+  font-size: 12.5px;
+  font-style: italic;
+  color: light-dark(var(--s2-gray-600), var(--s2-gray-500));
+  text-align: right;
 }

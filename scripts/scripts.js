@@ -47,6 +47,22 @@ function detectLabs() {
   firstSection.prepend(block);
 }
 
+// Append a "Last updated" line to docs pages, read from the served document's
+// Last-Modified header (the content-bus modified time on EDS).
+function decorateLastModified() {
+  if (!document.body.classList.contains('docs-template')) return;
+  const when = new Date(document.lastModified);
+  if (Number.isNaN(when.getTime())) return;
+  const yyyy = when.getFullYear();
+  const mm = String(when.getMonth() + 1).padStart(2, '0');
+  const dd = String(when.getDate()).padStart(2, '0');
+  const p = document.createElement('p');
+  p.className = 'doc-last-modified';
+  p.innerHTML = `Last updated <time datetime="${when.toISOString()}">${yyyy}-${mm}-${dd}</time>`;
+  const target = document.querySelector('main .section') || document.querySelector('main');
+  target?.append(p);
+}
+
 // Make content headings deep-linkable. Each heading with an id gets an anchor
 // link so clicking it updates the URL hash (and copies a sharable link).
 function decorateHeadingAnchors() {
@@ -113,6 +129,7 @@ export async function loadPage() {
 
   await loadArea();
   decorateHeadingAnchors();
+  decorateLastModified();
   await loadNav('pagenav');
 }
 

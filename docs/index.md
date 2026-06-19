@@ -11,12 +11,12 @@ sourceFormat: markdown
 <div>
 <div>
 <p><code>Documentation</code></p>
-<h1>Product Bus Documentation</h1>
+<h1>Edge Commerce</h1>
 <p>Everything you need to build on the Helix Commerce ecosystem — from your first product ingestion to advanced rendering, indexing, and promotions.</p>
 <p><a href="/getting-started">Get started</a></p>
 <p><a href="/api/get-config.html">API reference</a></p>
 </div>
-<div></div>
+<div><img src="https://main--edge-commerce-docs--aemsites.aem.page/media_19545b8154be669cdc0c6fce225a73d7c01210009.jpg?width=2000&format=webply&optimize=medium" alt="Edge Commerce documentation illustration"></div>
 </div>
 </div>
 
@@ -170,35 +170,6 @@ Suggested reading order depending on what you're building.
 <div>
 <h3>System administrators</h3>
 <ol><li><a href="/overview">Overview</a> — system architecture</li><li><a href="/network">Mixer configuration</a> — traffic routing</li><li><a href="/caching">Caching strategy</a> — invalidation &amp; TTLs</li><li><a href="/security">Security</a> — API keys &amp; validation</li></ol>
-</div>
-</div>
-</div>
-
-## Additional resources
-
-<div class="cards resources">
-<div>
-<div>
-<h3>:menu_book: Documentation</h3>
-<p><a href="https://github.com/adobe-rnd/helix-commerce-api">Helix Commerce API README</a></p>
-<p><a href="https://github.com/adobe-rnd/helix-product-pipeline">Product Pipeline README</a></p>
-<p><a href="https://github.com/adobe-rnd/helix-mixer">Helix Mixer README</a></p>
-</div>
-</div>
-<div>
-<div>
-<h3>:terminal: Repositories</h3>
-<p><a href="https://github.com/adobe-rnd/helix-commerce-api"><code>helix-commerce-api</code></a></p>
-<p><a href="https://github.com/adobe-rnd/helix-product-pipeline"><code>helix-product-pipeline</code></a></p>
-<p><a href="https://github.com/adobe-rnd/helix-mixer"><code>helix-mixer</code></a></p>
-</div>
-</div>
-<div>
-<div>
-<h3>:forum: Support</h3>
-<p><strong>Issues</strong> — submit to the GitHub repos</p>
-<p><strong>Adobe team</strong> — reach out on Slack</p>
-<p><strong>Community</strong> — Edge Delivery channels</p>
 </div>
 </div>
 </div>
