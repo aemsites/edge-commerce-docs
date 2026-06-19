@@ -12,3 +12,6 @@ helix-importer-ui
 .hlx/.da-token.json
 
 content
+
+.env
+.env.local

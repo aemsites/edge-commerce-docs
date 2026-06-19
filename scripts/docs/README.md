@@ -54,62 +54,57 @@ The generated HTML follows the DA/Edge Delivery Services content contract:
 - supported Markdown block tables, such as `Pagination (Contained)`, converted to canonical div-form EDS blocks
 - fenced Markdown code blocks converted to the canonical `code` block used by the docs template
 
-## Push to DA
+## Publish to the source bus (Helix 6)
 
-### Get a DA token
+Content, preview, and publish all go through the unified Helix 6 admin API at `api.aem.live`, authenticated with a **Helix admin API key** (sent as `x-auth-token`).
 
-Pushing calls the DA admin API, which needs a valid Adobe IMS token. Tokens last ~1 hour, so you'll need to refresh when it expires (`DA token expired …`).
+### Get a Helix admin API key
 
-The simplest way to authenticate is to run the AEM CLI's `content clone` against this repo's DA org/site. It opens a browser login and caches the token to `~/.aem/da-token.json`, which the push script reads automatically (lookup order below):
-
-```bash
-npx -y @adobe/aem-cli content clone --path /
-```
-
-Complete the Adobe IMS login in the browser, then run the push normally:
+Create a key with the `publish` role for this site:
 
 ```bash
-npm run docs:da:push
+curl -X POST "https://admin.hlx.page/config/aemsites/sites/edge-commerce-docs/apiKeys.json" \
+  -H "x-auth-token: {an admin token}" \
+  -H "content-type: application/json" \
+  -d '{ "description": "docs publish", "roles": ["publish"] }'
 ```
 
-If you already have a raw token (for CI or a one-off), set it directly instead — `DA_TOKEN` takes precedence over the cache:
+Copy the returned `value` (a JWT). Helix 6 only honors keys listed in `access.admin.apiKeyId`, so also add the key's `jti` there (the managed `apiKeys.json` auto-enable is not read by Helix 6 yet — fetch the current config, merge, then write it back):
 
 ```bash
-DA_TOKEN={your-token} npm run docs:da:push
+curl -X POST "https://admin.hlx.page/config/aemsites/sites/edge-commerce-docs.json" \
+  -H "x-auth-token: {an admin token}" \
+  -H "content-type: application/json" \
+  -d '{ "access": { "admin": { "apiKeyId": ["{jti}"] } } }'
 ```
+
+### Store the key
+
+Put it in a gitignored `.env` at the repo root; the push script loads it automatically:
+
+```bash
+echo 'HLX_ADMIN_API_KEY=your-key' > .env
+```
+
+In CI, provide it as the `HLX_ADMIN_API_KEY` secret.
 
 ### Run the push
 
-With a cached token (from the step above) this is all you need:
-
 ```bash
-npm run docs:da:push
+npm run docs:da:push              # build + upload source + preview
+npm run docs:da:push -- --publish # also publish (go live)
 ```
 
-Defaults:
-
-```text
-DA_ORG=aemsites
-DA_REPO=edge-commerce-docs
-DA_BRANCH=main
-```
-
-`docs:da:push` runs `docs:da:build`, uploads each generated HTML file and the shared header fragment to `admin.da.live/source`, and triggers preview via `admin.hlx.page/preview`.
-
-Optional flags can be passed after `--`:
+Other flags:
 
 ```bash
 npm run docs:da:push -- --dry-run
 npm run docs:da:push -- --no-preview
-npm run docs:da:push -- --publish
 ```
 
-Token lookup order:
+`docs:da:push` runs `docs:da:build`, then PUTs each generated file (raw body) to `api.aem.live/{org}/sites/{site}/source/...` and triggers preview (and publish with `--publish`).
 
-1. `DA_TOKEN` environment variable
-2. `DA_TOKEN_PATH` environment variable
-3. `.hlx/.da-token.json`
-4. `~/.aem/da-token.json`
+Overrides: `DA_ORG`, `DA_SITE` (defaults `aemsites` / `edge-commerce-docs`), `HELIX_API_HOST` (default `https://api.aem.live`).
 
 ## Path mapping
 
