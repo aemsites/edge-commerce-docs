@@ -28,6 +28,7 @@
         <p class="api-eyebrow">Orders</p>
         <h1>Estimate an order</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders/preview</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
         <p>Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers.</p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -61,6 +62,7 @@
             <tr><td><code>paymentMethod</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>couponCode</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>giftMessage</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>customerTimezone</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>custom</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>couponSource</code></td><td><code>string</code></td><td>no</td><td></td></tr>
           </table>
@@ -98,6 +100,7 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/orders/preview</span></div>
           <pre><code class="language-json">{
+  "locale": "en-US",
   "items": [
     {
       "sku": "sku1",

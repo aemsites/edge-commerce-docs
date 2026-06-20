@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Create an order — Helix Commerce API</title>
-    <meta name="description" content="Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. reCAPTCHA-gated for unauthenticated callers.">
+    <meta name="description" content="Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. The optional customerTimezone field stores the shopper browser timezone for customer-facing uses, such as formatting order confirmation email timestamps. reCAPTCHA-gated for unauthenticated callers.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,7 +28,8 @@
         <p class="api-eyebrow">Orders</p>
         <h1>Create an order</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders</code></p>
-        <p>Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. reCAPTCHA-gated for unauthenticated callers.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. The optional customerTimezone field stores the shopper browser timezone for customer-facing uses, such as formatting order confirmation email timestamps. reCAPTCHA-gated for unauthenticated callers.</p>
         <p class="permissions">Required permissions: <code>orders:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -62,6 +63,7 @@
             <tr><td><code>paymentMethod</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>couponCode</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>giftMessage</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>customerTimezone</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>custom</code></td><td><code>object</code></td><td>no</td><td></td></tr>
           </table>
         </div>
@@ -125,6 +127,7 @@
   },
   "country": "us",
   "locale": "en-US",
+  "customerTimezone": "America/Los_Angeles",
   "items": [
     {
       "name": "Product 1",
