@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Compute an estimate — Helix Commerce API</title>
-    <meta name="description" content="Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`.">
+    <meta name="description" content="Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,7 +28,8 @@
         <p class="api-eyebrow">Estimate</p>
         <h1>Compute an estimate</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/estimate/{estimateType}</code></p>
-        <p>Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -72,6 +73,7 @@
           <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/estimate/{estimateType}</span></div>
           <pre><code class="language-json">{
   "country": "US",
+  "locale": "en-US",
   "shipping": {
     "country": "US",
     "state": "CA"
