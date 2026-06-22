@@ -2,13 +2,17 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.40.4",
+    "version": "2.42.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
     {
-      "url": "https://commerce.adobe.io",
+      "url": "https://api.adobecommerce.live",
       "description": "Production"
+    },
+    {
+      "url": "https://api-stage.adobecommerce.live",
+      "description": "Staging"
     }
   ],
   "tags": [
@@ -1413,7 +1417,7 @@
       "post": {
         "operationId": "createOrder",
         "summary": "Create an order",
-        "description": "Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. reCAPTCHA-gated for unauthenticated callers.",
+        "description": "Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. The optional customerTimezone field stores the shopper browser timezone for customer-facing uses, such as formatting order confirmation email timestamps. reCAPTCHA-gated for unauthenticated callers.",
         "parameters": [
           {
             "name": "Authorization",
@@ -1541,6 +1545,7 @@
                     },
                     "country": "us",
                     "locale": "en-US",
+                    "customerTimezone": "America/Los_Angeles",
                     "items": [
                       {
                         "name": "Product 1",
@@ -1844,6 +1849,7 @@
               "examples": {
                 "example": {
                   "value": {
+                    "locale": "en-US",
                     "items": [
                       {
                         "sku": "sku1",
@@ -2751,13 +2757,13 @@
       "get": {
         "operationId": "getCustomerSubresource",
         "summary": "Retrieve an address or order",
-        "description": "Retrieves a single address (requires ownership of the email) or a single order. Order lookup is intentionally unauthenticated — knowing email + orderId is treated as sufficient proof for guest order-status lookups.",
+        "description": "Retrieves a single address (`subroute=addresses`, requires ownership of the email) or a single order (`subroute=orders`). Order lookup is intentionally unauthenticated: knowing email + orderId is treated as sufficient proof for guest order-status lookups, so a bearer token is optional on this operation.",
         "parameters": [
           {
             "name": "Authorization",
             "in": "header",
-            "required": true,
-            "description": "Bearer token. `Bearer <jwt>`.",
+            "required": false,
+            "description": "Bearer token. `Bearer <jwt>`. Required for address lookups; omit for guest order-status lookups.",
             "schema": {
               "type": "string"
             }
@@ -2790,7 +2796,8 @@
         "security": [
           {
             "bearerAuth": []
-          }
+          },
+          {}
         ],
         "tags": [
           "Customers"
@@ -2902,7 +2909,7 @@
       "post": {
         "operationId": "createEstimate",
         "summary": "Compute an estimate",
-        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`.",
+        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.",
         "responses": {
           "200": {
             "description": "The computed estimate. Body shape varies by `estimateType`.",
@@ -2972,6 +2979,7 @@
                 "example": {
                   "value": {
                     "country": "US",
+                    "locale": "en-US",
                     "shipping": {
                       "country": "US",
                       "state": "CA"
@@ -4814,6 +4822,11 @@
             "type": "string",
             "maxLength": 250
           },
+          "customerTimezone": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_+\\-/]+$",
+            "maxLength": 100
+          },
           "custom": {
             "type": "object",
             "additionalProperties": {
@@ -4881,6 +4894,9 @@
                 "maxLength": 255
               },
               "isDefault": {
+                "type": "boolean"
+              },
+              "isValidated": {
                 "type": "boolean"
               }
             },
@@ -5085,6 +5101,11 @@
             "type": "string",
             "maxLength": 250
           },
+          "customerTimezone": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_+\\-/]+$",
+            "maxLength": 100
+          },
           "custom": {
             "type": "object",
             "additionalProperties": {
@@ -5172,6 +5193,9 @@
             "maxLength": 255
           },
           "isDefault": {
+            "type": "boolean"
+          },
+          "isValidated": {
             "type": "boolean"
           }
         },

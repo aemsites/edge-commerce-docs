@@ -28,6 +28,7 @@
         <p class="api-eyebrow">Payments</p>
         <h1>Initiate a payment</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders/{orderId}/payments</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
         <p>Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result (synchronous charge outcome or a requires_action redirect). No authentication required.</p>
         <h2>Path parameters</h2>
         <div class="table">

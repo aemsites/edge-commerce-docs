@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Retrieve an address or order — Helix Commerce API</title>
-    <meta name="description" content="Retrieves a single address (requires ownership of the email) or a single order. Order lookup is intentionally unauthenticated — knowing email + orderId is treated as sufficient proof for guest order-status lookups.">
+    <meta name="description" content="Retrieves a single address (`subroute=addresses`, requires ownership of the email) or a single order (`subroute=orders`). Order lookup is intentionally unauthenticated: knowing email + orderId is treated as sufficient proof for guest order-status lookups, so a bearer token is optional on this operation.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,7 +28,8 @@
         <p class="api-eyebrow">Customers</p>
         <h1>Retrieve an address or order</h1>
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/customers/{email}/{subroute}/{resourceId}</code></p>
-        <p>Retrieves a single address (requires ownership of the email) or a single order. Order lookup is intentionally unauthenticated — knowing email + orderId is treated as sufficient proof for guest order-status lookups.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Retrieves a single address (`subroute=addresses`, requires ownership of the email) or a single order (`subroute=orders`). Order lookup is intentionally unauthenticated: knowing email + orderId is treated as sufficient proof for guest order-status lookups, so a bearer token is optional on this operation.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -44,7 +45,7 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. `Bearer &lt;jwt&gt;`. Required for address lookups; omit for guest order-status lookups.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
