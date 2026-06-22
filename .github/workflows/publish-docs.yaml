@@ -1,0 +1,36 @@
+name: Publish docs
+
+# On merge to main, build the narrative docs (Markdown -> DA HTML) and publish
+# them to the Helix 6 source bus: source PUT + preview + live. API reference
+# HTML and nav.html are code-bus assets and deploy via the normal EDS code
+# sync, so they are intentionally not handled here.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'scripts/docs/**'
+      - '.github/workflows/publish-docs.yaml'
+  workflow_dispatch:
+
+# Never let two publishes run concurrently (avoids racing source writes).
+concurrency:
+  group: publish-docs
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build and publish docs to the source bus
+        run: npm run docs:da:push -- --publish
+        env:
+          # Helix admin API key (publish role; jti allow-listed in
+          # access.admin.apiKeyId). Add it under Settings -> Secrets.
+          HLX_ADMIN_API_KEY: ${{ secrets.HLX_ADMIN_API_KEY }}
