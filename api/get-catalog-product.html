@@ -58,39 +58,39 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>sku</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
-            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
-            <tr><td><code>urlKey</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>description</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>name</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
-            <tr><td><code>metaTitle</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>metaDescription</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>gtin</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>url</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>brand</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>type</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>availability</code></td><td><code>"BackOrder" | "Discontinued" | "InStock" | "InStoreOnly" | "LimitedAvailability" | "MadeToOrder" | "OnlineOnly" | "OutOfStock" | "PreOrder" | "PreSale" | "Reserved" | "SoldOut"</code></td><td>no</td><td></td></tr>
-            <tr><td><code>availabilityDate</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>sku</code></td><td><code>string</code></td><td>yes</td><td>Unique stock-keeping unit identifier.</td></tr>
+            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>URL path for this product (e.g. "/products/my-product").</td></tr>
+            <tr><td><code>urlKey</code></td><td><code>string</code></td><td>no</td><td>URL key used to construct the canonical path.</td></tr>
+            <tr><td><code>description</code></td><td><code>string</code></td><td>no</td><td>Full product description.</td></tr>
+            <tr><td><code>name</code></td><td><code>string</code></td><td>yes</td><td>Display name for the product.</td></tr>
+            <tr><td><code>metaTitle</code></td><td><code>string</code></td><td>no</td><td>HTML meta title override.</td></tr>
+            <tr><td><code>metaDescription</code></td><td><code>string</code></td><td>no</td><td>HTML meta description override.</td></tr>
+            <tr><td><code>gtin</code></td><td><code>string</code></td><td>no</td><td>Global Trade Item Number (barcode).</td></tr>
+            <tr><td><code>url</code></td><td><code>string</code></td><td>no</td><td>Canonical absolute URL for the product.</td></tr>
+            <tr><td><code>brand</code></td><td><code>string</code></td><td>no</td><td>Brand or manufacturer name.</td></tr>
+            <tr><td><code>type</code></td><td><code>string</code></td><td>no</td><td>Product type identifier (e.g. "simple", "configurable", "bundle").</td></tr>
+            <tr><td><code>availability</code></td><td><code>"BackOrder" | "Discontinued" | "InStock" | "InStoreOnly" | "LimitedAvailability" | "MadeToOrder" | "OnlineOnly" | "OutOfStock" | "PreOrder" | "PreSale" | "Reserved" | "SoldOut"</code></td><td>no</td><td>schema.org availability status for a product or offer.</td></tr>
+            <tr><td><code>availabilityDate</code></td><td><code>string</code></td><td>no</td><td>ISO 8601 date when the product becomes available.</td></tr>
             <tr><td><code>price</code></td><td><code>object</code></td><td>no</td><td>Price information for a product or variant.</td></tr>
-            <tr><td><code>itemCondition</code></td><td><code>"DamagedCondition" | "NewCondition" | "RefurbishedCondition" | "UsedCondition"</code></td><td>no</td><td></td></tr>
-            <tr><td><code>metadata</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>options</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
-            <tr><td><code>aggregateRating</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>specifications</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>images</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
-            <tr><td><code>variants</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
-            <tr><td><code>jsonld</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>itemCondition</code></td><td><code>"DamagedCondition" | "NewCondition" | "RefurbishedCondition" | "UsedCondition"</code></td><td>no</td><td>schema.org item condition.</td></tr>
+            <tr><td><code>metadata</code></td><td><code>object</code></td><td>no</td><td>Arbitrary key/value metadata attached to the product.</td></tr>
+            <tr><td><code>options</code></td><td><code>object[]</code></td><td>no</td><td>Configurable options available for this product (e.g. Color, Size).</td></tr>
+            <tr><td><code>aggregateRating</code></td><td><code>object</code></td><td>no</td><td>Aggregate customer rating for schema.org structured data.</td></tr>
+            <tr><td><code>specifications</code></td><td><code>string</code></td><td>no</td><td>Freeform product specifications (HTML or plain text).</td></tr>
+            <tr><td><code>images</code></td><td><code>object[]</code></td><td>no</td><td>Product images.</td></tr>
+            <tr><td><code>variants</code></td><td><code>object[]</code></td><td>no</td><td>Available variants for a configurable product.</td></tr>
+            <tr><td><code>jsonld</code></td><td><code>string</code></td><td>no</td><td>Full JSON-LD override. When present, replaces the auto-generated structured data.</td></tr>
             <tr><td><code>custom</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>jsonldExtensions</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>jsonldExtensions</code></td><td><code>object</code></td><td>no</td><td>Additional schema.org properties shallow-merged into the auto-generated Product JSON-LD object. Ignored when jsonld override is used. Max 32,000 characters when serialized.</td></tr>
             <tr><td><code>shipping</code></td><td><code>string | object | object[]</code></td><td>no</td><td></td></tr>
-            <tr><td><code>bundleItems</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
-            <tr><td><code>feeds</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>weight</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>shippingDimensions</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>taxCode</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>taxData</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>country</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>locale</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>bundleItems</code></td><td><code>object[]</code></td><td>no</td><td>Bundle composition. Presence of this array (regardless of contents) marks this product as a bundle.</td></tr>
+            <tr><td><code>feeds</code></td><td><code>object</code></td><td>no</td><td>Feed configuration for product distribution.</td></tr>
+            <tr><td><code>weight</code></td><td><code>object</code></td><td>no</td><td>Product weight for display and JSON-LD structured data.</td></tr>
+            <tr><td><code>shippingDimensions</code></td><td><code>object</code></td><td>no</td><td>Physical dimensions used for shipping rate calculation.</td></tr>
+            <tr><td><code>taxCode</code></td><td><code>string</code></td><td>no</td><td>Tax classification code for this product.</td></tr>
+            <tr><td><code>taxData</code></td><td><code>object</code></td><td>no</td><td>Supplementary tax data passed to the tax provider.</td></tr>
+            <tr><td><code>country</code></td><td><code>string</code></td><td>no</td><td>ISO 3166-1 alpha-2 store country code.</td></tr>
+            <tr><td><code>locale</code></td><td><code>string</code></td><td>no</td><td>BCP-47 locale tag for this product entry.</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> The path is malformed.</h3>

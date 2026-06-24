@@ -57,39 +57,39 @@ The main product schema supports rich product data with HTML content, variants, 
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `sku` | string | Yes | Unique product identifier. |
-| `path` | string | Yes | Product URL path used for path-based storage. max length 900; pattern constrained |
-| `urlKey` | string | No | Human-readable product identifier for URL generation. excludes matching pattern |
-| `description` | string | No | Full product description. HTML content is supported. |
+| `sku` | string | Yes | Unique stock-keeping unit identifier. |
+| `path` | string | Yes | URL path for this product (e.g. "/products/my-product"). max length 900; pattern constrained |
+| `urlKey` | string | No | URL key used to construct the canonical path. excludes matching pattern |
+| `description` | string | No | Full product description. |
 | `name` | string | Yes | Display name for the product. |
-| `metaTitle` | string | No | SEO title tag content. |
-| `metaDescription` | string | No | SEO meta description. |
-| `gtin` | string | No | Barcode or Global Trade Item Number. |
-| `url` | string | No | Canonical product page URL; used directly in sitemap output when present. |
+| `metaTitle` | string | No | HTML meta title override. |
+| `metaDescription` | string | No | HTML meta description override. |
+| `gtin` | string | No | Global Trade Item Number (barcode). |
+| `url` | string | No | Canonical absolute URL for the product. |
 | `brand` | string | No | Brand or manufacturer name. |
-| `type` | string | No | Product type classification. |
-| `availability` | [SchemaOrgAvailability](#schemaorgavailability) | No | Stock status using schema.org availability vocabulary. |
-| `availabilityDate` | string | No | Date when the product becomes available. |
-| `price` | [ProductBusPrice](#productbusprice) | No | Price information for the product. |
-| `itemCondition` | [SchemaOrgItemCondition](#schemaorgitemcondition) | No | Product condition using schema.org item condition vocabulary. |
-| `metadata` | Record<string, string> | No | Generic metadata map rendered as meta tags in HTML output. |
-| `options` | [ProductBusOption](#productbusoption)[] | No | Configurable product options, such as color or size. |
-| `aggregateRating` | [AggregateRating](#aggregaterating) | No | Product review and rating information. |
-| `specifications` | string | No | Product specifications content. |
-| `images` | [ProductBusMedia](#productbusmedia)[] | No | Media gallery for product images and videos. |
-| `variants` | [ProductBusVariant](#productbusvariant)[] | No | Product variants for configurable products. |
-| `jsonld` | string | No | Override "escape hatch" for json-ld max length 128000 |
-| `custom` | Record<string, any> | No | Additional data that can be retrieved via .json API |
-| `jsonldExtensions` | Record<string, any> | No | Additional schema.org properties shallow-merged into the auto-generated Product JSON-LD object. Intended for additive fields (e.g. potentialAction, aggregateRating, review) but can overwrite any pipeline-generated key. Ignored when jsonld override is used. Max 32,000 characters when serialized. max length 32000 |
-| `shipping` | string \| object \| object[] | No | Shipping options, as string, object, or array of objects. If an array, each object contains shipping information for one option. |
-| `bundleItems` | object[] | No | Bundle composition. When present (regardless of contents), marks this product as a bundle: the cart treats it as a single purchasable SKU, and the Commerce API expands it into component line items at order preview for tax calculation. Bundle item prices must sum to this product's price. |
+| `type` | string | No | Product type identifier (e.g. "simple", "configurable", "bundle"). |
+| `availability` | [SchemaOrgAvailability](#schemaorgavailability) | No | schema.org availability status for a product or offer. |
+| `availabilityDate` | string | No | ISO 8601 date when the product becomes available. |
+| `price` | [ProductBusPrice](#productbusprice) | No | Price information for a product or variant. |
+| `itemCondition` | [SchemaOrgItemCondition](#schemaorgitemcondition) | No | schema.org item condition. |
+| `metadata` | Record<string, string> | No | Arbitrary key/value metadata attached to the product. |
+| `options` | [ProductBusOption](#productbusoption)[] | No | Configurable options available for this product (e.g. Color, Size). |
+| `aggregateRating` | [AggregateRating](#aggregaterating) | No | Aggregate customer rating for schema.org structured data. |
+| `specifications` | string | No | Freeform product specifications (HTML or plain text). |
+| `images` | [ProductBusMedia](#productbusmedia)[] | No | Product images. |
+| `variants` | [ProductBusVariant](#productbusvariant)[] | No | Available variants for a configurable product. |
+| `jsonld` | string | No | Full JSON-LD override. When present, replaces the auto-generated structured data. max length 128000 |
+| `custom` | Record<string, any> | No |  |
+| `jsonldExtensions` | Record<string, any> | No | Additional schema.org properties shallow-merged into the auto-generated Product JSON-LD object. Ignored when jsonld override is used. Max 32,000 characters when serialized. max length 32000 |
+| `shipping` | string \| object \| object[] | No | Shipping options, as a packed string, a single option object, or an array of option objects. |
+| `bundleItems` | object[] | No | Bundle composition. Presence of this array (regardless of contents) marks this product as a bundle. |
 | `feeds` | object | No | Feed configuration for product distribution. |
 | `weight` | [ProductBusWeight](#productbusweight) | No | Product weight for display and JSON-LD structured data. |
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
 | `taxCode` | string | No | Tax classification code for this product. max length 255 |
-| `taxData` | Record<string, any> | No | Free-form map of supplementary tax data |
-| `country` | string | No | Country code for country-scoped product data. pattern constrained |
-| `locale` | string | No | Locale code for locale-scoped product data. pattern constrained |
+| `taxData` | Record<string, any> | No | Supplementary tax data passed to the tax provider. |
+| `country` | string | No | ISO 3166-1 alpha-2 store country code. pattern constrained |
+| `locale` | string | No | BCP-47 locale tag for this product entry. pattern constrained |
 
 <!-- GENERATED: ProductBusEntry:end -->
 
@@ -144,20 +144,20 @@ Represents a variant of a configurable product (e.g., different color or size). 
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `sku` | string | Yes | Unique variant identifier. |
-| `name` | string | Yes | Display name for the variant. |
-| `price` | [ProductBusPrice](#productbusprice) | No | Variant-specific pricing; falls back to the parent product price when omitted. |
-| `url` | string | Yes | Canonical variant page URL. |
-| `images` | [ProductBusMedia](#productbusmedia)[] | Yes | Media gallery for the variant. |
-| `gtin` | string | No | Barcode or Global Trade Item Number for the variant. |
-| `description` | string | No | Variant-specific description. HTML content is supported. |
-| `availability` | [SchemaOrgAvailability](#schemaorgavailability) | No | Stock status using schema.org availability vocabulary. |
-| `options` | object[] | No |  |
-| `itemCondition` | [SchemaOrgItemCondition](#schemaorgitemcondition) | No | Variant condition using schema.org item condition vocabulary. |
-| `custom` | Record<string, any> | No | Custom data bag for variant-specific data. |
-| `jsonldExtensions` | Record<string, any> | No | Additional schema.org properties shallow-merged into this variant's Offer in the auto-generated JSON-LD. Ignored when the product-level jsonld override is used. Max 16,000 characters when serialized. max length 16000 |
-| `weight` | [ProductBusWeight](#productbusweight) | No | Variant weight; inherits the parent product value when omitted. |
-| `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Variant shipping dimensions; inherits the parent product value when omitted. |
+| `sku` | string | Yes | Unique stock-keeping unit identifier. |
+| `name` | string | Yes | Display name for this variant. |
+| `price` | [ProductBusPrice](#productbusprice) | No | Price information for a product or variant. |
+| `url` | string | Yes | Canonical URL for this variant. |
+| `images` | [ProductBusMedia](#productbusmedia)[] | Yes | Images for this variant. |
+| `gtin` | string | No | Global Trade Item Number (barcode). |
+| `description` | string | No | Variant-specific description. |
+| `availability` | [SchemaOrgAvailability](#schemaorgavailability) | No | schema.org availability status for a product or offer. |
+| `options` | object[] | No | Option values that identify this variant (e.g. color=Red, size=Large). |
+| `itemCondition` | [SchemaOrgItemCondition](#schemaorgitemcondition) | No | schema.org item condition. |
+| `custom` | Record<string, any> | No |  |
+| `jsonldExtensions` | Record<string, any> | No | Additional schema.org properties shallow-merged into this variant's Offer in the auto-generated JSON-LD. Max 16,000 characters when serialized. max length 16000 |
+| `weight` | [ProductBusWeight](#productbusweight) | No | Product weight for display and JSON-LD structured data. |
+| `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
 
 <!-- GENERATED: ProductBusVariant:end -->
 
@@ -188,7 +188,7 @@ Product weight for use in JSON-LD structured data. Rendered as a schema.org `Qua
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `value` | number | Yes | Numeric weight value. |
-| `unit` | `kg` \| `g` \| `lb` \| `oz` | Yes | Weight unit. Maps to UN/CEFACT codes in JSON-LD output. |
+| `unit` | `kg` \| `g` \| `lb` \| `oz` | Yes | Unit of weight measurement. |
 
 <!-- GENERATED: ProductBusWeight:end -->
 
@@ -203,11 +203,11 @@ Shipping dimensions for a product or variant, emitted as `Offer.shippingDetails`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `weight` | [ProductBusWeight](#productbusweight) | No | Package weight. |
-| `height` | number | No | Package height. |
-| `width` | number | No | Package width. |
-| `depth` | number | No | Package depth. |
-| `dimensionsUnit` | `cm` \| `mm` \| `in` | No | Unit for height, width, and depth. Maps to UN/CEFACT codes in JSON-LD. |
+| `weight` | [ProductBusWeight](#productbusweight) | No | Product weight for display and JSON-LD structured data. |
+| `height` | number | No | Height in the declared dimensionsUnit. |
+| `width` | number | No | Width in the declared dimensionsUnit. |
+| `depth` | number | No | Depth in the declared dimensionsUnit. |
+| `dimensionsUnit` | `cm` \| `mm` \| `in` | No | Unit of dimension measurement. |
 
 <!-- GENERATED: ShippingDimensions:end -->
 
@@ -222,11 +222,11 @@ Media asset (image or video) associated with a product.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `url` | string | Yes | Media URL (external or relative path after processing). |
-| `label` | string | No | Label or alt text. |
-| `filename` | string | No | Human-readable filename segment for the rendered media URL. pattern constrained |
-| `roles` | string[] | No | Roles such as "thumbnail", "small", or "large". |
-| `video` | string | No |  |
+| `url` | string | Yes | Absolute URL of the image. |
+| `label` | string | No | Accessible alt text for the image. |
+| `filename` | string | No | Original filename of the image. pattern constrained |
+| `roles` | string[] | No | Semantic roles assigned to this image, e.g. "thumbnail". |
+| `video` | string | No | Absolute URL of an associated video asset, when this media entry represents a video. |
 
 <!-- GENERATED: ProductBusMedia:end -->
 
@@ -245,10 +245,10 @@ Configurable product option (e.g., color, size, finish).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | No | Option identifier. |
-| `label` | string | Yes | Display label. |
-| `position` | number | No | Sort order. |
-| `values` | object[] | Yes | Available option values. |
+| `id` | string | No | Option identifier, typically matching the attribute code. |
+| `label` | string | Yes | Display label for the option group (e.g. "Color"). |
+| `position` | number | No | Sort order for display. |
+| `values` | object[] | Yes | Available values for this option. |
 
 <!-- GENERATED: ProductBusOption:end -->
 
@@ -261,10 +261,10 @@ Product review/rating information.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `ratingValue` | string | No | Average rating, e.g. "4.5". |
-| `reviewCount` | string | No | Number of reviews; converts to an integer in JSON-LD. |
-| `bestRating` | string | No | Maximum possible rating, e.g. "5". |
-| `worstRating` | string | No | Minimum possible rating, e.g. "1". |
+| `ratingValue` | string | No | Average rating value. Numeric string; converted to a number in JSON-LD. |
+| `reviewCount` | string | No | Total number of ratings. Numeric string; converted to an integer in JSON-LD. |
+| `bestRating` | string | No | Best possible rating. Numeric string. |
+| `worstRating` | string | No | Worst possible rating. Numeric string. |
 
 <!-- GENERATED: AggregateRating:end -->
 
@@ -364,18 +364,18 @@ A single line item in an order. Bundle parents carry their resolved components i
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | No | Product name. |
-| `note` | string | No | Free-form note for this line item. |
-| `sku` | string | Yes | Product SKU. |
-| `path` | string | Yes | Product URL path. |
-| `imageUrl` | string | No | Product image URL. |
-| `productUrl` | string | No | Product page URL. |
+| `name` | string | No | Display name for this line item. |
+| `note` | string | No | Optional customer note for this line item. |
+| `sku` | string | Yes | SKU of the product. |
+| `path` | string | Yes | Product page path. |
+| `imageUrl` | string | No | Product image URL for order confirmation display. |
+| `productUrl` | string | No | Canonical product URL. |
 | `quantity` | number | Yes | Quantity ordered. |
-| `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for the line item. |
+| `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
-| `selectedOptions` | [SelectedOption](#selectedoption)[] | No | Option values selected by the customer for this line. Used at order preview to resolve which variant of each configurable bundle item to ship. |
-| `bundleItems` | [NestedBundleItem](#nestedbundleitem)[] | No | For bundle parents: the resolved component line items, nested on the parent. Not included in the order's charged subtotal — the parent line's `price` represents the chargeable value. Distinct from `ProductBusEntry.bundleItems`, which is the template form (can include configurable `variants`). |
-| `custom` | Record<string, any> | No | Custom line-item data preserved on the order. |
+| `selectedOptions` | [SelectedOption](#selectedoption)[] | No | Option values selected by the customer. |
+| `bundleItems` | [NestedBundleItem](#nestedbundleitem)[] | No | Resolved bundle component line items nested on a bundle parent. Not counted toward the order subtotal -- the parent price is the chargeable value. |
+| `custom` | Record<string, any> | No | Arbitrary custom data for this line item. |
 
 <!-- GENERATED: OrderItem:end -->
 
@@ -388,8 +388,8 @@ An option value selected by the customer on a line item (for example, a color or
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | Yes | Option identifier, e.g. "color". |
-| `value` | string | Yes | Selected option value, e.g. "Red". |
+| `id` | string | Yes | Option identifier. |
+| `value` | string | Yes | Selected value. |
 
 <!-- GENERATED: SelectedOption:end -->
 
@@ -402,11 +402,11 @@ A resolved bundle component nested on a bundle parent line. Components are not c
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | No | Component product name. |
-| `sku` | string | No | Component product SKU. |
-| `path` | string | Yes | Component product URL path. |
-| `quantity` | number | Yes | Quantity of this component in the bundle. |
-| `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for the component. |
+| `name` | string | No | Display name of the component. |
+| `sku` | string | No | SKU of the component. |
+| `path` | string | Yes | Product page path of the component. |
+| `quantity` | number | Yes | Quantity for this component. |
+| `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 
 <!-- GENERATED: NestedBundleItem:end -->
 
@@ -419,18 +419,18 @@ A shipping or billing address. `country` and `state` are always required because
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | Yes | Recipient full name. max length 255 |
+| `name` | string | Yes | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
-| `address1` | string | Yes | Street address line 1. max length 255 |
-| `address2` | string | No | Street address line 2 (apartment, suite, etc.). max length 255 |
-| `city` | string | Yes | City or locality. max length 255 |
-| `state` | string | Yes | State, province, or region. Required for tax and shipping rate lookups. max length 255 |
+| `address1` | string | Yes | Primary street address line. max length 255 |
+| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
+| `city` | string | Yes | City name. max length 255 |
+| `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | Yes | Postal or ZIP code. max length 255 |
-| `country` | string | Yes | Country. Required for tax and shipping rate lookups. max length 255 |
-| `phone` | string | No | Contact phone number. max length 255 |
-| `email` | string | Yes | Email address. max length 255; pattern constrained |
-| `isDefault` | boolean | No | Whether this is the customer's default address. |
-| `isValidated` | boolean | No | Whether the address has been validated. |
+| `country` | string | Yes | ISO 3166-1 alpha-2 country code. max length 255 |
+| `phone` | string | No | Phone number. max length 255 |
+| `email` | string | Yes | max length 255; pattern constrained |
+| `isDefault` | boolean | No | Whether this is the default address for the customer. |
+| `isValidated` | boolean | No | Whether this address has been validated by an address verification service. |
 
 <!-- GENERATED: Address:end -->
 
@@ -445,8 +445,8 @@ Customer contact details supplied with an order.
 |---|---|---|---|
 | `firstName` | string | Yes | Customer first name. max length 255 |
 | `lastName` | string | Yes | Customer last name. max length 255 |
-| `email` | string | Yes | Email address. max length 255; pattern constrained |
-| `phone` | string | No | Customer contact phone number. |
+| `email` | string | Yes | max length 255; pattern constrained |
+| `phone` | string | No | Customer phone number. |
 
 <!-- GENERATED: Customer:end -->
 
@@ -485,18 +485,18 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | No | Recipient full name. max length 255 |
+| `name` | string | No | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
-| `address1` | string | No | Street address line 1. max length 255 |
-| `address2` | string | No | Street address line 2 (apartment, suite, etc.). max length 255 |
-| `city` | string | No | City or locality. max length 255 |
-| `state` | string | Yes | State, province, or region. Required for tax and shipping rate lookups. max length 255 |
+| `address1` | string | No | Primary street address line. max length 255 |
+| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
+| `city` | string | No | City name. max length 255 |
+| `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |
-| `country` | string | Yes | Country. Required for tax and shipping rate lookups. max length 255 |
-| `phone` | string | No | Contact phone number. max length 255 |
-| `email` | string | No | Email address. max length 255; pattern constrained |
-| `isDefault` | boolean | No | Whether this is the customer's default address. |
-| `isValidated` | boolean | No | Whether the address has been validated. |
+| `country` | string | Yes | ISO 3166-1 alpha-2 country code. max length 255 |
+| `phone` | string | No | Phone number. max length 255 |
+| `email` | string | No | max length 255; pattern constrained |
+| `isDefault` | boolean | No | Whether this is the default address for the customer. |
+| `isValidated` | boolean | No | Whether this address has been validated by an address verification service. |
 
 <!-- GENERATED: PreviewAddress:end -->
 

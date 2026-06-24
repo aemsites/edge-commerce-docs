@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.43.0",
+    "version": "2.46.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -18,7 +18,7 @@
   "tags": [
     {
       "name": "Config",
-      "description": "Per-site configuration: allowed origins, delivery sites, auth toggle, and reCAPTCHA settings. One config document per org/site."
+      "description": "Per-site configuration: allowed origins, delivery sites, auth toggle, and reCAPTCHA settings. One config document per org/site. Optional `geoOverrides` entries are deep-merged over the base config for requests whose resolved country matches, letting one site serve multiple countries (e.g. distinct order ID prefixes) from the same domain."
     },
     {
       "name": "Catalog",
@@ -262,7 +262,18 @@
                     ],
                     "auth": {
                       "enabled": true
-                    }
+                    },
+                    "friendlyId": {
+                      "prefix": "US-"
+                    },
+                    "geoOverrides": [
+                      {
+                        "country": "ca",
+                        "friendlyId": {
+                          "prefix": "CA-"
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -2803,6 +2814,130 @@
           "Customers"
         ]
       },
+      "put": {
+        "operationId": "updateCustomerAddress",
+        "summary": "Update an address",
+        "description": "Replaces a single address (`subroute=addresses`). Requires ownership of the email.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated address."
+          },
+          "400": {
+            "description": "The address failed schema validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid address",
+                      "errors": [
+                        {
+                          "path": "$.country",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such address for this customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "address not found",
+                      "resource": "address"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The replacement address duplicates another saved address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "conflict",
+                      "message": "conflict",
+                      "resource": "address"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The replacement address.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Address"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "address1": "123 Main St",
+                    "city": "Anytown",
+                    "state": "CA",
+                    "zip": "12345",
+                    "country": "US"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Customers"
+        ]
+      },
       "delete": {
         "operationId": "deleteCustomerAddress",
         "summary": "Delete an address",
@@ -2835,24 +2970,6 @@
                       "code": "not_found",
                       "message": "address not found",
                       "resource": "address"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "501": {
-            "description": "Updating an address (POST with a resourceId) is not implemented.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "example": {
-                    "value": {
-                      "code": "not_implemented",
-                      "message": "not implemented"
                     }
                   }
                 }
@@ -3941,48 +4058,157 @@
                 "maxLength": 8
               }
             }
+          },
+          "geoOverrides": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "country": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                },
+                "friendlyId": {
+                  "type": "object",
+                  "properties": {
+                    "characters": {
+                      "type": "string",
+                      "pattern": "^[^/?#&%<> ]+$",
+                      "minLength": 2
+                    },
+                    "length": {
+                      "type": "integer",
+                      "minimum": 4,
+                      "maximum": 32
+                    },
+                    "prefix": {
+                      "type": "string",
+                      "pattern": "^[^/?#&%<> ]+$",
+                      "minLength": 1,
+                      "maxLength": 8
+                    }
+                  }
+                },
+                "emails": {
+                  "type": "object",
+                  "properties": {
+                    "branding": {
+                      "type": "object",
+                      "properties": {
+                        "logoUrl": {
+                          "type": "string",
+                          "pattern": "^https:\\/\\/",
+                          "maxLength": 1024
+                        },
+                        "brandColor": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{3,8}$|^[a-zA-Z]+$",
+                          "maxLength": 20
+                        },
+                        "supportEmail": {
+                          "type": "string",
+                          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                          "maxLength": 255
+                        },
+                        "supportPhone": {
+                          "type": "string",
+                          "pattern": "^[^<>]*$",
+                          "maxLength": 50
+                        },
+                        "footerAddress": {
+                          "type": "string",
+                          "pattern": "^[^<>]*$",
+                          "maxLength": 500
+                        }
+                      }
+                    },
+                    "transactional": {
+                      "type": "object",
+                      "properties": {
+                        "sender": {
+                          "type": "string",
+                          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                          "maxLength": 255
+                        },
+                        "fromName": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "replyTo": {
+                          "type": "string",
+                          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                          "maxLength": 255
+                        }
+                      }
+                    }
+                  }
+                },
+                "experimentalFlags": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "required": [
+                "country"
+              ]
+            }
           }
         }
       },
       "ProductBus": {
+        "description": "A Product Bus catalog entry representing a single product or configurable product.",
         "type": "object",
         "properties": {
           "sku": {
+            "description": "Unique stock-keeping unit identifier.",
             "type": "string"
           },
           "path": {
+            "description": "URL path for this product (e.g. \"/products/my-product\").",
             "type": "string",
             "pattern": "^\\/([a-z0-9_]+([-_][a-z0-9_]+)*\\/)*[a-z0-9]+(-[a-z0-9]+)*$",
             "maxLength": 900
           },
           "urlKey": {
+            "description": "URL key used to construct the canonical path.",
             "type": "string"
           },
           "description": {
+            "description": "Full product description.",
             "type": "string"
           },
           "name": {
+            "description": "Display name for the product.",
             "type": "string"
           },
           "metaTitle": {
+            "description": "HTML meta title override.",
             "type": "string"
           },
           "metaDescription": {
+            "description": "HTML meta description override.",
             "type": "string"
           },
           "gtin": {
+            "description": "Global Trade Item Number (barcode).",
             "type": "string"
           },
           "url": {
+            "description": "Canonical absolute URL for the product.",
             "type": "string"
           },
           "brand": {
+            "description": "Brand or manufacturer name.",
             "type": "string"
           },
           "type": {
+            "description": "Product type identifier (e.g. \"simple\", \"configurable\", \"bundle\").",
             "type": "string"
           },
           "availability": {
+            "description": "schema.org availability status for a product or offer.",
             "type": "string",
             "enum": [
               "BackOrder",
@@ -4000,6 +4226,7 @@
             ]
           },
           "availabilityDate": {
+            "description": "ISO 8601 date when the product becomes available.",
             "type": "string"
           },
           "price": {
@@ -4021,6 +4248,7 @@
             }
           },
           "itemCondition": {
+            "description": "schema.org item condition.",
             "type": "string",
             "enum": [
               "DamagedCondition",
@@ -4030,37 +4258,48 @@
             ]
           },
           "metadata": {
+            "description": "Arbitrary key/value metadata attached to the product.",
             "type": "object",
             "additionalProperties": {
               "type": "string"
             }
           },
           "options": {
+            "description": "Configurable options available for this product (e.g. Color, Size).",
             "type": "array",
             "items": {
+              "description": "A configurable product option with its available values (e.g. Color, Size).",
               "type": "object",
               "properties": {
                 "id": {
+                  "description": "Option identifier, typically matching the attribute code.",
                   "type": "string"
                 },
                 "label": {
+                  "description": "Display label for the option group (e.g. \"Color\").",
                   "type": "string"
                 },
                 "position": {
+                  "description": "Sort order for display.",
                   "type": "number"
                 },
                 "values": {
+                  "description": "Available values for this option.",
                   "type": "array",
                   "items": {
+                    "description": "A single selectable value for a product option.",
                     "type": "object",
                     "properties": {
                       "id": {
+                        "description": "Unique identifier for this option value.",
                         "type": "string"
                       },
                       "value": {
+                        "description": "Display label for this option value (e.g. \"Red\", \"Large\").",
                         "type": "string"
                       },
                       "uid": {
+                        "description": "Internal UID used by some backends.",
                         "type": "string"
                       }
                     },
@@ -4077,47 +4316,60 @@
             }
           },
           "aggregateRating": {
+            "description": "Aggregate customer rating for schema.org structured data.",
             "type": "object",
             "properties": {
               "ratingValue": {
+                "description": "Average rating value. Numeric string; converted to a number in JSON-LD.",
                 "type": "string"
               },
               "reviewCount": {
+                "description": "Total number of ratings. Numeric string; converted to an integer in JSON-LD.",
                 "type": "string"
               },
               "bestRating": {
+                "description": "Best possible rating. Numeric string.",
                 "type": "string"
               },
               "worstRating": {
+                "description": "Worst possible rating. Numeric string.",
                 "type": "string"
               }
             }
           },
           "specifications": {
+            "description": "Freeform product specifications (HTML or plain text).",
             "type": "string"
           },
           "images": {
+            "description": "Product images.",
             "type": "array",
             "items": {
+              "description": "Product media asset. An image, or a video when the video field is set.",
               "type": "object",
               "properties": {
                 "url": {
+                  "description": "Absolute URL of the image.",
                   "type": "string"
                 },
                 "label": {
+                  "description": "Accessible alt text for the image.",
                   "type": "string"
                 },
                 "filename": {
+                  "description": "Original filename of the image.",
                   "type": "string",
                   "pattern": "^[A-Za-z0-9_-]+$"
                 },
                 "roles": {
+                  "description": "Semantic roles assigned to this image, e.g. \"thumbnail\".",
                   "type": "array",
                   "items": {
                     "type": "string"
                   }
                 },
                 "video": {
+                  "description": "Absolute URL of an associated video asset, when this media entry represents a video.",
                   "type": "string"
                 }
               },
@@ -4127,14 +4379,18 @@
             }
           },
           "variants": {
+            "description": "Available variants for a configurable product.",
             "type": "array",
             "items": {
+              "description": "A purchasable variant of a configurable product.",
               "type": "object",
               "properties": {
                 "sku": {
+                  "description": "Unique stock-keeping unit identifier.",
                   "type": "string"
                 },
                 "name": {
+                  "description": "Display name for this variant.",
                   "type": "string"
                 },
                 "price": {
@@ -4156,30 +4412,38 @@
                   }
                 },
                 "url": {
+                  "description": "Canonical URL for this variant.",
                   "type": "string"
                 },
                 "images": {
+                  "description": "Images for this variant.",
                   "type": "array",
                   "items": {
+                    "description": "Product media asset. An image, or a video when the video field is set.",
                     "type": "object",
                     "properties": {
                       "url": {
+                        "description": "Absolute URL of the image.",
                         "type": "string"
                       },
                       "label": {
+                        "description": "Accessible alt text for the image.",
                         "type": "string"
                       },
                       "filename": {
+                        "description": "Original filename of the image.",
                         "type": "string",
                         "pattern": "^[A-Za-z0-9_-]+$"
                       },
                       "roles": {
+                        "description": "Semantic roles assigned to this image, e.g. \"thumbnail\".",
                         "type": "array",
                         "items": {
                           "type": "string"
                         }
                       },
                       "video": {
+                        "description": "Absolute URL of an associated video asset, when this media entry represents a video.",
                         "type": "string"
                       }
                     },
@@ -4189,12 +4453,15 @@
                   }
                 },
                 "gtin": {
+                  "description": "Global Trade Item Number (barcode).",
                   "type": "string"
                 },
                 "description": {
+                  "description": "Variant-specific description.",
                   "type": "string"
                 },
                 "availability": {
+                  "description": "schema.org availability status for a product or offer.",
                   "type": "string",
                   "enum": [
                     "BackOrder",
@@ -4212,17 +4479,22 @@
                   ]
                 },
                 "options": {
+                  "description": "Option values that identify this variant (e.g. color=Red, size=Large).",
                   "type": "array",
                   "items": {
+                    "description": "A single selectable value for a product option.",
                     "type": "object",
                     "properties": {
                       "id": {
+                        "description": "Unique identifier for this option value.",
                         "type": "string"
                       },
                       "value": {
+                        "description": "Display label for this option value (e.g. \"Red\", \"Large\").",
                         "type": "string"
                       },
                       "uid": {
+                        "description": "Internal UID used by some backends.",
                         "type": "string"
                       }
                     },
@@ -4232,6 +4504,7 @@
                   }
                 },
                 "itemCondition": {
+                  "description": "schema.org item condition.",
                   "type": "string",
                   "enum": [
                     "DamagedCondition",
@@ -4245,16 +4518,20 @@
                   "additionalProperties": true
                 },
                 "jsonldExtensions": {
+                  "description": "Additional schema.org properties shallow-merged into this variant's Offer in the auto-generated JSON-LD. Max 16,000 characters when serialized.",
                   "type": "object",
                   "additionalProperties": true
                 },
                 "weight": {
+                  "description": "Product weight for display and JSON-LD structured data.",
                   "type": "object",
                   "properties": {
                     "value": {
+                      "description": "Numeric weight value.",
                       "type": "number"
                     },
                     "unit": {
+                      "description": "Unit of weight measurement.",
                       "type": "string",
                       "enum": [
                         "kg",
@@ -4270,15 +4547,19 @@
                   ]
                 },
                 "shippingDimensions": {
+                  "description": "Physical dimensions used for shipping rate calculation.",
                   "type": "object",
                   "properties": {
                     "weight": {
+                      "description": "Product weight for display and JSON-LD structured data.",
                       "type": "object",
                       "properties": {
                         "value": {
+                          "description": "Numeric weight value.",
                           "type": "number"
                         },
                         "unit": {
+                          "description": "Unit of weight measurement.",
                           "type": "string",
                           "enum": [
                             "kg",
@@ -4294,15 +4575,19 @@
                       ]
                     },
                     "height": {
+                      "description": "Height in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "width": {
+                      "description": "Width in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "depth": {
+                      "description": "Depth in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "dimensionsUnit": {
+                      "description": "Unit of dimension measurement.",
                       "type": "string",
                       "enum": [
                         "cm",
@@ -4322,6 +4607,7 @@
             }
           },
           "jsonld": {
+            "description": "Full JSON-LD override. When present, replaces the auto-generated structured data.",
             "type": "string",
             "maxLength": 128000
           },
@@ -4330,6 +4616,7 @@
             "additionalProperties": true
           },
           "jsonldExtensions": {
+            "description": "Additional schema.org properties shallow-merged into the auto-generated Product JSON-LD object. Ignored when jsonld override is used. Max 32,000 characters when serialized.",
             "type": "object",
             "additionalProperties": true
           },
@@ -4339,30 +4626,39 @@
                 "type": "string"
               },
               {
+                "description": "A single shipping option in Google Merchant Center format.",
                 "type": "object",
                 "properties": {
                   "country": {
+                    "description": "Two-letter country code (ISO 3166-1 alpha-2).",
                     "type": "string"
                   },
                   "region": {
+                    "description": "State or region code.",
                     "type": "string"
                   },
                   "service": {
+                    "description": "Shipping service label (e.g. \"Standard\", \"Overnight\").",
                     "type": "string"
                   },
                   "price": {
+                    "description": "Shipping cost with currency code (e.g. \"16.00 USD\").",
                     "type": "string"
                   },
                   "min_handling_time": {
+                    "description": "Minimum order handling time in business days.",
                     "type": "string"
                   },
                   "max_handling_time": {
+                    "description": "Maximum order handling time in business days.",
                     "type": "string"
                   },
                   "min_transit_time": {
+                    "description": "Minimum shipping transit time in business days.",
                     "type": "string"
                   },
                   "max_transit_time": {
+                    "description": "Maximum shipping transit time in business days.",
                     "type": "string"
                   }
                 }
@@ -4370,30 +4666,39 @@
               {
                 "type": "array",
                 "items": {
+                  "description": "A single shipping option in Google Merchant Center format.",
                   "type": "object",
                   "properties": {
                     "country": {
+                      "description": "Two-letter country code (ISO 3166-1 alpha-2).",
                       "type": "string"
                     },
                     "region": {
+                      "description": "State or region code.",
                       "type": "string"
                     },
                     "service": {
+                      "description": "Shipping service label (e.g. \"Standard\", \"Overnight\").",
                       "type": "string"
                     },
                     "price": {
+                      "description": "Shipping cost with currency code (e.g. \"16.00 USD\").",
                       "type": "string"
                     },
                     "min_handling_time": {
+                      "description": "Minimum order handling time in business days.",
                       "type": "string"
                     },
                     "max_handling_time": {
+                      "description": "Maximum order handling time in business days.",
                       "type": "string"
                     },
                     "min_transit_time": {
+                      "description": "Minimum shipping transit time in business days.",
                       "type": "string"
                     },
                     "max_transit_time": {
+                      "description": "Maximum shipping transit time in business days.",
                       "type": "string"
                     }
                   }
@@ -4402,23 +4707,30 @@
             ]
           },
           "bundleItems": {
+            "description": "Bundle composition. Presence of this array (regardless of contents) marks this product as a bundle.",
             "type": "array",
             "items": {
+              "description": "One entry in a bundle product's composition. May be a simple item (sku + price) or a configurable item (variants array). Presence of the parent product's bundleItems array marks it as a bundle.",
               "type": "object",
               "properties": {
                 "sku": {
+                  "description": "SKU for a simple bundle item.",
                   "type": "string"
                 },
                 "name": {
+                  "description": "Display name for a simple bundle item.",
                   "type": "string"
                 },
                 "price": {
+                  "description": "Price for a bundle component. Narrower than ProductBusPrice -- no currency field (currency comes from the parent line item).",
                   "type": "object",
                   "properties": {
                     "final": {
+                      "description": "Component price as a decimal string.",
                       "type": "string"
                     },
                     "regular": {
+                      "description": "Pre-discount price for display purposes.",
                       "type": "string"
                     }
                   },
@@ -4427,23 +4739,30 @@
                   ]
                 },
                 "variants": {
+                  "description": "Variants for a configurable bundle item. When present, the server selects one variant at preview time.",
                   "type": "array",
                   "items": {
+                    "description": "One variant of a configurable bundle item. The server selects the variant whose options are all satisfied by the parent line item's selectedOptions.",
                     "type": "object",
                     "properties": {
                       "sku": {
+                        "description": "SKU for this variant.",
                         "type": "string"
                       },
                       "name": {
+                        "description": "Display name for this variant.",
                         "type": "string"
                       },
                       "price": {
+                        "description": "Price for a bundle component. Narrower than ProductBusPrice -- no currency field (currency comes from the parent line item).",
                         "type": "object",
                         "properties": {
                           "final": {
+                            "description": "Component price as a decimal string.",
                             "type": "string"
                           },
                           "regular": {
+                            "description": "Pre-discount price for display purposes.",
                             "type": "string"
                           }
                         },
@@ -4452,14 +4771,18 @@
                         ]
                       },
                       "options": {
+                        "description": "Option pairs that identify this variant.",
                         "type": "array",
                         "items": {
+                          "description": "Option pair on a configurable bundle item variant. The server resolves which variant to ship by matching every entry here against the parent line item's selectedOptions.",
                           "type": "object",
                           "properties": {
                             "id": {
+                              "description": "Option identifier, matched against selectedOptions[].id.",
                               "type": "string"
                             },
                             "name": {
+                              "description": "Option value label, matched against selectedOptions[].value.",
                               "type": "string"
                             }
                           },
@@ -4470,10 +4793,12 @@
                         }
                       },
                       "taxCode": {
+                        "description": "Per-variant tax classification code. Falls back to the bundle parent's taxCode when absent.",
                         "type": "string",
                         "maxLength": 255
                       },
                       "taxData": {
+                        "description": "Supplementary tax data. Falls back to the bundle parent's taxData when absent.",
                         "type": "object",
                         "additionalProperties": true
                       }
@@ -4486,10 +4811,12 @@
                   }
                 },
                 "taxCode": {
+                  "description": "Per-component tax classification code. Falls back to the bundle parent's taxCode when absent.",
                   "type": "string",
                   "maxLength": 255
                 },
                 "taxData": {
+                  "description": "Supplementary tax data. Falls back to the bundle parent's taxData when absent.",
                   "type": "object",
                   "additionalProperties": true
                 }
@@ -4497,29 +4824,36 @@
             }
           },
           "feeds": {
+            "description": "Feed configuration for product distribution.",
             "type": "object",
             "properties": {
               "common": {
+                "description": "Common feed settings shared across product distribution channels.",
                 "type": "object",
                 "properties": {
                   "geoTargetCountries": {
+                    "description": "Target countries for product feeds.",
                     "type": "array",
                     "items": {
                       "type": "string"
                     }
                   },
                   "geoStoreCountry": {
+                    "description": "Store country for feed generation.",
                     "type": "string"
                   }
                 }
               },
               "oai": {
+                "description": "Product feed eligibility for the OpenAI / agentic commerce feed.",
                 "type": "object",
                 "properties": {
                   "isEligibleForSearch": {
+                    "description": "Whether the product is eligible for search feeds.",
                     "type": "boolean"
                   },
                   "isEligibleForCheckout": {
+                    "description": "Whether the product supports checkout via feeds.",
                     "type": "boolean"
                   }
                 },
@@ -4531,12 +4865,15 @@
             }
           },
           "weight": {
+            "description": "Product weight for display and JSON-LD structured data.",
             "type": "object",
             "properties": {
               "value": {
+                "description": "Numeric weight value.",
                 "type": "number"
               },
               "unit": {
+                "description": "Unit of weight measurement.",
                 "type": "string",
                 "enum": [
                   "kg",
@@ -4552,15 +4889,19 @@
             ]
           },
           "shippingDimensions": {
+            "description": "Physical dimensions used for shipping rate calculation.",
             "type": "object",
             "properties": {
               "weight": {
+                "description": "Product weight for display and JSON-LD structured data.",
                 "type": "object",
                 "properties": {
                   "value": {
+                    "description": "Numeric weight value.",
                     "type": "number"
                   },
                   "unit": {
+                    "description": "Unit of weight measurement.",
                     "type": "string",
                     "enum": [
                       "kg",
@@ -4576,15 +4917,19 @@
                 ]
               },
               "height": {
+                "description": "Height in the declared dimensionsUnit.",
                 "type": "number"
               },
               "width": {
+                "description": "Width in the declared dimensionsUnit.",
                 "type": "number"
               },
               "depth": {
+                "description": "Depth in the declared dimensionsUnit.",
                 "type": "number"
               },
               "dimensionsUnit": {
+                "description": "Unit of dimension measurement.",
                 "type": "string",
                 "enum": [
                   "cm",
@@ -4595,18 +4940,22 @@
             }
           },
           "taxCode": {
+            "description": "Tax classification code for this product.",
             "type": "string",
             "maxLength": 255
           },
           "taxData": {
+            "description": "Supplementary tax data passed to the tax provider.",
             "type": "object",
             "additionalProperties": true
           },
           "country": {
+            "description": "ISO 3166-1 alpha-2 store country code.",
             "type": "string",
             "pattern": "^[a-z]{2}$"
           },
           "locale": {
+            "description": "BCP-47 locale tag for this product entry.",
             "type": "string",
             "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
           }
@@ -4632,27 +4981,35 @@
           "items": {
             "type": "array",
             "items": {
+              "description": "A single line item in an order or estimate.",
               "type": "object",
               "properties": {
                 "name": {
+                  "description": "Display name for this line item.",
                   "type": "string"
                 },
                 "note": {
+                  "description": "Optional customer note for this line item.",
                   "type": "string"
                 },
                 "sku": {
+                  "description": "SKU of the product.",
                   "type": "string"
                 },
                 "path": {
+                  "description": "Product page path.",
                   "type": "string"
                 },
                 "imageUrl": {
+                  "description": "Product image URL for order confirmation display.",
                   "type": "string"
                 },
                 "productUrl": {
+                  "description": "Canonical product URL.",
                   "type": "string"
                 },
                 "quantity": {
+                  "description": "Quantity ordered.",
                   "type": "number"
                 },
                 "price": {
@@ -4674,15 +5031,19 @@
                   }
                 },
                 "shippingDimensions": {
+                  "description": "Physical dimensions used for shipping rate calculation.",
                   "type": "object",
                   "properties": {
                     "weight": {
+                      "description": "Product weight for display and JSON-LD structured data.",
                       "type": "object",
                       "properties": {
                         "value": {
+                          "description": "Numeric weight value.",
                           "type": "number"
                         },
                         "unit": {
+                          "description": "Unit of weight measurement.",
                           "type": "string",
                           "enum": [
                             "kg",
@@ -4698,15 +5059,19 @@
                       ]
                     },
                     "height": {
+                      "description": "Height in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "width": {
+                      "description": "Width in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "depth": {
+                      "description": "Depth in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "dimensionsUnit": {
+                      "description": "Unit of dimension measurement.",
                       "type": "string",
                       "enum": [
                         "cm",
@@ -4717,14 +5082,18 @@
                   }
                 },
                 "selectedOptions": {
+                  "description": "Option values selected by the customer.",
                   "type": "array",
                   "items": {
+                    "description": "A customer-selected option value for a line item (e.g. color=Red).",
                     "type": "object",
                     "properties": {
                       "id": {
+                        "description": "Option identifier.",
                         "type": "string"
                       },
                       "value": {
+                        "description": "Selected value.",
                         "type": "string"
                       }
                     },
@@ -4735,20 +5104,26 @@
                   }
                 },
                 "bundleItems": {
+                  "description": "Resolved bundle component line items nested on a bundle parent. Not counted toward the order subtotal -- the parent price is the chargeable value.",
                   "type": "array",
                   "items": {
+                    "description": "A resolved bundle component line item nested on a bundle parent order item.",
                     "type": "object",
                     "properties": {
                       "name": {
+                        "description": "Display name of the component.",
                         "type": "string"
                       },
                       "sku": {
+                        "description": "SKU of the component.",
                         "type": "string"
                       },
                       "path": {
+                        "description": "Product page path of the component.",
                         "type": "string"
                       },
                       "quantity": {
+                        "description": "Quantity for this component.",
                         "type": "number"
                       },
                       "price": {
@@ -4778,6 +5153,7 @@
                   }
                 },
                 "custom": {
+                  "description": "Arbitrary custom data for this line item.",
                   "type": "object",
                   "additionalProperties": true
                 }
@@ -4850,41 +5226,51 @@
             "$ref": "#/components/schemas/Customer"
           },
           "shipping": {
+            "description": "A shipping or billing address.",
             "type": "object",
             "properties": {
               "name": {
+                "description": "Full name of the recipient.",
                 "type": "string",
                 "maxLength": 255
               },
               "company": {
+                "description": "Company name.",
                 "type": "string",
                 "maxLength": 255
               },
               "address1": {
+                "description": "Primary street address line.",
                 "type": "string",
                 "maxLength": 255
               },
               "address2": {
+                "description": "Secondary address line (apartment, suite, etc.).",
                 "type": "string",
                 "maxLength": 255
               },
               "city": {
+                "description": "City name.",
                 "type": "string",
                 "maxLength": 255
               },
               "state": {
+                "description": "State or province code.",
                 "type": "string",
                 "maxLength": 255
               },
               "zip": {
+                "description": "Postal or ZIP code.",
                 "type": "string",
                 "maxLength": 255
               },
               "country": {
+                "description": "ISO 3166-1 alpha-2 country code.",
                 "type": "string",
                 "maxLength": 255
               },
               "phone": {
+                "description": "Phone number.",
                 "type": "string",
                 "maxLength": 255
               },
@@ -4894,9 +5280,11 @@
                 "maxLength": 255
               },
               "isDefault": {
+                "description": "Whether this is the default address for the customer.",
                 "type": "boolean"
               },
               "isValidated": {
+                "description": "Whether this address has been validated by an address verification service.",
                 "type": "boolean"
               }
             },
@@ -4911,27 +5299,35 @@
           "items": {
             "type": "array",
             "items": {
+              "description": "A single line item in an order or estimate.",
               "type": "object",
               "properties": {
                 "name": {
+                  "description": "Display name for this line item.",
                   "type": "string"
                 },
                 "note": {
+                  "description": "Optional customer note for this line item.",
                   "type": "string"
                 },
                 "sku": {
+                  "description": "SKU of the product.",
                   "type": "string"
                 },
                 "path": {
+                  "description": "Product page path.",
                   "type": "string"
                 },
                 "imageUrl": {
+                  "description": "Product image URL for order confirmation display.",
                   "type": "string"
                 },
                 "productUrl": {
+                  "description": "Canonical product URL.",
                   "type": "string"
                 },
                 "quantity": {
+                  "description": "Quantity ordered.",
                   "type": "number"
                 },
                 "price": {
@@ -4953,15 +5349,19 @@
                   }
                 },
                 "shippingDimensions": {
+                  "description": "Physical dimensions used for shipping rate calculation.",
                   "type": "object",
                   "properties": {
                     "weight": {
+                      "description": "Product weight for display and JSON-LD structured data.",
                       "type": "object",
                       "properties": {
                         "value": {
+                          "description": "Numeric weight value.",
                           "type": "number"
                         },
                         "unit": {
+                          "description": "Unit of weight measurement.",
                           "type": "string",
                           "enum": [
                             "kg",
@@ -4977,15 +5377,19 @@
                       ]
                     },
                     "height": {
+                      "description": "Height in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "width": {
+                      "description": "Width in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "depth": {
+                      "description": "Depth in the declared dimensionsUnit.",
                       "type": "number"
                     },
                     "dimensionsUnit": {
+                      "description": "Unit of dimension measurement.",
                       "type": "string",
                       "enum": [
                         "cm",
@@ -4996,14 +5400,18 @@
                   }
                 },
                 "selectedOptions": {
+                  "description": "Option values selected by the customer.",
                   "type": "array",
                   "items": {
+                    "description": "A customer-selected option value for a line item (e.g. color=Red).",
                     "type": "object",
                     "properties": {
                       "id": {
+                        "description": "Option identifier.",
                         "type": "string"
                       },
                       "value": {
+                        "description": "Selected value.",
                         "type": "string"
                       }
                     },
@@ -5014,20 +5422,26 @@
                   }
                 },
                 "bundleItems": {
+                  "description": "Resolved bundle component line items nested on a bundle parent. Not counted toward the order subtotal -- the parent price is the chargeable value.",
                   "type": "array",
                   "items": {
+                    "description": "A resolved bundle component line item nested on a bundle parent order item.",
                     "type": "object",
                     "properties": {
                       "name": {
+                        "description": "Display name of the component.",
                         "type": "string"
                       },
                       "sku": {
+                        "description": "SKU of the component.",
                         "type": "string"
                       },
                       "path": {
+                        "description": "Product page path of the component.",
                         "type": "string"
                       },
                       "quantity": {
+                        "description": "Quantity for this component.",
                         "type": "number"
                       },
                       "price": {
@@ -5057,6 +5471,7 @@
                   }
                 },
                 "custom": {
+                  "description": "Arbitrary custom data for this line item.",
                   "type": "object",
                   "additionalProperties": true
                 }
@@ -5123,13 +5538,16 @@
         ]
       },
       "Customer": {
+        "description": "Customer contact information provided at checkout.",
         "type": "object",
         "properties": {
           "firstName": {
+            "description": "Customer first name.",
             "type": "string",
             "maxLength": 255
           },
           "lastName": {
+            "description": "Customer last name.",
             "type": "string",
             "maxLength": 255
           },
@@ -5139,6 +5557,7 @@
             "maxLength": 255
           },
           "phone": {
+            "description": "Customer phone number.",
             "type": "string"
           }
         },
@@ -5149,41 +5568,51 @@
         ]
       },
       "Address": {
+        "description": "A shipping or billing address.",
         "type": "object",
         "properties": {
           "name": {
+            "description": "Full name of the recipient.",
             "type": "string",
             "maxLength": 255
           },
           "company": {
+            "description": "Company name.",
             "type": "string",
             "maxLength": 255
           },
           "address1": {
+            "description": "Primary street address line.",
             "type": "string",
             "maxLength": 255
           },
           "address2": {
+            "description": "Secondary address line (apartment, suite, etc.).",
             "type": "string",
             "maxLength": 255
           },
           "city": {
+            "description": "City name.",
             "type": "string",
             "maxLength": 255
           },
           "state": {
+            "description": "State or province code.",
             "type": "string",
             "maxLength": 255
           },
           "zip": {
+            "description": "Postal or ZIP code.",
             "type": "string",
             "maxLength": 255
           },
           "country": {
+            "description": "ISO 3166-1 alpha-2 country code.",
             "type": "string",
             "maxLength": 255
           },
           "phone": {
+            "description": "Phone number.",
             "type": "string",
             "maxLength": 255
           },
@@ -5193,9 +5622,11 @@
             "maxLength": 255
           },
           "isDefault": {
+            "description": "Whether this is the default address for the customer.",
             "type": "boolean"
           },
           "isValidated": {
+            "description": "Whether this address has been validated by an address verification service.",
             "type": "boolean"
           }
         },
