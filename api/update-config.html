@@ -58,6 +58,7 @@
             <tr><td><code>emails</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>experimentalFlags</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>friendlyId</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>geoOverrides</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -72,6 +73,7 @@
             <tr><td><code>emails</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>experimentalFlags</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>friendlyId</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>geoOverrides</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> The configuration failed schema validation.</h3>
@@ -104,7 +106,18 @@
   ],
   "auth": {
     "enabled": true
-  }
+  },
+  "friendlyId": {
+    "prefix": "US-"
+  },
+  "geoOverrides": [
+    {
+      "country": "ca",
+      "friendlyId": {
+        "prefix": "CA-"
+      }
+    }
+  ]
 }</code></pre>
         </div>
         <div class="code-sample">
