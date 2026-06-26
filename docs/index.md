@@ -112,6 +112,14 @@ Focused, task-oriented guides for each part of the platform.
 <p><code>codes</code> <code>rules</code></p>
 </div>
 </div>
+<div>
+<div>:shopping_cart:</div>
+<div>
+<h3><a href="/checkout/overview">Checkout</a></h3>
+<p>Payment, fraud, tax &amp; identity providers, and the encrypted secrets store.</p>
+<p><code>payments</code> <code>fraud</code> <code>tax</code></p>
+</div>
+</div>
 </div>
 
 ## Operations &amp; best practices
