@@ -74,6 +74,16 @@ npm run docs:da:push              # build + upload source + preview
 npm run docs:da:push -- --publish # also publish (go live)
 ```
 
+### Continuous publishing (CI)
+
+Merges to `main` that touch `docs/**` or `scripts/docs/**` trigger
+`.github/workflows/publish-docs.yaml`, which runs `docs:da:push --publish`
+(build + source PUT + preview + live). It authenticates with the
+`HLX_ADMIN_API_KEY` repo secret (a publish-role Helix admin API key whose
+`jti` is allow-listed in `access.admin.apiKeyId`). API reference HTML and
+`nav.html` are code-bus assets and ship via the normal EDS code sync, so they
+are not part of this workflow.
+
 Other flags:
 
 ```bash
