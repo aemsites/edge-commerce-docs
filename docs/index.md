@@ -16,7 +16,7 @@ sourceFormat: markdown
 <p><a href="/getting-started">Get started</a></p>
 <p><a href="/api/get-config.html">API reference</a></p>
 </div>
-<div><img src="/img/homepage-docs-illustration.svg" alt="Edge Commerce documentation illustration"></div>
+<div><img src="https://main--edge-commerce-docs--aemsites.aem.page/media_19545b8154be669cdc0c6fce225a73d7c01210009.jpg?width=2000&format=webply&optimize=medium" alt="Edge Commerce documentation illustration"></div>
 </div>
 </div>
 
