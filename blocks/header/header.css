@@ -25,28 +25,33 @@ header {
   .nav-menu-button {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 10px;
-    border: 1px solid light-dark(var(--s2-gray-300), var(--s2-gray-700));
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    padding: 0;
+    border: 0;
     border-radius: 8px;
-    background: light-dark(var(--s2-gray-50), var(--s2-gray-900));
-    color: light-dark(var(--s2-gray-900), var(--s2-gray-50));
-    font: inherit;
-    font-size: 14px;
+    background: transparent;
+    color: light-dark(var(--s2-gray-800), var(--s2-gray-50));
     cursor: pointer;
 
     .nav-menu-icon {
       display: inline-flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
 
     .nav-menu-icon span {
       display: block;
-      width: 14px;
+      width: 18px;
       height: 2px;
       border-radius: 999px;
       background: currentcolor;
+    }
+
+    &:hover {
+      background: light-dark(var(--s2-gray-100), var(--s2-gray-800));
     }
   }
 
