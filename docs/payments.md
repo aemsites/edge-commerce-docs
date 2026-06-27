@@ -42,7 +42,7 @@ When payment is initiated, the API returns an action that tells the storefront w
 | Action | Meaning |
 |--------|---------|
 | `redirect` | Send the customer to the provider's hosted page (Chase card, PayPal, Affirm) |
-| `complete` | Payment finished server-side; no further customer action (wallet flows) |
+| `complete` | Payment completed without a redirect; no further customer action (wallet flows) |
 
 ## Shared credentials across provider variants
 

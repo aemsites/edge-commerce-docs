@@ -62,7 +62,7 @@ The `apiBaseUrl` is restricted to PayPal's two known hostnames so a misconfigura
 | `userAction` | string | Call-to-action on PayPal's review page: `pay_now` or `continue` |
 | `locale` | string | PayPal checkout page locale (e.g. `en-US`). When empty, PayPal auto-detects from the browser |
 
-> The `enabled` field is accepted for forward compatibility but is not used by the current flow.
+> The `enabled` field is reserved for future use. Configuring it does not currently change provider behavior.
 
 ## Next steps
 

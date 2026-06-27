@@ -57,7 +57,7 @@ The configured gateway is enforced per site: a production site configured with t
 |-------|------|-------------|
 | `supportedNetworks` | string[] | Card networks shown on the Apple Pay sheet. One or more of `visa`, `masterCard`, `amex`, `discover`. When omitted, the storefront supplies the network list |
 
-> The `enabled` field is accepted for forward compatibility but is not used by the current flow.
+> The `enabled` field is reserved for future use. Configuring it does not currently change provider behavior.
 
 ## Next steps
 
