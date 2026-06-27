@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">Edge Commerce documentation illustration</title>
+  <desc id="desc">Abstract product data flowing through documentation, API, checkout, and delivery components.</desc>
+  <defs>
+    <linearGradient id="bg" x1="120" y1="60" x2="840" y2="580" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e5f0fe"/>
+      <stop offset="1" stop-color="#f8f8f8"/>
+    </linearGradient>
+    <linearGradient id="card" x1="220" y1="160" x2="760" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef4ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#274dea" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="640" rx="48" fill="url(#bg)"/>
+  <circle cx="770" cy="120" r="88" fill="#d7f7e1" opacity="0.75"/>
+  <circle cx="160" cy="510" r="96" fill="#d9edff" opacity="0.9"/>
+  <path d="M150 183c98-80 207-105 326-75 119 29 214 109 284 240" fill="none" stroke="#c6d8ff" stroke-width="18" stroke-linecap="round" opacity="0.75"/>
+
+  <g filter="url(#shadow)">
+    <rect x="220" y="128" width="520" height="384" rx="28" fill="url(#card)"/>
+    <rect x="260" y="174" width="230" height="24" rx="12" fill="#274dea" opacity="0.85"/>
+    <rect x="260" y="220" width="420" height="14" rx="7" fill="#8fb4ff" opacity="0.9"/>
+    <rect x="260" y="250" width="360" height="14" rx="7" fill="#8fb4ff" opacity="0.65"/>
+    <rect x="260" y="280" width="395" height="14" rx="7" fill="#8fb4ff" opacity="0.5"/>
+
+    <g transform="translate(260 340)">
+      <rect width="120" height="92" rx="18" fill="#ffffff"/>
+      <circle cx="34" cy="32" r="14" fill="#2fb880"/>
+      <rect x="58" y="24" width="42" height="10" rx="5" fill="#717171"/>
+      <rect x="24" y="62" width="72" height="10" rx="5" fill="#c6c6c6"/>
+    </g>
+
+    <g transform="translate(420 340)">
+      <rect width="120" height="92" rx="18" fill="#ffffff"/>
+      <rect x="25" y="24" width="70" height="12" rx="6" fill="#f68511"/>
+      <rect x="25" y="50" width="70" height="10" rx="5" fill="#c6c6c6"/>
+      <rect x="25" y="70" width="48" height="10" rx="5" fill="#dadada"/>
+    </g>
+
+    <g transform="translate(580 340)">
+      <rect width="120" height="92" rx="18" fill="#ffffff"/>
+      <path d="M34 47l18 18 36-40" fill="none" stroke="#274dea" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="24" y="70" width="72" height="10" rx="5" fill="#dadada"/>
+    </g>
+  </g>
+
+  <g fill="none" stroke="#274dea" stroke-linecap="round" stroke-linejoin="round" stroke-width="10" opacity="0.9">
+    <path d="M126 260h78"/>
+    <path d="M180 236l24 24-24 24"/>
+    <path d="M756 380h78"/>
+    <path d="M810 356l24 24-24 24"/>
+  </g>
+
+  <g fill="#ffffff" stroke="#8fb4ff" stroke-width="5">
+    <rect x="86" y="224" width="76" height="76" rx="20"/>
+    <rect x="798" y="344" width="76" height="76" rx="20"/>
+  </g>
+  <g fill="#274dea">
+    <circle cx="124" cy="262" r="9"/>
+    <circle cx="836" cy="382" r="9"/>
+  </g>
+</svg>
