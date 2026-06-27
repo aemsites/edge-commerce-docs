@@ -87,7 +87,45 @@ async function buildNavTree() {
   return docsTree;
 }
 
+function closeMobileNav() {
+  document.body.classList.remove('nav-open');
+  document.dispatchEvent(new CustomEvent('sitenav:close'));
+}
+
+function decorateMobileDrawer(el) {
+  el.id = 'site-navigation';
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'sitenav-close';
+  close.setAttribute('aria-label', 'Close navigation menu');
+  close.textContent = '×';
+  close.addEventListener('click', closeMobileNav);
+  el.prepend(close);
+
+  const backdrop = document.createElement('button');
+  backdrop.type = 'button';
+  backdrop.className = 'sitenav-backdrop';
+  backdrop.setAttribute('aria-label', 'Close navigation menu');
+  backdrop.addEventListener('click', closeMobileNav);
+  el.insertAdjacentElement('afterend', backdrop);
+
+  el.addEventListener('click', (e) => {
+    if (e.target.closest('a') && window.matchMedia('(width < 900px)').matches) {
+      closeMobileNav();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('nav-open')) {
+      closeMobileNav();
+    }
+  });
+}
+
 export default async function init(el) {
+  decorateMobileDrawer(el);
+
   const link = document.createElement('a');
   link.href = '/';
   link.className = 'docket-brand-logo';

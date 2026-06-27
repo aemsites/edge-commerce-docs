@@ -62,7 +62,7 @@ For Canadian operation, write a full Affirm-Canada configuration to a country-sc
 | `merchantName` | string | Merchant display name shown on the Affirm checkout page |
 | `checkoutMode` | string | How the Affirm client presents checkout: `modal` (in-page overlay) or `redirect` (full-page redirect, default) |
 
-> The `enabled` field is accepted for forward compatibility but is not used by the current flow.
+> The `enabled` field is reserved for future use. Configuring it does not currently change provider behavior.
 
 ## Next steps
 

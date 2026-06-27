@@ -33,7 +33,7 @@ Each integration is a named provider that the API calls at the right moment in t
 
 Every provider needs credentials: API tokens, merchant IDs, client secrets, and endpoint URLs. These are never kept in regular site config. They go in the [secrets store](/checkout/secrets): an encrypted, write-only store that resolves the right credentials for each order based on its country and locale.
 
-The mechanics of writing and resolving secrets are identical for every provider, so they are documented once in the [secrets store guide](/checkout/secrets). Each provider page then documents only that provider's own configuration fields.
+The mechanics of writing and resolving secrets are identical for every provider, so they are documented once in the [secrets store guide](/checkout/secrets).
 
 ## How a checkout flows
 
@@ -41,7 +41,7 @@ At a high level, an order moves through these stages:
 
 1. **Estimate**: the storefront previews shipping, tax, and discounts for the cart. Tax can be calculated by the [Avalara](/checkout/tax/avalara) provider when configured.
 2. **Order creation**: the customer confirms, and the order is created with its locked-in estimates.
-3. **Payment initiation**: the storefront initiates payment with a [payment provider](/checkout/payments/overview). The API loads that provider's credentials, computes the amount server-side, and returns the next step (typically a redirect).
+3. **Payment initiation**: the storefront initiates payment with a [payment provider](/checkout/payments/overview). The API loads that provider's credentials, computes the amount from the stored order, and returns the next step (typically a redirect).
 4. **Fraud screening**: when [Forter](/checkout/fraud/forter) is configured, the transaction is screened before it is approved.
 5. **Confirmation**: the provider confirms the result, the order state is updated, and the customer is returned to the storefront.
 

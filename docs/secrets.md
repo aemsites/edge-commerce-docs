@@ -118,7 +118,7 @@ Each provider page documents that provider's full schema, every field, and any p
 
 ### reCAPTCHA
 
-The `recaptcha.json` secret enables reCAPTCHA verification on unauthenticated write endpoints (such as order creation, order preview, and login). Unlike the providers above, it is a global secret only; it does not use country or locale scoping. See the [reCAPTCHA page](/checkout/recaptcha) for the full schema and protected endpoints.
+The `recaptcha.json` secret enables reCAPTCHA verification on unauthenticated write endpoints (such as order creation, order preview, and login). Unlike the providers above, it is configured site-wide and does not use country or locale scoping. See the [reCAPTCHA page](/checkout/recaptcha) for the full schema and protected endpoints.
 
 ## Next steps
 

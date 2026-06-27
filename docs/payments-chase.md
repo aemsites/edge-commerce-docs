@@ -59,9 +59,9 @@ curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/secrets/payments-
 | `transType` | string | When funds are captured: `auth_capture` (authorize and capture immediately, default), `auth_only` (authorize only, capture later), or `store_authorize` (authorize and store credentials for installments) |
 | `maxUserRetries` | number | How many times the customer can retry card entry on the hosted page (0–10) before Chase redirects to the cancel URL |
 | `templateUrl` | string (HTTPS) | URL of a merchant-hosted template used to brand the Chase hosted page |
-| `safetechMerchantId` | string | Enables Chase SafeTech fraud screening. When set, Chase runs fraud rules server-side and can decline a transaction before approval. Omit to disable |
+| `safetechMerchantId` | string | Enables Chase SafeTech fraud screening. When set, Chase runs fraud rules and can decline a transaction before approval. Omit to disable |
 
-> The schema also defines several fields reserved for future capabilities (Orbital Gateway credentials such as `username`, `password`, `merchantId`, `terminalId`, `bin`, `avsUrl`, and `orbitalEndpoint`, plus `enabled`, `title`, and `language`). They are accepted for forward compatibility but are not used by the current card payment flow.
+> The schema also defines several fields reserved for future capabilities (Orbital Gateway credentials such as `username`, `password`, `merchantId`, `terminalId`, `bin`, `avsUrl`, and `orbitalEndpoint`, plus `enabled`, `title`, and `language`). Configure them only when your implementation requires the corresponding wallet or Orbital feature.
 
 ## Apple Pay and Google Pay through Chase
 

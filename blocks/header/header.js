@@ -14,6 +14,32 @@ function decorateMainNav(el) {
   el.classList.add('main-nav-section');
 }
 
+function decorateMobileNavToggle(section) {
+  if (section.querySelector('.nav-menu-button')) return;
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'nav-menu-button';
+  button.setAttribute('aria-controls', 'site-navigation');
+  button.setAttribute('aria-expanded', 'false');
+  button.setAttribute('aria-label', 'Open navigation menu');
+  button.innerHTML = '<span class="nav-menu-icon"><span></span><span></span><span></span></span><span class="nav-menu-label">Menu</span>';
+
+  button.addEventListener('click', () => {
+    const open = !document.body.classList.contains('nav-open');
+    document.body.classList.toggle('nav-open', open);
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+  });
+
+  document.addEventListener('sitenav:close', () => {
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-label', 'Open navigation menu');
+  });
+
+  section.prepend(button);
+}
+
 async function decorateLink(section, pattern, name) {
   const link = section.querySelector(`[href*="${pattern}"]`);
   if (!link) return;
@@ -98,6 +124,7 @@ async function decorateHeader(fragment) {
   const ul = fragment.querySelector('ul');
   const mainNav = ul.closest('.section');
   decorateMainNav(mainNav);
+  decorateMobileNavToggle(mainNav);
 
   const actions = fragment.querySelector('.section:last-child');
 
