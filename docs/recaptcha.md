@@ -18,11 +18,16 @@ reCAPTCHA Enterprise protects the API's unauthenticated write endpoints from aut
 
 Unlike the payment, fraud, tax, and identity providers, reCAPTCHA is not tied to a single checkout step and is configured site-wide; it does not use country or locale scoping.
 
-Configuration is stored in the secrets store as `recaptcha.json`. See the [secrets store guide](/checkout/secrets) for how to write it.
+reCAPTCHA uses two pieces of configuration:
+
+- Site configuration enables enforcement and optional bypass rules with `recaptcha.enabled`, `recaptcha.bypassOrigins`, and `recaptcha.bypassDeliverySites`.
+- The encrypted secrets store holds `recaptcha.json`, which contains the Google project and API key values.
+
+See [Site configuration](/configuration/site#recaptcha-settings) for the enforcement switch and bypass rules. See the [secrets store guide](/checkout/secrets) for how to write `recaptcha.json`.
 
 ## Enabling
 
-The presence of `recaptcha.json` enables verification on the protected endpoints. Remove the file to disable it.
+Set `recaptcha.enabled` to `true` in site configuration and write `recaptcha.json` to the secrets store. To disable enforcement, set `recaptcha.enabled` to `false` or remove the field from site configuration.
 
 ## Writing the configuration
 
@@ -63,6 +68,7 @@ The storefront obtains a reCAPTCHA token from the embedded `siteKey` and include
 
 ## Next steps
 
-- [Secrets store](/checkout/secrets): How the configuration is stored
+- [Site configuration](/configuration/site#recaptcha-settings): Enable enforcement and configure bypass rules
+- [Secrets store](/checkout/secrets): Store the Google project and API key values
 - [Payments overview](/checkout/payments/overview): How abuse protection complements payment-time controls
 - [API reference](/api-reference): Complete API endpoint reference

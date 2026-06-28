@@ -8,9 +8,15 @@ sourceFormat: markdown
 
 # Security best practices
 
-## API key management
+## Token management
 
-Rotate your API keys regularly, quarterly rotation is recommended as a baseline. Never commit keys to version control, and instead use environment variables or a secret management service to store and access them securely.
+Use [service tokens](/authentication/service-tokens) for automation and integrations. Create one token per integration, grant only the permissions it needs, and rotate tokens regularly. Never commit tokens to version control; store them in a secret management system.
+
+Use an authenticated admin session for sensitive setup tasks such as writing provider credentials. Service tokens are intentionally blocked from some high-privilege operations, including secrets writes and token administration.
+
+## Access control
+
+Review [roles and permissions](/authentication/roles-permissions) before granting access. Permissions are scoped by organization and site, and routes check the specific permission required for the operation.
 
 ## Data validation
 
@@ -18,5 +24,8 @@ Validate all product data before ingestion to catch issues early. Sanitize HTML 
 
 ## Next steps
 
-- [Data Ingestion Guide](/data-ingestion#etl-process-overview): Validation during the ETL process
-- [API Reference](/api-reference#authentication): Authentication and authorization
+- [Site configuration](/configuration/site): Configure allowed origins, auth and reCAPTCHA
+- [Authentication overview](/authentication/overview): Learn how tokens and site scoping work
+- [Roles and permissions](/authentication/roles-permissions): Review access levels and permission groups
+- [Data ingestion](/data-ingestion#etl-process-overview): Validate data during the ETL process
+- [API reference](/api-reference): Complete endpoint details

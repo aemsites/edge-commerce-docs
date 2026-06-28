@@ -120,6 +120,22 @@ Focused, task-oriented guides for each part of the platform.
 <p><code>payments</code> <code>fraud</code> <code>tax</code></p>
 </div>
 </div>
+<div>
+<div>:tune:</div>
+<div>
+<h3><a href="/configuration/site">Site configuration</a></h3>
+<p>Allowed origins, auth, reCAPTCHA, email branding and friendly order IDs.</p>
+<p><code>config</code> <code>auth</code> <code>email</code></p>
+</div>
+</div>
+<div>
+<div>:shield:</div>
+<div>
+<h3><a href="/authentication/overview">Authentication &amp; access</a></h3>
+<p>Bearer tokens, roles, permissions and scoped service tokens.</p>
+<p><code>auth</code> <code>roles</code> <code>tokens</code></p>
+</div>
+</div>
 </div>
 
 ## Operations &amp; best practices
@@ -130,7 +146,9 @@ Focused, task-oriented guides for each part of the platform.
 <div><div><a href="/multi-store">Multi-store</a> — Store &amp; locale structure</div></div>
 <div><div><a href="/caching">Caching strategy</a> — TTLs &amp; push invalidation</div></div>
 <div><div><a href="/image-processing">Image processing</a> — How images are fetched</div></div>
-<div><div><a href="/security">Security</a> — API keys &amp; data validation</div></div>
+<div><div><a href="/configuration/site">Site configuration</a> — Allowed origins, auth &amp; email settings</div></div>
+<div><div><a href="/authentication/overview">Authentication &amp; access</a> — Tokens, roles &amp; permissions</div></div>
+<div><div><a href="/security">Security</a> — Token management &amp; data validation</div></div>
 <div><div><a href="/custom-data">Custom data</a> — Extending with custom fields</div></div>
 </div>
 
@@ -177,7 +195,7 @@ Suggested reading order depending on what you're building.
 <div>:shield:</div>
 <div>
 <h3>System administrators</h3>
-<ol><li><a href="/overview">Overview</a> — system architecture</li><li><a href="/network">Mixer configuration</a> — traffic routing</li><li><a href="/caching">Caching strategy</a> — invalidation &amp; TTLs</li><li><a href="/security">Security</a> — API keys &amp; validation</li></ol>
+<ol><li><a href="/overview">Overview</a> — system architecture</li><li><a href="/authentication/overview">Authentication &amp; access</a> — tokens, roles &amp; permissions</li><li><a href="/network">Mixer configuration</a> — traffic routing</li><li><a href="/security">Security</a> — token management &amp; validation</li></ol>
 </div>
 </div>
 </div>
