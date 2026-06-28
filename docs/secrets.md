@@ -118,10 +118,11 @@ Each provider page documents that provider's full schema, every field, and any p
 
 ### reCAPTCHA
 
-The `recaptcha.json` secret enables reCAPTCHA verification on unauthenticated write endpoints (such as order creation, order preview, and login). Unlike the providers above, it is configured site-wide and does not use country or locale scoping. See the [reCAPTCHA page](/checkout/recaptcha) for the full schema and protected endpoints.
+The `recaptcha.json` secret provides the Google project and API key values used for reCAPTCHA verification on unauthenticated write endpoints, such as order creation, order preview, and login. Enforcement is enabled in [site configuration](/configuration/site#recaptcha-settings) with `recaptcha.enabled`. Unlike the providers above, the secret is configured site-wide and does not use country or locale scoping. See the [reCAPTCHA page](/checkout/recaptcha) for the full schema and protected endpoints.
 
 ## Next steps
 
-- [Payments overview](/checkout/payments/overview): How payment providers use these credentials
 - [Checkout overview](/checkout/overview): How the provider groups fit together
+- [Payments overview](/checkout/payments/overview): How payment providers use these credentials
+- [Site configuration](/configuration/site): Configure non-secret site settings
 - [API reference](/api-reference): Complete API endpoint reference

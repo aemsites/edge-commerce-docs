@@ -23,7 +23,7 @@ function decorateMobileNavToggle(section) {
   button.setAttribute('aria-controls', 'site-navigation');
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-label', 'Open navigation menu');
-  button.innerHTML = '<span class="nav-menu-icon"><span></span><span></span><span></span></span><span class="nav-menu-label">Menu</span>';
+  button.innerHTML = '<span class="nav-menu-icon"><span></span><span></span><span></span></span>';
 
   button.addEventListener('click', () => {
     const open = !document.body.classList.contains('nav-open');
@@ -115,16 +115,15 @@ async function decorateSearch(actions) {
 }
 
 async function decorateHeader(fragment) {
-  const img = fragment.querySelector('.section:first-child img');
-  if (img) {
-    const brand = img.closest('.section');
+  const brand = fragment.querySelector('.section:first-child');
+  if (brand) {
     decorateBrand(brand);
+    decorateMobileNavToggle(brand);
   }
 
   const ul = fragment.querySelector('ul');
   const mainNav = ul.closest('.section');
   decorateMainNav(mainNav);
-  decorateMobileNavToggle(mainNav);
 
   const actions = fragment.querySelector('.section:last-child');
 
