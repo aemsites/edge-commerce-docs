@@ -145,7 +145,7 @@ To preview how catalog promotions will look before activating them in production
 
 ## Conditional promotions
 
-When a catalog promotion has a `conditions` object, it behaves differently. Rather than being applied at render time to lower displayed prices, a conditional promotion is evaluated at cart/estimate time. The typical use case is granting a free product when the cart meets a spending threshold.
+When a catalog promotion has a `conditions` object, it behaves differently. Rather than being applied at render time to lower displayed prices, a conditional promotion is evaluated at cart/estimate time. The typical use case is granting a free product when the cart meets a spending threshold. See [Estimates and cart totals](/estimates) for estimate-time discount behavior.
 
 ```json
 {

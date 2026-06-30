@@ -29,7 +29,7 @@ Use a service token for recurring machine-to-machine tasks:
 | Customer data sync | `customers:read`, `customers:write` |
 | Transactional email | `emails:send` plus optional destination scopes |
 | Promotions management | `coupons:read`, `coupons:write`, `price_rules:read`, `price_rules:write` |
-| Journal reads | `journal:orders:read`, `journal:general:read` |
+| [Journal reads](/orders/journal) | `journal:orders:read`, `journal:general:read` |
 
 Do not use service tokens for credential setup, site configuration, site-admin management, or token administration. Those operations require an authenticated admin session or are handled outside service-token automation.
 
@@ -85,7 +85,7 @@ A service token can be created only with permissions from this allowlist:
 | `customers:read` | Read customer records |
 | `customers:write` | Create or update customer records |
 | `emails:send` | Send transactional email |
-| `journal:orders:read` | Read order journal entries |
+| `journal:orders:read` | Read [order journal](/orders/journal) entries |
 | `journal:general:read` | Read general journal entries |
 | `coupons:read` | Read coupon types and codes |
 | `coupons:write` | Create or update coupon types and codes |

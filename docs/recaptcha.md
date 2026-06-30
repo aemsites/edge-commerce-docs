@@ -58,17 +58,18 @@ Of the three, only `apiKey` is a true secret. `projectId` and `siteKey` are publ
 
 ## Protected endpoints
 
-When `recaptcha.json` is present, verification is enforced on the unauthenticated write endpoints:
+When `recaptcha.enabled` is set in site configuration and `recaptcha.json` is present, verification is enforced on unauthenticated write endpoints:
 
-- Order creation
-- Order preview
-- Login
+- [Order creation](/orders/lifecycle#create-the-order)
+- [Order preview](/orders/lifecycle#preview-the-selected-order)
+- [Login](/authentication/overview)
 
 The storefront obtains a reCAPTCHA token from the embedded `siteKey` and includes it with these requests; the API exchanges it for an assessment using the `apiKey`.
 
 ## Next steps
 
 - [Site configuration](/configuration/site#recaptcha-settings): Enable enforcement and configure bypass rules
+- [Order lifecycle](/orders/lifecycle): Understand protected checkout endpoints
 - [Secrets store](/checkout/secrets): Store the Google project and API key values
 - [Payments overview](/checkout/payments/overview): How abuse protection complements payment-time controls
 - [API reference](/api-reference): Complete API endpoint reference

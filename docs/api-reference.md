@@ -63,6 +63,8 @@ Authorization: Bearer {your-sitekey}
 
 `GET` operations for published data do not require authentication.
 
+For authored guidance on token types, roles, and service tokens, see [Authentication overview](/authentication/overview), [Roles and permissions](/authentication/roles-permissions), and [Service tokens](/authentication/service-tokens).
+
 ## Path-based storage
 
 Products are stored and accessed by their URL path. The path determines both the storage location and the product's URL on your site.

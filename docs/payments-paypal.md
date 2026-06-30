@@ -67,5 +67,6 @@ The `apiBaseUrl` is restricted to PayPal's two known hostnames so a misconfigura
 ## Next steps
 
 - [Payments overview](/checkout/payments/overview): The payment flow
+- [Order lifecycle](/orders/lifecycle): Order states and payment callbacks
 - [Secrets store](/checkout/secrets): Writing and resolving credentials
 - [API reference](/api-reference): Complete API endpoint reference

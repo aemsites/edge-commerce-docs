@@ -115,6 +115,14 @@ Focused, task-oriented guides for each part of the platform.
 <div>
 <div>:shopping_cart:</div>
 <div>
+<h3><a href="/orders/lifecycle">Orders</a></h3>
+<p>Order preview, creation, customer data, payment state and journals.</p>
+<p><code>orders</code> <code>customers</code> <code>payments</code></p>
+</div>
+</div>
+<div>
+<div>:credit_card:</div>
+<div>
 <h3><a href="/checkout/overview">Checkout</a></h3>
 <p>Payment, fraud, tax &amp; identity providers, and the encrypted secrets store.</p>
 <p><code>payments</code> <code>fraud</code> <code>tax</code></p>
@@ -146,6 +154,11 @@ Focused, task-oriented guides for each part of the platform.
 <div><div><a href="/multi-store">Multi-store</a> — Store &amp; locale structure</div></div>
 <div><div><a href="/caching">Caching strategy</a> — TTLs &amp; push invalidation</div></div>
 <div><div><a href="/image-processing">Image processing</a> — How images are fetched</div></div>
+<div><div><a href="/orders/lifecycle">Order lifecycle</a>: Preview, payment state &amp; journals</div></div>
+<div><div><a href="/estimates">Estimates and cart totals</a>: Tax, shipping, coupons &amp; totals</div></div>
+<div><div><a href="/orders/journal">Order journal</a>: Event history &amp; troubleshooting</div></div>
+<div><div><a href="/customers">Customers</a>: Profiles, addresses &amp; customer orders</div></div>
+<div><div><a href="/emails">Transactional email</a>: OTP, order confirmation &amp; templates</div></div>
 <div><div><a href="/configuration/site">Site configuration</a> — Allowed origins, auth &amp; email settings</div></div>
 <div><div><a href="/authentication/overview">Authentication &amp; access</a> — Tokens, roles &amp; permissions</div></div>
 <div><div><a href="/security">Security</a> — Token management &amp; data validation</div></div>
@@ -188,7 +201,7 @@ Suggested reading order depending on what you're building.
 <div>:design_services:</div>
 <div>
 <h3>Frontend developers</h3>
-<ol><li><a href="/rendering-guide">Rendering guide</a> — how products render</li><li><a href="/indexing">Product indexing</a> — search &amp; catalog data</li><li><a href="/schema-reference">Schema reference</a> — available product fields</li><li><a href="/network">Mixer configuration</a> — URL routing</li></ol>
+<ol><li><a href="/rendering-guide">Rendering guide</a> — how products render</li><li><a href="/orders/lifecycle">Order lifecycle</a>: checkout flow</li><li><a href="/estimates">Estimates and cart totals</a>: checkout totals</li><li><a href="/customers">Customers</a>: account data</li><li><a href="/emails">Transactional email</a>: OTP and order email</li><li><a href="/indexing">Product indexing</a> — search &amp; catalog data</li><li><a href="/schema-reference">Schema reference</a> — available product fields</li><li><a href="/network">Mixer configuration</a> — URL routing</li></ol>
 </div>
 </div>
 <div>

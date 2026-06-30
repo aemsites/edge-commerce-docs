@@ -63,4 +63,5 @@ The configured gateway is enforced per site: a production site configured with t
 
 - [Chase](/checkout/payments/chase): Processing Apple Pay through Chase
 - [Payments overview](/checkout/payments/overview): The payment flow
+- [Order lifecycle](/orders/lifecycle): Wallet payment state transitions
 - [Secrets store](/checkout/secrets): Writing and resolving credentials

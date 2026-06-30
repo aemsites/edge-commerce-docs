@@ -14,7 +14,7 @@ sources:
 
 # Avalara tax
 
-Avalara AvaTax calculates tax in real time during order preview. When configured, the Edge Commerce API sends the cart, ship-to address, and ship-from address to Avalara and uses the returned tax in the order estimate. When Avalara is not configured, tax falls back to the merchant's table-based rules.
+Avalara AvaTax calculates tax in real time during estimates and order preview. When configured, the Edge Commerce API sends the cart, ship-to address, and ship-from address to Avalara and uses the returned tax in the order estimate. When Avalara is not configured, tax falls back to the merchant's table-based rules. See [Estimates and cart totals](/estimates#relationship-to-tax-providers) for how tax fits into cart totals.
 
 Configuration is stored in the secrets store as `taxes-avalara.json`. See the [secrets store guide](/checkout/secrets) for how to write it and how country/locale resolution works.
 
@@ -74,5 +74,6 @@ The `originAddress` object requires `line1`, `city`, `region`, `postalCode`, and
 ## Next steps
 
 - [Checkout overview](/checkout/overview): How tax fits into the order flow
+- [Estimates and cart totals](/estimates): How tax is calculated during cart estimates
 - [Secrets store](/checkout/secrets): Writing and resolving credentials
 - [API reference](/api-reference): Complete API endpoint reference
