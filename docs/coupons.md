@@ -166,7 +166,7 @@ SAVE10+EMAIL_JUN26  → base code: SAVE10, source: EMAIL_JUN26
 
 ## Applying a coupon at checkout
 
-The storefront includes the coupon code in the body of an estimate request. The estimate endpoint validates the code and, if it passes all checks, applies the discount to the cart and returns the breakdown.
+The storefront includes the coupon code in the body of an estimate request. The estimate endpoint validates the code and, if it passes all checks, applies the discount to the cart and returns the breakdown. See [Estimates and cart totals](/estimates) for how coupon validation fits into tax, shipping, price, and order estimates.
 
 ```bash
 curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/shipping" \

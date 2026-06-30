@@ -70,5 +70,6 @@ Apple Pay and Google Pay can be processed through the same Chase account using t
 ## Next steps
 
 - [Payments overview](/checkout/payments/overview): The payment flow
+- [Order lifecycle](/orders/lifecycle): Order states and payment callbacks
 - [Secrets store](/checkout/secrets): Writing and resolving credentials
 - [Apple Pay](/checkout/payments/apple-pay): Apple Pay merchant identity

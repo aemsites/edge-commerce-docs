@@ -14,7 +14,7 @@ sources:
 
 # Payments overview
 
-The Edge Commerce API collects payment for an order through a payment provider. Each provider is integrated behind a common model, so the storefront initiates payment the same way regardless of which provider handles it. The provider's credentials come from the [secrets store](/checkout/secrets), resolved by the order's country and locale.
+The Edge Commerce API collects payment for an order through a payment provider. Each provider is integrated behind a common model, so the storefront initiates payment the same way regardless of which provider handles it. The provider's credentials come from the [secrets store](/checkout/secrets), resolved by the order's country and locale. See [Order lifecycle](/orders/lifecycle) for how payment initiation changes order state.
 
 ## Supported providers
 
@@ -65,6 +65,7 @@ Payment initiation does not require customer authentication, so guests can check
 
 ## Next steps
 
+- [Order lifecycle](/orders/lifecycle): Understand payment state transitions
 - [Chase](/checkout/payments/chase) · [PayPal](/checkout/payments/paypal) · [Affirm](/checkout/payments/affirm) · [Apple Pay](/checkout/payments/apple-pay): Provider configuration
 - [Secrets store](/checkout/secrets): How payment credentials are stored and resolved
 - [API reference](/api-reference): Complete API endpoint reference

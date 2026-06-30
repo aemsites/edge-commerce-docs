@@ -14,7 +14,7 @@ sources:
 
 # Forter fraud detection
 
-Forter is a real-time fraud detection service. When configured, the Edge Commerce API submits each transaction to Forter during the payment flow, and Forter returns an approve or decline decision before the payment is finalized. Fraud screening is optional: it is enabled simply by storing a Forter configuration.
+Forter is a real-time fraud detection service. When configured, the Edge Commerce API submits each transaction to Forter during the payment flow, and Forter returns an approve or decline decision before the payment is finalized. Fraud screening is optional: it is enabled simply by storing a Forter configuration. See [Order lifecycle](/orders/lifecycle) for payment state transitions and [Order journal](/orders/journal) for fraud outcome events.
 
 Configuration is stored in the secrets store as `fraud-forter.json`. See the [secrets store guide](/checkout/secrets) for how to write it and how country/locale resolution works.
 
@@ -71,5 +71,6 @@ Providers not listed above are accepted as free-form string maps, so a new payme
 ## Next steps
 
 - [Payments overview](/checkout/payments/overview): How fraud screening fits into the payment flow
+- [Order journal](/orders/journal): Read fraud and payment outcome events
 - [Secrets store](/checkout/secrets): Writing and resolving credentials
 - [API reference](/api-reference): Complete API endpoint reference

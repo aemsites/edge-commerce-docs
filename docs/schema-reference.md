@@ -330,6 +330,8 @@ Product condition using schema.org vocabulary. These values are rendered in the 
 
 Request body schemas for the order and checkout endpoints — what a client sends when previewing or placing an order. These are distinct from the stored order shape returned in responses.
 
+For how `estimateToken` fits into preview and order creation, see [Estimate tokens](/orders/lifecycle#estimate-tokens).
+
 ### Order
 
 The full order request body used when placing an order.

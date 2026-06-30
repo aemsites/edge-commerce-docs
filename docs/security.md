@@ -12,7 +12,7 @@ sourceFormat: markdown
 
 Use [service tokens](/authentication/service-tokens) for automation and integrations. Create one token per integration, grant only the permissions it needs, and rotate tokens regularly. Never commit tokens to version control; store them in a secret management system.
 
-Use an authenticated admin session for sensitive setup tasks such as writing provider credentials. Service tokens are intentionally blocked from some high-privilege operations, including secrets writes and token administration.
+Use an authenticated admin session for sensitive setup tasks such as writing provider credentials to the [secrets store](/checkout/secrets). Service tokens are intentionally blocked from some high-privilege operations, including secrets writes and token administration.
 
 ## Access control
 
@@ -27,5 +27,6 @@ Validate all product data before ingestion to catch issues early. Sanitize HTML 
 - [Site configuration](/configuration/site): Configure allowed origins, auth and reCAPTCHA
 - [Authentication overview](/authentication/overview): Learn how tokens and site scoping work
 - [Roles and permissions](/authentication/roles-permissions): Review access levels and permission groups
+- [Secrets store](/checkout/secrets): Store provider credentials securely
 - [Data ingestion](/data-ingestion#etl-process-overview): Validate data during the ETL process
 - [API reference](/api-reference): Complete endpoint details

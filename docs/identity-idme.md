@@ -14,7 +14,7 @@ sources:
 
 # ID.me identity verification
 
-ID.me verifies that a customer belongs to a group (such as military, medical workers, nurses, first responders, or teachers) so the storefront can grant group-based discounts. Verification uses OAuth 2.0: the customer is sent to ID.me to confirm their status, and on success the API applies a configured coupon code to the cart.
+ID.me verifies that a customer belongs to a group (such as military, medical workers, nurses, first responders, or teachers) so the storefront can grant group-based discounts. Verification uses OAuth 2.0: the customer is sent to ID.me to confirm their status, and on success the API applies a configured coupon code to the cart. See [Coupons](/coupons) and [Estimates and cart totals](/estimates) for how the resulting coupon is applied at checkout.
 
 Configuration is stored in the secrets store as `identity-idme.json`. See the [secrets store guide](/checkout/secrets) for how to write it and how country/locale resolution works.
 
@@ -55,5 +55,6 @@ curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/secrets/identity-
 ## Next steps
 
 - [Coupons guide](/coupons): How the applied coupon code is defined
+- [Estimates and cart totals](/estimates): How the coupon affects cart totals
 - [Secrets store](/checkout/secrets): Writing and resolving credentials
 - [Checkout overview](/checkout/overview): How identity verification fits in

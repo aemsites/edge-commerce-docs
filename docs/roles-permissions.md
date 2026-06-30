@@ -65,13 +65,13 @@ The `JWT service token eligible` column means the permission may be delegated wh
 | Catalog | `catalog:read`, `catalog:write` | Product ingestion and product data retrieval |
 | Orders | `orders:read`, `orders:write`, `orders:custom:write` | Order lookup, order creation, and custom order creation |
 | Indexes | `index:read`, `index:write` | Product index configuration and updates |
-| Customers | `customers:read`, `customers:write` | Customer profile and address management |
+| Customers | `customers:read`, `customers:write` | [Customer profile and address management](/customers) |
 | Config | `config:read`, `config:write` | [Site configuration](/configuration/site) management |
 | Checkout secrets | `secrets:write` | Writing encrypted provider credentials |
 | Service tokens | `service_token:read`, `service_token:write`, `service_token:create` | Managing service and legacy site tokens |
 | Admins | `admins:read`, `admins:write` | Internal site-admin record management. Not available to service tokens |
 | Email | `emails:send` and optional scoped variants | Sending transactional emails |
-| Journal | `journal:orders:read`, `journal:general:read` | Reading journal entries |
+| Journal | `journal:orders:read`, `journal:general:read` | Reading [journal entries](/orders/journal) |
 | Promotions | `coupons:read`, `coupons:write`, `price_rules:read`, `price_rules:write` | Managing coupons and price rules |
 
 ## Service-token restrictions

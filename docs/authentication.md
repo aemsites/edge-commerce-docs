@@ -41,7 +41,7 @@ Some checkout and customer-facing endpoints are intentionally unauthenticated, s
 
 The user login flow has two steps:
 
-1. `POST /auth/login`: validates the email address, checks that auth is enabled for the site, sends a one-time password, and returns an opaque challenge. See [Site configuration](/configuration/site#authentication-settings) for the `auth.enabled` setting.
+1. `POST /auth/login`: validates the email address, checks that auth is enabled for the site, sends a one-time password, and returns an opaque challenge. See [Site configuration](/configuration/site#authentication-settings) for the `auth.enabled` setting and [Transactional email](/emails#otp-email-flow) for OTP email rendering.
 2. `POST /auth/callback`: verifies the code and challenge, resolves the caller's role, and issues the session token.
 
 The callback returns the token in the response body and also sets an `auth_token` cookie with `HttpOnly`, `Secure`, and `SameSite=Strict`.

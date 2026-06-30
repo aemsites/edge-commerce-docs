@@ -164,7 +164,7 @@ See [reCAPTCHA verification](/checkout/recaptcha) for the secret and protected e
 
 ## Email settings
 
-The `emails` object configures branding and sender information for one-time password and transactional email.
+The `emails` object configures branding and sender information for one-time password and transactional email. See [Transactional email](/emails) for template paths and rendering behavior.
 
 ```json
 {
@@ -255,4 +255,5 @@ If a configuration update fails validation, the API returns `400` with field-lev
 - [Authentication overview](/authentication/overview): Configure auth and understand login behavior
 - [reCAPTCHA verification](/checkout/recaptcha): Configure the reCAPTCHA secret used with `recaptcha.enabled`
 - [Service tokens](/authentication/service-tokens): Create scoped tokens for automation
+- [Transactional email](/emails): Configure OTP and order confirmation templates
 - [API reference](/api-reference): Complete endpoint details

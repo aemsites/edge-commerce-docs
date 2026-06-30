@@ -67,5 +67,6 @@ For Canadian operation, write a full Affirm-Canada configuration to a country-sc
 ## Next steps
 
 - [Payments overview](/checkout/payments/overview): The payment flow
+- [Order lifecycle](/orders/lifecycle): Order states and payment callbacks
 - [Secrets store](/checkout/secrets): Writing and resolving credentials
 - [API reference](/api-reference): Complete API endpoint reference

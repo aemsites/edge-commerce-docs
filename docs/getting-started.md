@@ -57,7 +57,7 @@ Each site requires a unique API key (sitekey) that provides access to an org/sit
 
 To obtain a sitekey for initial setup, reach out to the Adobe team on Slack or contact your Adobe representative.
 
-Once you have a sitekey, you can manage it (rotate, set) using the Authentication API endpoints described in the [Product Bus API Reference](/api-reference#authentication-api).
+Once you have a sitekey, you can manage it (rotate, set) using the Authentication API endpoints described in the [Product Bus API Reference](/api-reference#authentication-api). For newer token guidance, see [Authentication overview](/authentication/overview) and [Service tokens](/authentication/service-tokens).
 
 ## Your first product ingestion
 
