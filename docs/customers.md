@@ -93,7 +93,7 @@ The token must belong to the same organization, site, and email address. Admin a
 
 ## Address book
 
-Saved addresses belong to a customer email. Address routes require the authenticated email to match the `{email}` path parameter. See [Schema reference](/schema-reference#address) for the generated address schema.
+Saved addresses belong to a customer email. Address routes require the authenticated email to match the `{email}` path parameter. Storefronts can use [Places and address validation](/places) before saving an address to reduce entry errors. See [Schema reference](/schema-reference#address) for the generated address schema.
 
 ### Address shape
 
@@ -196,6 +196,7 @@ See [Order lifecycle](/orders/lifecycle) for the full checkout flow.
 ## Next steps
 
 - [Order lifecycle](/orders/lifecycle): Understand how checkout creates customers and links orders
+- [Places and address validation](/places): Autocomplete and validate customer addresses
 - [Authentication overview](/authentication/overview): Learn how email ownership and site scoping work
 - [Roles and permissions](/authentication/roles-permissions): Review customer and order permissions
 - [API reference](/api-reference): Complete endpoint details

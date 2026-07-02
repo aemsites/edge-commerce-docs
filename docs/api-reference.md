@@ -1,6 +1,6 @@
 ---
-title: "Helix Commerce API reference"
-description: "Human-readable API reference for Product Bus operations."
+title: "Edge Commerce API reference"
+description: "Human-readable API reference for Edge Commerce operations."
 daPath: "/api-reference"
 status: migrated
 managed: true
@@ -40,7 +40,7 @@ migration:
   notes: "Migrated as-is from the legacy documentation repo; source commits retain the original frontmatter baseline."
 ---
 
-# Helix Commerce API reference
+# Edge Commerce API reference
 
 ## Base URL structure
 
@@ -51,14 +51,14 @@ https://api.adobecommerce.live/{org}/sites/{site}/{route}
 
 The common parameters are `{org}` for your organization identifier, `{site}` for your site identifier, and `{route}` for the API route which varies by operation.
 
-The available API routes are `/catalog{path}` for product operations where `{path}` is the product URL path (e.g., `/catalog/us/en/products/blender-pro-500.json`), `/index{path}` for index management, and `/auth/token` for API key management.
+The available API routes include `/catalog{path}` for product operations where `{path}` is the product URL path, `/index{path}` for index management, `/auth/*` for authentication, and checkout routes such as `/estimate/*`, `/orders/*`, and `/places/*`.
 
 ## Authentication
 
 All modifying operations (`PUT`, `POST`, `DELETE`) require authentication using a bearer token:
 
 ```bash
-Authorization: Bearer {your-sitekey}
+Authorization: Bearer {your-admin-or-service-token}
 ```
 
 `GET` operations for published data do not require authentication.
@@ -316,29 +316,29 @@ If you have [push invalidation](/caching#push-invalidation) enabled, the CDN cac
 
 ## Authentication API
 
-### Rotate API key
+### Rotate legacy site token
 
 `POST /{org}/sites/{site}/auth/token`
 
-This endpoint requires authentication with your current sitekey. On success, it returns a newly generated sitekey that replaces your current one.
+This legacy endpoint requires authentication with the current site token. On success, it returns a newly generated site token that replaces the current one. For new automation, prefer [service tokens](/authentication/service-tokens).
 
 ```bash
 curl -X POST \
-  -H "Authorization: Bearer {your-api-key}" \
+  -H "Authorization: Bearer {your-current-site-token}" \
   "https://api.adobecommerce.live/{org}/sites/{site}/auth/token"
 ```
 
-See also [Security best practices](/security) for API key management recommendations.
+See also [Security](/security) for token management recommendations.
 
-### Set explicit API key
+### Set explicit legacy site token
 
 `PUT /{org}/sites/{site}/auth/token`
 
-This endpoint requires authentication with your current sitekey. Provide your desired key value in the request body as `{ "token": "new-key-value" }`. The API confirms the update on success.
+This legacy endpoint requires authentication with the current site token. Provide your desired key value in the request body as `{ "token": "new-key-value" }`. The API confirms the update on success. For new automation, prefer [service tokens](/authentication/service-tokens).
 
 ```bash
 curl -X PUT \
-  -H "Authorization: Bearer {your-api-key}" \
+  -H "Authorization: Bearer {your-current-site-token}" \
   -H "Content-Type: application/json" \
   -d '{"token": "new-custom-key"}' \
   "https://api.adobecommerce.live/{org}/sites/{site}/auth/token"

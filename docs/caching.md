@@ -32,7 +32,7 @@ The Pipeline automatically detects your CDN provider and returns the appropriate
 
 ## Push invalidation
 
-When products are updated via the Product Bus API (`PUT`/`DELETE` operations), cached content is automatically purged from your CDN.
+When products are updated through the Edge Commerce API (`PUT`/`DELETE` operations), cached content is automatically purged from your CDN.
 
 To enable push invalidation, configure your CDN to respect cache headers from AEM Network and set up [Push Invalidation](https://www.aem.live/docs/setup-byo-cdn-push-invalidation) for your Edge Delivery Site. The Pipeline uses cache tags (also called surrogate keys) to enable selective purging. When a product is updated, only that product's cached pages (HTML, JSON) are invalidated. Product indexes (`index.json`) and sitemaps (`sitemap.xml`) also carry their own cache keys, so when the Product Indexer refreshes an index, only that index's cached response is invalidated — not your entire catalog or other indexes.
 

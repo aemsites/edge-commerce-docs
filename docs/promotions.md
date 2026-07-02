@@ -22,7 +22,7 @@ migration:
 
 # Promotions guide
 
-The Helix Commerce promotions system has two layers: catalog promotions that lower displayed product prices, and cart rules that apply automatic discounts at checkout. Both are managed through the Commerce API and evaluated against the customer's shopping context at the appropriate point in the purchase flow.
+Edge Commerce promotions have two layers: catalog promotions that lower displayed product prices, and cart rules that apply automatic discounts at checkout. Both are managed through the Edge Commerce API and evaluated against the customer's shopping context at the appropriate point in the purchase flow.
 
 ## Catalog promotions
 

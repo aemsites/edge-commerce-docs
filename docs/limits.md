@@ -8,7 +8,7 @@ sourceFormat: markdown
 
 # Limits and guidance
 
-In addition to the [standard limits for AEM](https://main--helix-website--adobe.aem.live/docs/limits), there are specific considerations for the Helix Commerce API:
+In addition to the [standard limits for AEM](https://main--helix-website--adobe.aem.live/docs/limits), there are specific considerations for the Edge Commerce API:
 
 ## Bulk operations
 - Maximum 50 products per `POST` request

@@ -1,6 +1,6 @@
 ---
-title: "Product Bus Documentation"
-description: "Everything you need to build on the Helix Commerce ecosystem — from your first product ingestion to advanced rendering, indexing, and promotions."
+title: "Edge Commerce documentation"
+description: "Everything you need to build on Edge Commerce, from your first product ingestion to rendering, indexing, checkout, and promotions."
 daPath: "/"
 status: migrated
 managed: true
@@ -12,7 +12,7 @@ sourceFormat: markdown
 <div>
 <p><code>Documentation</code></p>
 <h1>Edge Commerce</h1>
-<p>Everything you need to build on the Helix Commerce ecosystem — from your first product ingestion to advanced rendering, indexing, and promotions.</p>
+<p>Everything you need to build on Edge Commerce, from your first product ingestion to rendering, indexing, checkout, and promotions.</p>
 <p><a href="/getting-started">Get started</a></p>
 <p><a href="/api/get-config.html">API reference</a></p>
 </div>
@@ -29,8 +29,8 @@ The four guides that explain how the system works end to end.
 <div>:explore:</div>
 <div>
 <h3><a href="/overview">Overview</a></h3>
-<p>Edge Delivery Commerce</p>
-<ul><li>System architecture &amp; key components</li><li>Data flow explanation</li><li>Product Bus, Commerce API, Pipeline, Indexer &amp; Mixer</li></ul>
+<p>Edge Commerce architecture</p>
+<ul><li>System architecture &amp; key components</li><li>Data flow explanation</li><li>Product data, Edge Commerce API, Pipeline, Indexer &amp; Network</li></ul>
 </div>
 </div>
 <div>
@@ -38,14 +38,14 @@ The four guides that explain how the system works end to end.
 <div>
 <h3><a href="/getting-started">Getting started</a></h3>
 <p>Your first ingestion</p>
-<ul><li>Prerequisites &amp; obtaining an API key</li><li>First product ingestion — 4-step walkthrough</li><li>URL pattern, mixer config &amp; indexing setup</li></ul>
+<ul><li>Prerequisites &amp; access setup</li><li>First product ingestion walkthrough</li><li>URL pattern, network routing &amp; indexing setup</li></ul>
 </div>
 </div>
 <div>
 <div>:api:</div>
 <div>
 <h3><a href="/api/get-config.html">API reference</a></h3>
-<p>Product Bus API</p>
+<p>Edge Commerce API</p>
 <ul><li>Path-based product storage &amp; CRUD</li><li>Complete endpoint documentation</li><li>Authentication, cache &amp; error formats</li></ul>
 </div>
 </div>
@@ -116,8 +116,8 @@ Focused, task-oriented guides for each part of the platform.
 <div>:shopping_cart:</div>
 <div>
 <h3><a href="/orders/lifecycle">Orders</a></h3>
-<p>Order preview, creation, customer data, payment state and journals.</p>
-<p><code>orders</code> <code>customers</code> <code>payments</code></p>
+<p>Order preview, creation, customer data, address validation, payment state and journals.</p>
+<p><code>orders</code> <code>customers</code> <code>places</code></p>
 </div>
 </div>
 <div>
@@ -150,31 +150,32 @@ Focused, task-oriented guides for each part of the platform.
 
 <div class="link-list">
 <div><div><h3>:tune: Operations &amp; best practices</h3></div></div>
-<div><div><a href="/limits">Limits &amp; guidance</a> — Bulk operation &amp; data limits</div></div>
-<div><div><a href="/multi-store">Multi-store</a> — Store &amp; locale structure</div></div>
-<div><div><a href="/caching">Caching strategy</a> — TTLs &amp; push invalidation</div></div>
-<div><div><a href="/image-processing">Image processing</a> — How images are fetched</div></div>
+<div><div><a href="/limits">Limits &amp; guidance</a>: Bulk operation &amp; data limits</div></div>
+<div><div><a href="/multi-store">Multi-store</a>: Store &amp; locale structure</div></div>
+<div><div><a href="/caching">Caching strategy</a>: TTLs &amp; push invalidation</div></div>
+<div><div><a href="/image-processing">Image processing</a>: How images are fetched</div></div>
 <div><div><a href="/orders/lifecycle">Order lifecycle</a>: Preview, payment state &amp; journals</div></div>
 <div><div><a href="/estimates">Estimates and cart totals</a>: Tax, shipping, coupons &amp; totals</div></div>
 <div><div><a href="/orders/journal">Order journal</a>: Event history &amp; troubleshooting</div></div>
 <div><div><a href="/customers">Customers</a>: Profiles, addresses &amp; customer orders</div></div>
+<div><div><a href="/places">Places and address validation</a>: Autocomplete, details &amp; validation</div></div>
 <div><div><a href="/emails">Transactional email</a>: OTP, order confirmation &amp; templates</div></div>
-<div><div><a href="/configuration/site">Site configuration</a> — Allowed origins, auth &amp; email settings</div></div>
-<div><div><a href="/authentication/overview">Authentication &amp; access</a> — Tokens, roles &amp; permissions</div></div>
-<div><div><a href="/security">Security</a> — Token management &amp; data validation</div></div>
-<div><div><a href="/custom-data">Custom data</a> — Extending with custom fields</div></div>
+<div><div><a href="/configuration/site">Site configuration</a>: Allowed origins, auth &amp; email settings</div></div>
+<div><div><a href="/authentication/overview">Authentication &amp; access</a>: Tokens, roles &amp; permissions</div></div>
+<div><div><a href="/security">Security</a>: Token management &amp; data validation</div></div>
+<div><div><a href="/custom-data">Custom data</a>: Extending with custom fields</div></div>
 </div>
 
 ## How it fits together
 
-Product data flows from your sources through the pipeline into the Product Bus, then out to search and delivery.
+Product data flows from your sources into the product data store, then out to search and delivery.
 
 <div class="flow">
 <div><div>:storage:</div><div>Sources</div><div>Catalog &amp; commerce data</div></div>
 <div><div>:bolt:</div><div>Product Pipeline</div><div>ETL ingestion</div></div>
-<div><div>:hub:</div><div><strong>Product Bus</strong></div><div>Path-based storage</div></div>
+<div><div>:hub:</div><div><strong>Product data</strong></div><div>Path-based storage</div></div>
 <div><div>:search:</div><div>Indexer</div><div>Search &amp; feeds</div></div>
-<div><div>:alt_route:</div><div>Helix Mixer</div><div>URL routing</div></div>
+<div><div>:alt_route:</div><div>AEM Network</div><div>URL routing</div></div>
 <div><div>:public:</div><div>Delivery</div><div>HTML · JSON · feeds</div></div>
 </div>
 
@@ -187,28 +188,28 @@ Suggested reading order depending on what you're building.
 <div>:person:</div>
 <div>
 <h3>First-time users</h3>
-<ol><li><a href="/overview">Overview</a> — ecosystem &amp; architecture</li><li><a href="/getting-started">Getting started</a> — set up your first product</li><li><a href="/schema-reference">Schema reference</a> — learn the data structure</li><li><a href="/api/get-config.html">API reference</a> — explore operations</li></ol>
+<ol><li><a href="/overview">Overview</a>: Ecosystem &amp; architecture</li><li><a href="/getting-started">Getting started</a>: Set up your first product</li><li><a href="/schema-reference">Schema reference</a>: Learn the data structure</li><li><a href="/api/get-config.html">API reference</a>: Explore operations</li></ol>
 </div>
 </div>
 <div>
 <div>:database:</div>
 <div>
 <h3>Building ETL</h3>
-<ol><li><a href="/data-ingestion">Data ingestion</a> — process &amp; considerations</li><li><a href="/schema-reference">Schema reference</a> — required data structures</li><li><a href="/api/get-config.html">API reference</a> — endpoints for loading</li><li><a href="/limits">Limits &amp; guidance</a> — bulk operation limits</li></ol>
+<ol><li><a href="/data-ingestion">Data ingestion</a>: Process &amp; considerations</li><li><a href="/schema-reference">Schema reference</a>: Required data structures</li><li><a href="/api/get-config.html">API reference</a>: Endpoints for loading</li><li><a href="/limits">Limits &amp; guidance</a>: Bulk operation limits</li></ol>
 </div>
 </div>
 <div>
 <div>:design_services:</div>
 <div>
 <h3>Frontend developers</h3>
-<ol><li><a href="/rendering-guide">Rendering guide</a> — how products render</li><li><a href="/orders/lifecycle">Order lifecycle</a>: checkout flow</li><li><a href="/estimates">Estimates and cart totals</a>: checkout totals</li><li><a href="/customers">Customers</a>: account data</li><li><a href="/emails">Transactional email</a>: OTP and order email</li><li><a href="/indexing">Product indexing</a> — search &amp; catalog data</li><li><a href="/schema-reference">Schema reference</a> — available product fields</li><li><a href="/network">Mixer configuration</a> — URL routing</li></ol>
+<ol><li><a href="/rendering-guide">Rendering guide</a>: How products render</li><li><a href="/orders/lifecycle">Order lifecycle</a>: Checkout flow</li><li><a href="/places">Places and address validation</a>: Address entry</li><li><a href="/estimates">Estimates and cart totals</a>: Checkout totals</li><li><a href="/customers">Customers</a>: Account data</li><li><a href="/emails">Transactional email</a>: OTP and order email</li><li><a href="/indexing">Product indexing</a>: Search and catalog data</li><li><a href="/schema-reference">Schema reference</a>: Available product fields</li><li><a href="/network">Network configuration</a>: URL routing</li></ol>
 </div>
 </div>
 <div>
 <div>:shield:</div>
 <div>
 <h3>System administrators</h3>
-<ol><li><a href="/overview">Overview</a> — system architecture</li><li><a href="/authentication/overview">Authentication &amp; access</a> — tokens, roles &amp; permissions</li><li><a href="/network">Mixer configuration</a> — traffic routing</li><li><a href="/security">Security</a> — token management &amp; validation</li></ol>
+<ol><li><a href="/overview">Overview</a>: System architecture</li><li><a href="/authentication/overview">Authentication &amp; access</a>: Tokens, roles &amp; permissions</li><li><a href="/network">Network configuration</a>: Traffic routing</li><li><a href="/security">Security</a>: Token management &amp; validation</li></ol>
 </div>
 </div>
 </div>

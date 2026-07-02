@@ -50,7 +50,7 @@ Before you can use the Product Bus, you need to transform your product data from
 
 1. Extract: Retrieve product data from your source systems (Product Information Management (PIM), Enterprise Resource Planning (ERP), Commerce platform, or other databases)
 2. Transform: Convert your data format into the Product Bus schema (see [Schema Reference](/schema-reference#productbusentry) for complete reference)
-3. Load: Send transformed data to the [Commerce API via HTTP PUT requests](/api-reference#create-or-update-a-product)
+3. Load: Send transformed data to the [Edge Commerce API via HTTP PUT requests](/api-reference#create-or-update-a-product)
 
 ### Your responsibility
 
@@ -138,7 +138,7 @@ curl -H "Authorization: Bearer {your-api-key}" \
 curl "https://main--{site}--{org}.aem.network/{store}/{locale}/index.json" | grep "{sku}"
 ```
 
-Build a script that fetches a sample of products from your source system, runs them through your ETL transformation, sends them to the Product Bus API via POST/PUT, then verifies via GET request that stored data matches expected output. Run this validation daily or after every ETL deployment.
+Build a script that fetches a sample of products from your source system, runs them through your ETL transformation, sends them to the Edge Commerce API via POST/PUT, then verifies via GET request that stored data matches expected output. Run this validation daily or after every ETL deployment.
 
 Test bulk operations with realistic product counts and verify your ETL respects the 50 products per request limit. Monitor memory usage and processing time for large batches, and test retry logic by intentionally triggering rate limits. Load test at realistic intervals and rates, so you don't waste resources or exceed quotas. Overzealous testing can lead to unnecessary costs and quota violations.
 
