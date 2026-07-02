@@ -14,7 +14,7 @@ sources:
 
 # Estimates and cart totals
 
-Estimate endpoints help storefronts show cart totals before an order is created. They are designed for interactive checkout screens where the shopper is still changing products, quantities, address details, shipping method, or coupon codes.
+Estimate endpoints help storefronts show cart totals before an order is created. They are designed for interactive checkout screens where the shopper is still changing products, quantities, address details, shipping method, or coupon codes. Use [Places and address validation](/places) when the storefront needs address autocomplete or postal address validation before estimating shipping and tax.
 
 Estimates do not create an order and do not lock the final total. Use [Order preview](/orders/lifecycle#preview-the-selected-order) when the shopper is ready to place the order and you need an [`estimateToken`](/orders/lifecycle#estimate-tokens).
 
@@ -320,6 +320,7 @@ See [Order lifecycle](/orders/lifecycle) for the full checkout sequence.
 ## Next steps
 
 - [Order lifecycle](/orders/lifecycle): Understand how estimates lead into preview and order creation
+- [Places and address validation](/places): Autocomplete and validate addresses before estimates
 - [Coupons](/coupons): Configure coupon types and codes
 - [Promotions](/promotions): Configure catalog promotions and cart rules
 - [Avalara tax](/checkout/tax/avalara): Configure tax provider credentials

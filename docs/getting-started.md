@@ -1,6 +1,6 @@
 ---
-title: "Getting Started with Product Bus"
-description: "Set up Product Bus and ingest the first product."
+title: "Getting started with Edge Commerce"
+description: "Set up Edge Commerce and ingest the first product."
 daPath: "/getting-started"
 status: migrated
 managed: true
@@ -40,24 +40,23 @@ migration:
   notes: "Migrated as-is from the legacy documentation repo; source commits retain the original frontmatter baseline."
 ---
 
-# Getting Started with Product Bus
+# Getting started with Edge Commerce
 
-The Product Bus is a centralized storage layer that holds product data from commerce systems, Product Information Management (PIM) platforms, and other sources in a unified format. This guide walks through setting up your first product and configuring the routing needed to render product pages.
+Edge Commerce stores product data from commerce systems, Product Information Management (PIM) platforms, and other sources in a unified format. This guide walks through setting up your first product and configuring the routing needed to render product pages.
 
 ## Prerequisites
 
-To use the Product Bus, you'll need:
-1. **API Key (sitekey)**: Provides access to the Helix Commerce API for ingestion and data retrieval
-2. **Org/Site identifiers**: Your organization and site names in the Edge Delivery Services structure
-3. **Product path structure**: A plan for how you'll organize products in your catalog (e.g., `/us/en/products/...`, `/products/...`, etc.)
+To use Edge Commerce, you'll need:
 
-## Obtain an API key
+1. **API access**: An admin session or [service token](/authentication/service-tokens) with the permissions needed for ingestion and configuration.
+2. **Org/site identifiers**: Your organization and site names in the Edge Delivery Services structure.
+3. **Product path structure**: A plan for how you'll organize products in your catalog, such as `/us/en/products/...` or `/products/...`.
 
-Each site requires a unique API key (sitekey) that provides access to an org/site pair. The sitekey can be used to ingest and fetch data from any store and view within that org/site.
+## Set up API access
 
-To obtain a sitekey for initial setup, reach out to the Adobe team on Slack or contact your Adobe representative.
+For initial setup, work with your Adobe representative to enable access for your org and site. After access is configured, use an authenticated admin session for one-time setup and create [service tokens](/authentication/service-tokens) for recurring automation such as catalog ingestion.
 
-Once you have a sitekey, you can manage it (rotate, set) using the Authentication API endpoints described in the [Product Bus API Reference](/api-reference#authentication-api). For newer token guidance, see [Authentication overview](/authentication/overview) and [Service tokens](/authentication/service-tokens).
+For token types, permissions, and role behavior, see [Authentication overview](/authentication/overview), [Roles and permissions](/authentication/roles-permissions), and [Service tokens](/authentication/service-tokens).
 
 ## Your first product ingestion
 
@@ -65,7 +64,7 @@ Once you have a sitekey, you can manage it (rotate, set) using the Authenticatio
 
 Before creating products, you need to configure the AEM Network to route product URLs to the Product Pipeline backend.
 
-Configure the `mixerConfig` in your site's `public.json`:
+Configure URL routing in your site's `public.json`:
 
 ```bash
 curl --request POST \
@@ -90,22 +89,22 @@ When you submit this request, the API will return the updated configuration obje
 
 #### What this configuration does
 
-This configuration tells the AEM Network how to handle your product URLs. The `patterns` section routes any URL matching `/us/en/products/*` to the `adobe_productbus` backend. The `backends` section then defines where that backend lives (the Product Pipeline origin) and sets up the path prefix (remember to replace `{org}` and `{site}` with your actual values).
+This configuration tells the AEM Network how to handle your product URLs. The `patterns` section routes any URL matching `/us/en/products/*` to the product backend. The `backends` section then defines where that backend lives and sets up the path prefix. Replace `{org}` and `{site}` with your actual values.
 
 For more details about URL pattern configuration, see the [AEM Network Configuration Reference](/network#pattern-based-routing).
 
-When a request arrives at `https://www.example.com/us/en/products/blender-pro-500`, the AEM Network matches the pattern `/us/en/products/*` and routes to the Product Pipeline backend. The Pipeline loads the product from Product Bus at `/us/en/products/blender-pro-500` and renders it as HTML with metadata and JSON-LD.
+When a request arrives at `https://www.example.com/us/en/products/blender-pro-500`, the AEM Network matches the pattern `/us/en/products/*` and routes to the Product Pipeline backend. The Pipeline loads the product data at `/us/en/products/blender-pro-500` and renders it as HTML with metadata and JSON-LD.
 
-With routing configured, `aem.network` now directs product URLs to the Product Pipeline for rendering.
+With routing configured, product URLs are directed to the Product Pipeline for rendering.
 
 ### Step 2: Create a simple product
 
-With routing configured, you can now store your first product in the Product Bus. This example creates a basic product with required fields like SKU (Stock Keeping Unit), name, price, and images.
+With routing configured, you can now store your first product. This example creates a basic product with required fields like SKU (Stock Keeping Unit), name, price, and images.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/test-product.json" \
   -X PUT \
-  -H "Authorization: Bearer {your-api-key}" \
+  -H "Authorization: Bearer {your-admin-or-service-token}" \
   -H "Content-Type: application/json" \
   -d '{
     "sku": "test-sku",
@@ -132,10 +131,10 @@ If something goes wrong, you might encounter a `400 Bad Request` error, which ty
 
 ### Step 3: Verify the product was created
 
-Retrieve the product you just created to confirm it was stored correctly in the Product Bus.
+Retrieve the product you just created to confirm it was stored correctly.
 
 ```bash
-curl -H "Authorization: Bearer {your-api-key}" \
+curl -H "Authorization: Bearer {your-admin-or-service-token}" \
   "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/test-product.json"
 ```
 If the product was created successfully, you'll receive a `200 OK` status code along with the full product object that matches what you created in Step 2. If you see a `404 Not Found` error instead, double-check that the product path in your request matches exactly what you used when creating the product in Step 2.
@@ -148,7 +147,7 @@ With the product stored and routing configured, you can now view the rendered pr
 https://main--{site}--{org}.aem.network/us/en/products/test-product
 ```
 
-You will see an HTML page with the product information, including metadata in the document head and JSON-LD structured data for SEO. The Product Pipeline loads the product from the Product Bus and renders it server-side.
+You will see an HTML page with the product information, including metadata in the document head and JSON-LD structured data for SEO. The Product Pipeline loads the product data and renders it server-side.
 
 ## Next steps
 
@@ -159,4 +158,4 @@ You will see an HTML page with the product information, including metadata in th
 
 | Pagination (Contained) |                |
 |------------------------|----------------|
-| :icon-arrow: Previous <br> [Product Bus Overview](/overview)                       | Up Next :icon-arrow:<br>[Data ingestion guide](/data-ingestion) |
+| :icon-arrow: Previous <br> [Overview](/overview)                       | Up Next :icon-arrow:<br>[Data ingestion guide](/data-ingestion) |

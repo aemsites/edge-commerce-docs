@@ -71,7 +71,7 @@ All top-level fields are optional, and unknown fields are rejected.
 
 ## Allowed origins
 
-`allowedOrigins` entries must be canonical origins:
+`allowedOrigins` entries must be canonical origins. These values are enforced by browser-facing flows such as [Places and address validation](/places) and reCAPTCHA-protected checkout requests:
 
 ```json
 {
@@ -108,7 +108,7 @@ https://www.example.com?preview=true
 
 ```json
 {
-  "allowedDeliverySites": ["main--example--aemsites", "feature-*--example--aemsites"]
+  "allowedDeliverySites": ["main--example--aemsites", "*--example--aemsites"]
 }
 ```
 
@@ -256,4 +256,5 @@ If a configuration update fails validation, the API returns `400` with field-lev
 - [reCAPTCHA verification](/checkout/recaptcha): Configure the reCAPTCHA secret used with `recaptcha.enabled`
 - [Service tokens](/authentication/service-tokens): Create scoped tokens for automation
 - [Transactional email](/emails): Configure OTP and order confirmation templates
+- [Places and address validation](/places): Configure allowed origins for browser address flows
 - [API reference](/api-reference): Complete endpoint details

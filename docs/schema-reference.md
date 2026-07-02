@@ -42,7 +42,7 @@ migration:
 
 # Schema reference
 
-This reference documents the schemas used by the Commerce API: the Product Bus product schema and the order and checkout request schemas.
+This reference documents the schemas used by the Edge Commerce API: the Product Bus product schema and the order and checkout request schemas.
 
 ## Product Bus
 

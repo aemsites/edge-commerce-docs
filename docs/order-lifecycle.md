@@ -67,7 +67,7 @@ This example shows a guest checkout flow. If reCAPTCHA is enabled for the site, 
 
 ### 1. Estimate available shipping methods
 
-Use `POST /estimate/shipping` while the shopper is editing the cart or address.
+Use `POST /estimate/shipping` while the shopper is editing the cart or address. If the storefront needs autocomplete or postal validation before estimating, use [Places and address validation](/places) first.
 
 ```bash
 curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/shipping" \
@@ -431,6 +431,7 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 
 - [Checkout overview](/checkout/overview): How provider groups fit into checkout
 - [Estimates and cart totals](/estimates): Compute tax, shipping, discounts, and cart totals
+- [Places and address validation](/places): Autocomplete and validate checkout addresses
 - [Payments overview](/checkout/payments/overview): Initiate payment and handle provider actions
 - [Order journal](/orders/journal): Read order history and operational events
 - [Customers and account data](/customers): Manage profiles, addresses and customer orders

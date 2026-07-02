@@ -376,7 +376,7 @@ When a request comes in for `/us/en/products/t1000-blender`, the pipeline:
 
 You can organize products using any URL path structure that makes sense for your site. Common patterns include regional/locale paths like `/us/en/products/blender` or `/ca/fr/produits/melangeur`, category paths like `/products/kitchen/blenders/blender-pro-500`, or flat paths like `/products/blender-pro-500`.
 
-The path structure is determined when you create products via the Commerce API - whatever path you use in the API endpoint becomes the product's URL.
+The path structure is determined when you create products through the Edge Commerce API. Whatever path you use in the API endpoint becomes the product's URL.
 
 ## Next steps
 
