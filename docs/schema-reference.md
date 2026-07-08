@@ -75,7 +75,6 @@ The main product schema supports rich product data with HTML content, variants, 
 | `metadata` | Record<string, string> | No | Arbitrary key/value metadata attached to the product. |
 | `options` | [ProductBusOption](#productbusoption)[] | No | Configurable options available for this product (e.g. Color, Size). |
 | `aggregateRating` | [AggregateRating](#aggregaterating) | No | Aggregate customer rating for schema.org structured data. |
-| `specifications` | string | No | Freeform product specifications (HTML or plain text). |
 | `images` | [ProductBusMedia](#productbusmedia)[] | No | Product images. |
 | `variants` | [ProductBusVariant](#productbusvariant)[] | No | Available variants for a configurable product. |
 | `jsonld` | string | No | Full JSON-LD override. When present, replaces the auto-generated structured data. max length 128000 |
@@ -372,7 +371,7 @@ A single line item in an order. Bundle parents carry their resolved components i
 | `path` | string | Yes | Product page path. |
 | `imageUrl` | string | No | Product image URL for order confirmation display. |
 | `productUrl` | string | No | Canonical product URL. |
-| `quantity` | number | Yes | Quantity ordered. |
+| `quantity` | integer | Yes | Quantity ordered. Must be a whole number from 1 to 1000. |
 | `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
 | `selectedOptions` | [SelectedOption](#selectedoption)[] | No | Option values selected by the customer. |
@@ -407,7 +406,7 @@ A resolved bundle component nested on a bundle parent line. Components are not c
 | `name` | string | No | Display name of the component. |
 | `sku` | string | No | SKU of the component. |
 | `path` | string | Yes | Product page path of the component. |
-| `quantity` | number | Yes | Quantity for this component. |
+| `quantity` | integer | Yes | Quantity ordered. Must be a whole number from 1 to 1000. |
 | `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 
 <!-- GENERATED: NestedBundleItem:end -->
