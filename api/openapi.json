@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.48.0",
+    "version": "2.49.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -1982,7 +1982,7 @@
             }
           },
           "403": {
-            "description": "Caller lacks orders:write/orders:custom:write or has an org/site mismatch.",
+            "description": "Caller lacks orders:custom:write or has an org/site mismatch.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2012,7 +2012,6 @@
           }
         },
         "x-permissions": [
-          "orders:write",
           "orders:custom:write"
         ],
         "security": [

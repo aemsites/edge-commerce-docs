@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-patch">PATCH</span> <code class="http-path">/{org}/sites/{site}/orders/{orderId}/custom</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
         <p>Merges the request body into the order custom data. Keys with a null value are removed. Each key and value is limited to 2048 characters.</p>
-        <p class="permissions">Required permissions: <code>orders:write, orders:custom:write</code></p>
+        <p class="permissions">Required permissions: <code>orders:custom:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -65,7 +65,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">403</span> Caller lacks orders:write/orders:custom:write or has an org/site mismatch.</h3>
+        <h3><span class="status-badge status-4xx">403</span> Caller lacks orders:custom:write or has an org/site mismatch.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
