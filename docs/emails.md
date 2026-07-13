@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "e8f6b93"
 ---
 
 # Transactional email
@@ -72,6 +72,8 @@ OTP and order confirmation emails are sent on behalf of the site. If no custom s
 Use `fromName` to set the display name customers see in their inbox, such as `Example Store`. Use `replyTo` when customer replies should go to a support inbox instead of the sender address.
 
 Custom sender addresses and domains must be set up before they are used. If you want OTP or order confirmation email to come from your own domain, contact your Adobe team to configure and verify the sender domain. After the sender is ready, set `emails.otp.sender` or `emails.transactional.sender` in site configuration.
+
+For order email, country-specific `geoOverrides` can replace `emails.branding` and `emails.transactional` values. OTP email does not have request-country context, so `emails.otp` cannot be overridden geographically. See [Geographic overrides](/configuration/site#geographic-overrides).
 
 ## OTP email flow
 

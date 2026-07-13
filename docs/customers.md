@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "683f17d"
 ---
 
 # Customers and account data
@@ -150,7 +150,7 @@ Address updates are replacements, not partial patches. Send the full address bod
 
 ### List customer orders
 
-Listing a customer's orders requires `orders:read`, an authenticated token for the same email address, and matching organization/site scope. See [Roles and permissions](/authentication/roles-permissions) for permission details.
+Listing a customer's orders requires `orders:read`, an authenticated token for the same email address, and matching organization/site scope. The response returns up to 1,000 order links for client-side sorting. See [Roles and permissions](/authentication/roles-permissions) for permission details.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@example.com/orders" \

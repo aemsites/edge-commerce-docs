@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "844b959"
 ---
 
 # Estimates and cart totals
@@ -57,7 +57,7 @@ Estimate request shapes vary by type, but these fields are common across shippin
 | `country` | Store country as an ISO 3166-1 alpha-2 code. Can fall back to `shipping.country` |
 | `locale` | Optional BCP-47 locale used for localized shipping method labels |
 | `shipping` | Partial shipping address. `country`, `state`, and sometimes `zip` are enough for estimates |
-| `items` | Cart line items with SKU, path, quantity, price, and optional shipping dimensions |
+| `items` | Cart line items with SKU, path, price, optional shipping dimensions, and a whole-number quantity from 1 to 1000 |
 | `customer.email` | Optional. Used when coupon rules depend on customer usage limits |
 | `couponCode` | Optional coupon code |
 | `couponSource` | Optional coupon source, such as `manual` or `auto` |
@@ -204,7 +204,7 @@ Example response:
 }
 ```
 
-`price` applies catalog promotions first, validates coupons against the post-promotion subtotal, applies coupon stacking rules, and then applies automatic cart rules.
+`price` applies catalog promotions first, validates coupons, applies coupon stacking rules, and then applies automatic cart rules. Coupon pricing depends on the coupon type: by default, the API compares the existing sale price with the coupon-adjusted regular price and keeps the lower value. Coupon types with `applyToSalePrice: true` calculate their discount from the post-promotion price instead. Product-list coupons compare each configured absolute price with the current line-item price.
 
 ## Order estimate
 
@@ -290,10 +290,11 @@ Estimate totals use this order of operations:
 1. Load catalog promotions and automatic cart rules for the country.
 2. Apply catalog promotion price overrides to line items.
 3. Validate coupon code, source, country, eligibility, usage limits, and minimum order amount when applicable.
-4. Apply coupon stacking rules. Non-stackable coupons suppress automatic cart rules.
-5. Apply automatic cart rules, including method-scoped free shipping.
-6. Attribute order-level cash discounts back to eligible line items where applicable.
-7. Evaluate conditional promotions that grant free items.
+4. Calculate the coupon from regular or post-promotion prices according to its `applyToSalePrice` setting, or apply absolute prices from `discountedProducts`.
+5. Apply coupon stacking rules. Non-stackable coupons suppress automatic cart rules.
+6. Apply automatic cart rules, including method-scoped free shipping.
+7. Attribute order-level cash discounts back to eligible line items where applicable.
+8. Evaluate conditional promotions that grant free items.
 
 See [Promotions](/promotions) and [Coupons](/coupons) for rule configuration and coupon behavior.
 

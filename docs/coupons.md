@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.10.2"
-    lastReviewedCommit: "90dccc8"
-    lastContentCommit: "90dccc8"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "844b959"
 migration:
   from: "helix-commerce-documentation/documentation/coupons.md"
   migratedAt: "2026-06-15"
@@ -49,14 +49,16 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 |-------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier for this type. Immutable after creation |
 | `name` | string | Yes | Human-readable name shown in the order discount breakdown |
-| `discountType` | string | Yes | `"percentage"` or `"fixed"` |
-| `discountValue` | number | Yes | Discount magnitude: a percentage (e.g., `10` for 10%) or a fixed currency amount |
+| `discountType` | string | Conditional | `"percentage"` or `"fixed"`. Required unless `discountedProducts` is used |
+| `discountValue` | number | No | Discount magnitude: a percentage (e.g., `10` for 10%) or a fixed currency amount. Defaults to `0` for percentage and fixed coupon types |
 | `minimumOrderAmount` | number | No | Minimum eligible subtotal required to apply the coupon. Defaults to `0` |
 | `maximumDiscountAmount` | number | No | Cap on the discount for percentage types. `null` means no cap |
 | `freeShipping` | boolean | No | When `true`, removes shipping charges in addition to any price discount |
 | `includedShippingTypes` | string[] | No | Restricts free shipping to specific shipping type identifiers. Only meaningful when `freeShipping` is `true` |
 | `stackable` | boolean | No | Whether the coupon can be combined with auto-applied cart rules. When `false`, all cart rules are suppressed while the coupon is active. Defaults to `true` |
 | `excludeDiscountedProducts` | boolean | No | When `true`, already-discounted items (products where `price.final < price.regular`) are excluded from the coupon's scope. Defaults to `false` |
+| `applyToSalePrice` | boolean | No | When `true`, applies the coupon to the current sale price. When `false` (default), compares the sale price with the coupon-adjusted regular price and uses the lower price |
+| `discountedProducts` | array | Conditional | Product-list pricing that maps product paths, and optionally variant SKUs, to absolute final unit prices. Used instead of `discountType` and `discountValue` |
 | `autoApply` | boolean | No | Signals that the storefront should apply this coupon type automatically without customer input. The storefront is responsible for selecting eligible codes and passing them in the estimate request with `couponSource: "auto"`. Defaults to `false` |
 | `allowManualEntry` | boolean | No | When `false`, the coupon code is rejected if submitted with `couponSource: "manual"`, preventing customers from typing it. Defaults to `true` |
 | `includedProducts` | array | No | Restricts the discount to specific products. Each entry is a product path string or a `{ path, sku }` object |
@@ -74,9 +76,30 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 
 For `"percentage"` discount types, the discount is `(eligibleSubtotal × discountValue) / 100`, capped at `maximumDiscountAmount` when set. For `"fixed"` discount types, the discount is the lesser of `discountValue` and the eligible subtotal, ensuring the subtotal never goes negative.
 
-The _eligible subtotal_ is the sum of the per-line post-promotion prices for items within the coupon's product and category scope. When `excludeDiscountedProducts` is `true`, items whose price has already been lowered by a catalog promotion are removed from scope.
+By default, `applyToSalePrice` is `false`. The API calculates the coupon against each eligible item's regular price, compares that result with the item's current sale price, and uses whichever price is lower. If the sale is already better than the coupon, the coupon contributes no additional discount for that line. Set `applyToSalePrice` to `true` to calculate the coupon from post-promotion prices instead.
+
+When `excludeDiscountedProducts` is `true`, products already reduced below their regular price are removed from the coupon scope. This setting takes precedence over `applyToSalePrice`.
 
 An individual code's `discountOverride` field can replace the type's `discountType` and `discountValue` for that specific code, which allows issuing special codes with a different discount magnitude without creating a separate type.
+
+### Product-list pricing
+
+Use `discountedProducts` when a coupon sets absolute final prices instead of calculating a percentage or fixed discount:
+
+```json
+{
+  "id": "bundle-prices",
+  "name": "Bundle pricing",
+  "discountedProducts": [
+    { "path": "/us/en/products/blender", "price": "199.00" },
+    { "path": "/us/en/products/blender", "sku": "BLENDER-RED", "price": "189.00" }
+  ]
+}
+```
+
+Each entry requires a product `path` and a non-negative price supplied as a finite number or canonical decimal string, such as `19.99`. An optional `sku` limits the price to one variant. When both a path-only entry and a matching path-and-SKU entry apply, the SKU-specific entry wins. The API compares the configured coupon price with the current line-item price and uses the lower value.
+
+`discountedProducts` cannot be combined with `discountType`, `discountValue`, `applyToSalePrice`, `excludeDiscountedProducts`, or product/category scope fields. Coupon codes belonging to a product-list type also cannot set `discountOverride`. Exact duplicate entries are rejected.
 
 ## Coupon codes
 

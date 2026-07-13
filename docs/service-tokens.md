@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "5577796"
 ---
 
 # Service tokens
@@ -79,7 +79,7 @@ A service token can be created only with permissions from this allowlist:
 | `catalog:write` | Create, update, or delete product data |
 | `orders:read` | Read orders |
 | `orders:write` | Create or update orders |
-| `orders:custom:write` | Create custom orders |
+| `orders:custom:write` | Add, replace, or remove custom metadata on existing orders |
 | `index:read` | Read index configuration |
 | `index:write` | Create or update index configuration |
 | `customers:read` | Read customer records |
@@ -93,6 +93,8 @@ A service token can be created only with permissions from this allowlist:
 | `price_rules:write` | Create or update catalog and cart price rules |
 
 Permissions outside this list are rejected at token creation time.
+
+Updating `PATCH /orders/{orderId}/custom` requires `orders:custom:write`. The broader `orders:write` permission does not grant access to this endpoint.
 
 ## Email destination scopes
 
