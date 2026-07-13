@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.49.0",
+    "version": "2.49.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -3214,6 +3214,28 @@
               }
             }
           },
+          "429": {
+            "description": "Per-IP rate limit exceeded (120 requests/minute per tenant). Retry after the window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_RATE_LIMITED",
+                      "message": "rate limit exceeded, retry in 60 seconds",
+                      "retryable": true,
+                      "details": {
+                        "retryAfterSeconds": 60
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "500": {
             "description": "The Google Places API key is not configured.",
             "content": {
@@ -3323,6 +3345,28 @@
                     "value": {
                       "code": "forbidden",
                       "message": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Per-IP rate limit exceeded (120 requests/minute per tenant). Retry after the window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_RATE_LIMITED",
+                      "message": "rate limit exceeded, retry in 60 seconds",
+                      "retryable": true,
+                      "details": {
+                        "retryAfterSeconds": 60
+                      }
                     }
                   }
                 }

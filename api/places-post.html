@@ -74,6 +74,17 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
+        <h3><span class="status-badge status-4xx">429</span> Per-IP rate limit exceeded (120 requests/minute per tenant). Retry after the window resets.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
         <h3><span class="status-badge status-5xx">500</span> The Google Places API key is not configured.</h3>
         <div class="table">
           <table>
@@ -127,6 +138,17 @@
           <pre><code class="language-json">{
   "code": "forbidden",
   "message": "forbidden"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">429</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_RATE_LIMITED",
+  "message": "rate limit exceeded, retry in 60 seconds",
+  "retryable": true,
+  "details": {
+    "retryAfterSeconds": 60
+  }
 }</code></pre>
         </div>
         <div class="code-sample">
