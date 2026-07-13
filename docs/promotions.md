@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.10.2"
-    lastReviewedCommit: "90dccc8"
-    lastContentCommit: "90dccc8"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "844b959"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -252,7 +252,7 @@ Cart rules that list a coupon type ID in their `incompatibleTypes` array are aut
 
 ## How promotions apply during the purchase flow
 
-The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, any coupon code is validated against the post-promotion subtotal. Third, cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
+The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, any coupon code is validated, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the coupon type: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. Third, cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
 
 ## Next steps
 

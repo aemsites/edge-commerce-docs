@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "e8f6b93"
 ---
 
 # Site configuration
@@ -68,6 +68,7 @@ All top-level fields are optional, and unknown fields are rejected.
 | `emails` | object | Branding and sender settings for OTP and transactional email |
 | `experimentalFlags` | object | Boolean feature flags |
 | `friendlyId` | object | Friendly order ID generation settings |
+| `geoOverrides` | array | Country-specific overrides for selected configuration fields |
 
 ## Allowed origins
 
@@ -130,7 +131,7 @@ The `auth` object controls whether the one-time password login flow is enabled f
 }
 ```
 
-When `auth.enabled` is not `true`, `POST /auth/login` rejects login requests for the site. The only supported field under `auth` is `enabled`.
+When `auth.enabled` is `true`, customers and admins can use `POST /auth/login`. When the value is unset, an existing site admin may still log in to bootstrap configuration. Creating the first admin also enables authentication when no value has been set. An explicit `auth.enabled: false` blocks login for everyone. The only supported field under `auth` is `enabled`.
 
 See [Authentication overview](/authentication/overview) for the login flow and token model.
 
@@ -229,6 +230,44 @@ Both `emails.otp` and `emails.transactional` support:
 | `characters` | string | Named preset or literal character set. Must contain at least two characters and cannot include `/`, URL separators, spaces, or HTML-sensitive characters |
 | `length` | integer | Number of generated characters, from 4 to 32 |
 | `prefix` | string | Optional prefix, from 1 to 8 characters. Uses the same character restrictions |
+
+## Geographic overrides
+
+Use `geoOverrides` to replace selected configuration values for requests associated with a specific country. Each entry requires a lowercase ISO 3166-1 alpha-2 `country` code. When a request country matches, the entry is deep-merged over the top-level configuration; without a match, the top-level values remain in effect.
+
+```json
+{
+  "emails": {
+    "branding": { "supportEmail": "support@example.com" }
+  },
+  "friendlyId": {
+    "prefix": "ord",
+    "length": 8
+  },
+  "geoOverrides": [
+    {
+      "country": "ca",
+      "emails": {
+        "branding": { "supportEmail": "support-ca@example.com" },
+        "transactional": { "sender": "orders-ca@example.com" }
+      },
+      "friendlyId": { "prefix": "ca" },
+      "experimentalFlags": { "regionalCheckout": true }
+    }
+  ]
+}
+```
+
+An override may contain:
+
+- `friendlyId`
+- `emails.branding`
+- `emails.transactional`
+- `experimentalFlags`
+
+Browser access, authentication, reCAPTCHA, and OTP email settings cannot be overridden because those flows do not resolve a request country before using configuration. Do not include `allowedOrigins`, `allowedDeliverySites`, `auth`, `recaptcha`, or `emails.otp` in an override.
+
+If duplicate entries use the same country, the first match wins. Keep one entry per country so behavior remains clear.
 
 ## Experimental flags
 

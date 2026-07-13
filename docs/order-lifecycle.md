@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "5577796"
 ---
 
 # Order lifecycle
@@ -301,10 +301,11 @@ At creation time, the API:
 - Verifies the `estimateToken` when one is supplied.
 - Rejects unauthorized free items that are not covered by a promotion grant.
 - Creates or associates the customer record when needed.
+- Records `customerType` as `registered` when the authenticated human caller has an email, or `guest` for unauthenticated and service-token checkout.
 - Persists the order with state `pending`.
 - Creates the first order history entry.
 
-The response wraps the stored order as `{ "order": { ... } }`.
+The response wraps the stored order as `{ "order": { ... } }`. The `customerType` value is generated from authenticated request context; clients cannot set it in the request.
 
 ### Estimate tokens
 
@@ -379,7 +380,7 @@ Use `PATCH /orders/{orderId}/custom` to attach integration metadata to an order.
 
 The request body is a flat object. String values set or replace keys. `null` removes a key. Each key and value is capped at 2048 characters.
 
-This endpoint requires either `orders:write` or `orders:custom:write`. The narrower `orders:custom:write` permission is useful for integrations that should annotate orders but not otherwise manage them.
+This endpoint requires `orders:custom:write`; `orders:write` alone does not authorize the request. This dedicated permission lets integrations annotate orders without granting broader order-management access.
 
 See [Service tokens](/authentication/service-tokens) for scoped automation tokens.
 

@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "f18c725"
+    lastContentCommit: "f18c725"
 ---
 
 # Places and address validation
@@ -57,6 +57,8 @@ Supported actions:
 | `validate` | `POST` | Validates a postal address and returns a normalized response |
 
 `OPTIONS` is supported for browser preflight requests.
+
+Places requests are limited to 120 requests per minute for each client IP and tenant. The limit is shared across GET and POST actions for the same organization and site. Browser preflight requests do not consume the limit.
 
 ## Autocomplete
 
@@ -152,8 +154,11 @@ Do not treat a Places response as final order authorization. Estimate, tax, ship
 | `400` | A required field is missing, such as `input`, `place_id`, or `address.addressLines` |
 | `403` | The request origin is missing or is not allowed for the site |
 | `405` | The method is not allowed for the selected action, such as `GET` for `validate` |
+| `429` | The per-IP limit of 120 requests per minute for the tenant was exceeded |
 | `500` | The platform Places key is not configured |
 | `502` | The upstream Places or Address Validation API failed or could not be reached |
+
+A rate-limit response uses the `ADOBE_COMMERCE_RATE_LIMITED` error code, sets `retryable` to `true`, and includes `details.retryAfterSeconds`. Pause requests for that interval before retrying. Storefronts should also debounce autocomplete calls to avoid sending a request for every keystroke.
 
 For autocomplete and details, non-200 statuses from the upstream Places API may be passed through so the storefront can handle quota or provider-specific errors.
 

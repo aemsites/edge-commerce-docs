@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.49.1"
+    lastReviewedCommit: "494256f"
+    lastContentCommit: "5577796"
 ---
 
 # Roles and permissions
@@ -58,12 +58,14 @@ Unknown roles are ignored. A user session with an email always receives the `use
 
 The `JWT service token eligible` column means the permission may be delegated when creating a JWT service token. The token still receives only the permissions explicitly listed at creation time.
 
+`PATCH /orders/{orderId}/custom` requires `orders:custom:write`. Holding `orders:write` without that dedicated permission does not authorize custom metadata updates.
+
 ## Permission groups
 
 | Group | Permissions | Typical use |
 |-------|-------------|-------------|
 | Catalog | `catalog:read`, `catalog:write` | Product ingestion and product data retrieval |
-| Orders | `orders:read`, `orders:write`, `orders:custom:write` | Order lookup, order creation, and custom order creation |
+| Orders | `orders:read`, `orders:write`, `orders:custom:write` | Order lookup, order creation, and custom metadata updates |
 | Indexes | `index:read`, `index:write` | Product index configuration and updates |
 | Customers | `customers:read`, `customers:write` | [Customer profile and address management](/customers) |
 | Config | `config:read`, `config:write` | [Site configuration](/configuration/site) management |
