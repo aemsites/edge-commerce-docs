@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.49.1",
+    "version": "2.52.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -51,6 +51,10 @@
     {
       "name": "Auth",
       "description": "Clears the `auth_token` cookie and revokes the token if a valid one is presented (via cookie or bearer header). Always responds 204, even when no/invalid token is presented."
+    },
+    {
+      "name": "Coupons",
+      "description": "Retrieve, update, or delete a single coupon type."
     }
   ],
   "paths": {
@@ -3940,6 +3944,1253 @@
           "Auth"
         ]
       }
+    },
+    "/{org}/sites/{site}/coupons": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "listCoupons",
+        "summary": "List coupon codes",
+        "description": "Returns coupon code names, optionally filtered by `type` and/or `active`, with cursor-based pagination.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of coupon code names with an optional pagination cursor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "A page of coupon code names with an optional pagination cursor.",
+                  "type": "object",
+                  "properties": {
+                    "codes": {
+                      "description": "Coupon code names.",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "cursor": {
+                      "description": "Opaque cursor for the next page; null when there are no more.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "codes"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "codes": [
+                        "SAVE10",
+                        "SUMMER-ABCD1234"
+                      ],
+                      "cursor": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "post": {
+        "operationId": "createCoupon",
+        "summary": "Create a coupon code",
+        "description": "Creates a single coupon code referencing an existing coupon type. A `discountOverride` is rejected when the referenced type is a product-list coupon.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The created coupon code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponCode"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "SAVE10",
+                      "typeId": "summer-10",
+                      "expiresAt": "2027-01-01T00:00:00Z",
+                      "discountOverride": null,
+                      "usageLimit": null,
+                      "usageCount": 0,
+                      "usesPerCustomer": null,
+                      "active": true,
+                      "createdAt": "2026-01-01T00:00:00.000Z",
+                      "updatedAt": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing code/typeId, invalid code format, referenced coupon type not found, or a discountOverride on a product-list type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$",
+                          "message": "code and typeId are required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A coupon with this code already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "already_exists",
+                      "message": "coupon SAVE10 already exists",
+                      "resource": "coupon",
+                      "details": {
+                        "code": "SAVE10",
+                        "typeId": "summer-10"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The coupon code to create.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponCode"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "code": "SAVE10",
+                    "typeId": "summer-10",
+                    "expiresAt": "2027-01-01T00:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/coupons/batch": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "post": {
+        "operationId": "batchCreateCoupons",
+        "summary": "Batch-generate coupon codes",
+        "description": "Generates `count` (max 500) unique codes with an optional `prefix`, all referencing the given coupon type.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The generated code count and code names.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The generated code count and names.",
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "description": "Number of codes generated.",
+                      "type": "integer"
+                    },
+                    "codes": {
+                      "description": "The generated code names.",
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "count",
+                    "codes"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "count": 2,
+                      "codes": [
+                        "SUMMER-ABCD1234",
+                        "SUMMER-EFGH5678"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing typeId, or referenced coupon type not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.typeId",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed — only POST.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "method_not_allowed",
+                      "message": "GET not allowed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Batch parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchCreateCouponsRequest"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "typeId": "summer-10",
+                    "count": 50,
+                    "prefix": "SUMMER"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/coupons/{code}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "code",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Coupon code (case-insensitive; normalized to uppercase)."
+        }
+      ],
+      "get": {
+        "operationId": "getCoupon",
+        "summary": "Retrieve a coupon code",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The coupon code object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponCode"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "SAVE10",
+                      "typeId": "summer-10",
+                      "expiresAt": "2027-01-01T00:00:00Z",
+                      "discountOverride": null,
+                      "usageLimit": null,
+                      "usageCount": 0,
+                      "usesPerCustomer": null,
+                      "active": true,
+                      "createdAt": "2026-01-01T00:00:00.000Z",
+                      "updatedAt": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No coupon with this code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "coupon not found",
+                      "resource": "coupon"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "put": {
+        "operationId": "updateCoupon",
+        "summary": "Update a coupon code",
+        "description": "Merges the request body into the existing coupon. `code`, `typeId`, `usageCount`, and `createdAt` are immutable. A `discountOverride` is rejected when the referenced type is a product-list coupon.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated coupon code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponCode"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "SAVE10",
+                      "typeId": "summer-10",
+                      "expiresAt": "2027-01-01T00:00:00Z",
+                      "discountOverride": null,
+                      "usageLimit": null,
+                      "usageCount": 0,
+                      "usesPerCustomer": null,
+                      "active": false,
+                      "createdAt": "2026-01-01T00:00:00.000Z",
+                      "updatedAt": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A discountOverride was set on a code of a product-list coupon type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.discountOverride",
+                          "message": "not allowed for a product-list coupon type"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No coupon with this code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "coupon not found",
+                      "resource": "coupon"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Partial coupon code fields to merge into the existing code.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponCodeUpdate"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "active": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCoupon",
+        "summary": "Delete a coupon code",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Coupon deleted (no content)."
+          },
+          "404": {
+            "description": "No coupon with this code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "coupon not found",
+                      "resource": "coupon"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/coupons/types": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        }
+      ],
+      "get": {
+        "operationId": "listCouponTypes",
+        "summary": "List coupon types",
+        "description": "Returns all coupon type objects for the org/site.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of coupon type objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "A list of coupon type objects.",
+                  "type": "object",
+                  "properties": {
+                    "types": {
+                      "description": "Coupon type objects — each a FlatCouponType or a ProductListCouponType.",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  },
+                  "required": [
+                    "types"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "types": [
+                        {
+                          "id": "summer-10",
+                          "name": "10% Off Summer",
+                          "discountType": "percentage",
+                          "discountValue": 10,
+                          "minimumOrderAmount": 50,
+                          "maximumDiscountAmount": 100,
+                          "freeShipping": false,
+                          "stackable": true,
+                          "createdAt": "2026-01-01T00:00:00.000Z",
+                          "updatedAt": "2026-01-01T00:00:00.000Z"
+                        },
+                        {
+                          "id": "bundle-deal",
+                          "name": "Bundle Deal",
+                          "discountedProducts": [
+                            {
+                              "path": "/products/widget",
+                              "price": "19.99"
+                            },
+                            {
+                              "path": "/products/gadget",
+                              "sku": "GADGET-L",
+                              "price": "9.99"
+                            }
+                          ],
+                          "stackable": true,
+                          "createdAt": "2026-01-01T00:00:00.000Z",
+                          "updatedAt": "2026-01-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "post": {
+        "operationId": "createCouponType",
+        "summary": "Create a coupon type",
+        "description": "Validates and stores a coupon type. `id` and `name` are required, plus exactly one discount shape: a flat `discountType`/`discountValue`, or a \"product list coupon\" `discountedProducts` array. The two shapes are mutually exclusive, as are `country`/`countries`; included/excluded products and categories may not overlap.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The created coupon type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/FlatCouponType"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ProductListCouponType"
+                    }
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "id": "summer-10",
+                      "name": "10% Off Summer",
+                      "discountType": "percentage",
+                      "discountValue": 10,
+                      "minimumOrderAmount": 50,
+                      "maximumDiscountAmount": 100,
+                      "freeShipping": false,
+                      "stackable": true,
+                      "createdAt": "2026-01-01T00:00:00.000Z",
+                      "updatedAt": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (missing/invalid fields, mutually exclusive fields, category overlap, duplicate discountedProducts).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.id",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A coupon type with this id already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "already_exists",
+                      "message": "coupon type summer-10 already exists",
+                      "resource": "coupon_type",
+                      "details": {
+                        "typeId": "summer-10"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The coupon type to create — either a flat or a product-list coupon.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/FlatCouponType"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ProductListCouponType"
+                  }
+                ]
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "id": "summer-10",
+                    "name": "10% Off Summer",
+                    "discountType": "percentage",
+                    "discountValue": 10,
+                    "minimumOrderAmount": 50,
+                    "maximumDiscountAmount": 100,
+                    "freeShipping": false,
+                    "stackable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/coupons/types/{typeId}": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "typeId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Coupon type identifier."
+        }
+      ],
+      "get": {
+        "operationId": "getCouponType",
+        "summary": "Retrieve a coupon type",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The coupon type object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/FlatCouponType"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ProductListCouponType"
+                    }
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "id": "bundle-deal",
+                      "name": "Bundle Deal",
+                      "discountedProducts": [
+                        {
+                          "path": "/products/widget",
+                          "price": "19.99"
+                        },
+                        {
+                          "path": "/products/gadget",
+                          "sku": "GADGET-L",
+                          "price": "9.99"
+                        }
+                      ],
+                      "stackable": true,
+                      "createdAt": "2026-01-01T00:00:00.000Z",
+                      "updatedAt": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No coupon type with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "coupon type not found",
+                      "resource": "coupon_type"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:read"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "put": {
+        "operationId": "updateCouponType",
+        "summary": "Update a coupon type",
+        "description": "Merges the request body into the existing coupon type. `id` and `createdAt` are immutable. Setting `country` clears `countries` (and vice versa); switching between the flat and product-list shapes clears the opposing fields. Switching to the flat shape requires both `discountType` and `discountValue`.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated coupon type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/FlatCouponType"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ProductListCouponType"
+                    }
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "id": "summer-10",
+                      "name": "10% Off Summer",
+                      "discountType": "percentage",
+                      "discountValue": 15,
+                      "minimumOrderAmount": 50,
+                      "maximumDiscountAmount": 100,
+                      "freeShipping": false,
+                      "stackable": true,
+                      "createdAt": "2026-01-01T00:00:00.000Z",
+                      "updatedAt": "2026-01-01T00:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (mutually exclusive fields, category overlap, invalid country/locale, incomplete flat discount).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.country",
+                          "message": "invalid country code"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No coupon type with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "coupon type not found",
+                      "resource": "coupon_type"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Partial coupon type fields to merge into the existing type.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponTypeUpdate"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "discountValue": 15
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCouponType",
+        "summary": "Delete a coupon type",
+        "description": "Deletes the coupon type. Blocked with 409 if any codes still reference it.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Coupon type deleted (no content)."
+          },
+          "404": {
+            "description": "No coupon type with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "coupon type not found",
+                      "resource": "coupon_type"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Coupon codes still reference this type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "has_dependents",
+                      "message": "coupon type has 3 dependents",
+                      "resource": "coupon_type",
+                      "details": {
+                        "count": 3
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "coupons:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Coupons"
+        ]
+      }
     }
   },
   "components": {
@@ -5234,6 +6485,23 @@
           "paymentMethod": {
             "type": "string"
           },
+          "checkoutFlow": {
+            "description": "Checkout flow type. `express` identifies wallet or shortcut checkout flows.",
+            "type": "string",
+            "enum": [
+              "standard",
+              "express"
+            ]
+          },
+          "entryPoint": {
+            "description": "Page or experience where checkout started.",
+            "type": "string",
+            "enum": [
+              "cart",
+              "checkout",
+              "pdp"
+            ]
+          },
           "couponCode": {
             "type": "string"
           },
@@ -5556,6 +6824,23 @@
           "paymentMethod": {
             "type": "string"
           },
+          "checkoutFlow": {
+            "description": "Checkout flow type. `express` identifies wallet or shortcut checkout flows.",
+            "type": "string",
+            "enum": [
+              "standard",
+              "express"
+            ]
+          },
+          "entryPoint": {
+            "description": "Page or experience where checkout started.",
+            "type": "string",
+            "enum": [
+              "cart",
+              "checkout",
+              "pdp"
+            ]
+          },
           "couponCode": {
             "type": "string"
           },
@@ -5685,6 +6970,644 @@
           "state",
           "zip",
           "country"
+        ]
+      },
+      "FlatCouponType": {
+        "description": "A coupon type applying a flat percentage or fixed discount. Mutually exclusive with the product-list shape (`discountedProducts`).",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique coupon type identifier.",
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "description": "Human-readable name.",
+            "type": "string",
+            "minLength": 1
+          },
+          "minimumOrderAmount": {
+            "description": "Minimum pre-discount subtotal required to apply. Defaults to 0.",
+            "type": "number",
+            "minimum": 0
+          },
+          "maximumDiscountAmount": {
+            "description": "Cap on the discount amount (percentage coupons); null for no cap.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "freeShipping": {
+            "description": "Grants free shipping when applied.",
+            "type": "boolean"
+          },
+          "includedShippingTypes": {
+            "description": "When set, free shipping applies only to these shipping method types.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includedCategories": {
+            "description": "Categories the coupon applies to.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludedCategories": {
+            "description": "Categories excluded from the coupon.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stackable": {
+            "description": "Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.",
+            "type": "boolean"
+          },
+          "autoApply": {
+            "description": "Apply automatically without manual code entry. Defaults to false.",
+            "type": "boolean"
+          },
+          "allowManualEntry": {
+            "description": "Allow the code to be entered manually at checkout. Defaults to true.",
+            "type": "boolean"
+          },
+          "defaultUsageLimit": {
+            "description": "Default total usage limit for codes of this type; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "defaultUsesPerCode": {
+            "description": "Default per-code usage limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "notes": {
+            "description": "Free-form operator notes.",
+            "type": "string"
+          },
+          "country": {
+            "description": "Single ISO 3166-1 alpha-2 country the coupon is valid in. Mutually exclusive with `countries`.",
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "countries": {
+            "description": "ISO 3166-1 alpha-2 countries the coupon is valid in. Mutually exclusive with `country`.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2}$"
+            }
+          },
+          "locale": {
+            "description": "BCP-47 locale the coupon is scoped to.",
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          },
+          "createdAt": {
+            "description": "Creation timestamp (ISO 8601). Managed by the service; ignored on write.",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last-update timestamp (ISO 8601). Managed by the service; ignored on write.",
+            "type": "string"
+          },
+          "discountType": {
+            "description": "Whether `discountValue` is a percentage or a fixed cash amount.",
+            "type": "string",
+            "enum": [
+              "percentage",
+              "fixed"
+            ]
+          },
+          "discountValue": {
+            "description": "Discount magnitude — a percentage (0–100) when `discountType` is \"percentage\", otherwise a cash amount. Defaults to 0.",
+            "type": "number",
+            "minimum": 0
+          },
+          "includedProducts": {
+            "description": "When non-empty, only these products count toward the coupon. Each entry is a path string or a `{ path, sku? }` object.",
+            "type": "array",
+            "items": {
+              "anyOf": []
+            }
+          },
+          "excludedProducts": {
+            "description": "Products excluded from the coupon. Each entry is a path string or a `{ path, sku? }` object.",
+            "type": "array",
+            "items": {
+              "anyOf": []
+            }
+          },
+          "excludeDiscountedProducts": {
+            "description": "When true, apply only to full-price lines (regular price equals sale price).",
+            "type": "boolean"
+          },
+          "applyToSalePrice": {
+            "description": "When false (default) the discount is computed against the regular price with cheaper-wins; when true it stacks on the current sale price.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "discountType"
+        ]
+      },
+      "ProductListCouponType": {
+        "description": "A coupon type that sets absolute per-product prices via `discountedProducts`. The entries define their own scope; mutually exclusive with the flat discount and scoping/pricing fields (`discountType`, `discountValue`, `includedProducts`, `excludedProducts`, `includedCategories`, `excludedCategories`, `excludeDiscountedProducts`, `applyToSalePrice`).",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique coupon type identifier.",
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "description": "Human-readable name.",
+            "type": "string",
+            "minLength": 1
+          },
+          "minimumOrderAmount": {
+            "description": "Minimum pre-discount subtotal required to apply. Defaults to 0.",
+            "type": "number",
+            "minimum": 0
+          },
+          "maximumDiscountAmount": {
+            "description": "Cap on the discount amount (percentage coupons); null for no cap.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "freeShipping": {
+            "description": "Grants free shipping when applied.",
+            "type": "boolean"
+          },
+          "includedShippingTypes": {
+            "description": "When set, free shipping applies only to these shipping method types.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includedCategories": {
+            "description": "Categories the coupon applies to.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludedCategories": {
+            "description": "Categories excluded from the coupon.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stackable": {
+            "description": "Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.",
+            "type": "boolean"
+          },
+          "autoApply": {
+            "description": "Apply automatically without manual code entry. Defaults to false.",
+            "type": "boolean"
+          },
+          "allowManualEntry": {
+            "description": "Allow the code to be entered manually at checkout. Defaults to true.",
+            "type": "boolean"
+          },
+          "defaultUsageLimit": {
+            "description": "Default total usage limit for codes of this type; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "defaultUsesPerCode": {
+            "description": "Default per-code usage limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "notes": {
+            "description": "Free-form operator notes.",
+            "type": "string"
+          },
+          "country": {
+            "description": "Single ISO 3166-1 alpha-2 country the coupon is valid in. Mutually exclusive with `countries`.",
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "countries": {
+            "description": "ISO 3166-1 alpha-2 countries the coupon is valid in. Mutually exclusive with `country`.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2}$"
+            }
+          },
+          "locale": {
+            "description": "BCP-47 locale the coupon is scoped to.",
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          },
+          "createdAt": {
+            "description": "Creation timestamp (ISO 8601). Managed by the service; ignored on write.",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last-update timestamp (ISO 8601). Managed by the service; ignored on write.",
+            "type": "string"
+          },
+          "discountedProducts": {
+            "description": "Per-product absolute price overrides. Exact duplicates (same path, or same path + sku) are rejected.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscountedProduct"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "discountedProducts"
+        ]
+      },
+      "CouponTypeUpdate": {
+        "description": "Partial coupon type fields to merge into the existing type. `id` and timestamps are immutable.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Human-readable name.",
+            "type": "string",
+            "minLength": 1
+          },
+          "minimumOrderAmount": {
+            "description": "Minimum pre-discount subtotal required to apply. Defaults to 0.",
+            "type": "number",
+            "minimum": 0
+          },
+          "maximumDiscountAmount": {
+            "description": "Cap on the discount amount (percentage coupons); null for no cap.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "freeShipping": {
+            "description": "Grants free shipping when applied.",
+            "type": "boolean"
+          },
+          "includedShippingTypes": {
+            "description": "When set, free shipping applies only to these shipping method types.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "includedCategories": {
+            "description": "Categories the coupon applies to.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludedCategories": {
+            "description": "Categories excluded from the coupon.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stackable": {
+            "description": "Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.",
+            "type": "boolean"
+          },
+          "autoApply": {
+            "description": "Apply automatically without manual code entry. Defaults to false.",
+            "type": "boolean"
+          },
+          "allowManualEntry": {
+            "description": "Allow the code to be entered manually at checkout. Defaults to true.",
+            "type": "boolean"
+          },
+          "defaultUsageLimit": {
+            "description": "Default total usage limit for codes of this type; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "defaultUsesPerCode": {
+            "description": "Default per-code usage limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "notes": {
+            "description": "Free-form operator notes.",
+            "type": "string"
+          },
+          "country": {
+            "description": "Single ISO 3166-1 alpha-2 country the coupon is valid in. Mutually exclusive with `countries`.",
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "countries": {
+            "description": "ISO 3166-1 alpha-2 countries the coupon is valid in. Mutually exclusive with `country`.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{2}$"
+            }
+          },
+          "locale": {
+            "description": "BCP-47 locale the coupon is scoped to.",
+            "type": "string",
+            "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          },
+          "discountType": {
+            "description": "Whether `discountValue` is a percentage or a fixed cash amount.",
+            "type": "string",
+            "enum": [
+              "percentage",
+              "fixed"
+            ]
+          },
+          "discountValue": {
+            "description": "Discount magnitude — a percentage (0–100) when `discountType` is \"percentage\", otherwise a cash amount. Defaults to 0.",
+            "type": "number",
+            "minimum": 0
+          },
+          "includedProducts": {
+            "description": "When non-empty, only these products count toward the coupon. Each entry is a path string or a `{ path, sku? }` object.",
+            "type": "array",
+            "items": {
+              "anyOf": []
+            }
+          },
+          "excludedProducts": {
+            "description": "Products excluded from the coupon. Each entry is a path string or a `{ path, sku? }` object.",
+            "type": "array",
+            "items": {
+              "anyOf": []
+            }
+          },
+          "excludeDiscountedProducts": {
+            "description": "When true, apply only to full-price lines (regular price equals sale price).",
+            "type": "boolean"
+          },
+          "applyToSalePrice": {
+            "description": "When false (default) the discount is computed against the regular price with cheaper-wins; when true it stacks on the current sale price.",
+            "type": "boolean"
+          },
+          "discountedProducts": {
+            "description": "Per-product absolute price overrides. Exact duplicates (same path, or same path + sku) are rejected.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscountedProduct"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "DiscountedProduct": {
+        "description": "Maps a product path (optionally a variant via `sku`) to an absolute final per-unit price.",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Product path the price applies to.",
+            "type": "string",
+            "minLength": 1
+          },
+          "sku": {
+            "description": "Optional variant SKU. Omit to match any variant at the path. A path + sku entry takes precedence over a path-only entry for the same line.",
+            "type": "string"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "description": "Price as a decimal string, e.g. \"19.99\".",
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?$"
+              },
+              {
+                "description": "Price as a non-negative number.",
+                "type": "number",
+                "minimum": 0
+              }
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "price"
+        ]
+      },
+      "CouponCode": {
+        "description": "A single coupon code referencing a coupon type.",
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "The coupon code (case-insensitive; normalized to uppercase). Letters, digits, hyphens, underscores; max 64 chars.",
+            "type": "string",
+            "maxLength": 64
+          },
+          "typeId": {
+            "description": "Identifier of the coupon type this code draws its discount from.",
+            "type": "string"
+          },
+          "discountOverride": {
+            "description": "Overrides the coupon type's flat discount for this code. Not allowed when the type is a product-list coupon.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "discountType": {
+                "type": "string",
+                "enum": [
+                  "percentage",
+                  "fixed"
+                ]
+              },
+              "discountValue": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "discountType",
+              "discountValue"
+            ]
+          },
+          "usageLimit": {
+            "description": "Total redemption limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "usageCount": {
+            "description": "Times redeemed. Managed by the service; ignored on write.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "usesPerCustomer": {
+            "description": "Per-customer redemption limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "expiresAt": {
+            "description": "Expiry timestamp (ISO 8601). Omit for a code that never expires.",
+            "type": "string"
+          },
+          "active": {
+            "description": "Whether the code can be redeemed. Defaults to true.",
+            "type": "boolean"
+          },
+          "createdAt": {
+            "description": "Creation timestamp (ISO 8601). Managed by the service.",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last-update timestamp (ISO 8601). Managed by the service.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "typeId"
+        ]
+      },
+      "CouponCodeUpdate": {
+        "description": "Partial coupon code fields to merge into the existing code. `code`, `typeId`, `usageCount`, and timestamps are immutable.",
+        "type": "object",
+        "properties": {
+          "discountOverride": {
+            "description": "Overrides the coupon type's flat discount for this code. Not allowed when the type is a product-list coupon.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "discountType": {
+                "type": "string",
+                "enum": [
+                  "percentage",
+                  "fixed"
+                ]
+              },
+              "discountValue": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "discountType",
+              "discountValue"
+            ]
+          },
+          "usageLimit": {
+            "description": "Total redemption limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "usesPerCustomer": {
+            "description": "Per-customer redemption limit; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "expiresAt": {
+            "description": "Expiry timestamp (ISO 8601). Omit for a code that never expires.",
+            "type": "string"
+          },
+          "active": {
+            "description": "Whether the code can be redeemed. Defaults to true.",
+            "type": "boolean"
+          }
+        }
+      },
+      "BatchCreateCouponsRequest": {
+        "description": "Parameters for batch-generating unique coupon codes for an existing type.",
+        "type": "object",
+        "properties": {
+          "typeId": {
+            "description": "Coupon type the generated codes reference.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Number of codes to generate (max 500). Defaults to 1.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          },
+          "prefix": {
+            "description": "Optional code prefix. Defaults to \"CODE\".",
+            "type": "string"
+          },
+          "discountOverride": {
+            "description": "Overrides the coupon type's flat discount for this code. Not allowed when the type is a product-list coupon.",
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "discountType": {
+                "type": "string",
+                "enum": [
+                  "percentage",
+                  "fixed"
+                ]
+              },
+              "discountValue": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "discountType",
+              "discountValue"
+            ]
+          },
+          "usageLimit": {
+            "description": "Total redemption limit for every code; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "usesPerCustomer": {
+            "description": "Per-customer redemption limit for every code; null for unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "expiresAt": {
+            "description": "Expiry timestamp (ISO 8601) applied to every generated code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "typeId"
         ]
       },
       "ErrorResponse": {

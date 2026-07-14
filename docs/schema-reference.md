@@ -349,6 +349,8 @@ The full order request body used when placing an order.
 | `shippingMethod` | object | No | Shipping method selected by the customer from the estimate rates. Required for order preview. |
 | `estimateToken` | string | No | Estimate token from a prior order preview. Used to lock in estimates at order creation time. |
 | `paymentMethod` | string | No | Payment method identifier. |
+| `checkoutFlow` | `standard` \| `express` | No | Checkout flow type. `express` identifies wallet or shortcut checkout flows. |
+| `entryPoint` | `cart` \| `checkout` \| `pdp` | No | Page or experience where checkout started. |
 | `couponCode` | string | No | Coupon code applied to the order. |
 | `giftMessage` | string | No | Optional gift message to include with the order. Max 250 characters. max length 250 |
 | `customerTimezone` | string | No | IANA timezone captured from the shopper's browser at checkout. max length 100; pattern constrained |
@@ -469,6 +471,8 @@ The relaxed order request used for previews and estimates. `customer` is optiona
 | `shippingMethod` | object | No | Shipping method selected by the customer from the estimate rates. Required for order preview. |
 | `estimateToken` | string | No | Estimate token from a prior order preview. Used to lock in estimates at order creation time. |
 | `paymentMethod` | string | No | Payment method identifier. |
+| `checkoutFlow` | `standard` \| `express` | No | Checkout flow type. `express` identifies wallet or shortcut checkout flows. |
+| `entryPoint` | `cart` \| `checkout` \| `pdp` | No | Page or experience where checkout started. |
 | `couponCode` | string | No | Coupon code applied to the order. |
 | `giftMessage` | string | No | Optional gift message to include with the order. Max 250 characters. max length 250 |
 | `customerTimezone` | string | No | IANA timezone captured from the shopper's browser at checkout. max length 100; pattern constrained |
