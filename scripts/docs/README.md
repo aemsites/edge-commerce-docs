@@ -95,6 +95,36 @@ npm run docs:da:push -- --no-preview
 
 Overrides: `DA_ORG`, `DA_SITE` (defaults `aemsites` / `edge-commerce-docs`), `HELIX_API_HOST` (default `https://api.aem.live`).
 
+## LLM doc sync
+
+`llm-sync.mjs` automatically updates narrative docs when a source repo changes. It reads each `docs/*.md` file, checks its frontmatter `sources` block for the target repo, diffs the source repo since the last reviewed commit, sends the diff and current doc to an LLM, and writes the updated doc back.
+
+The workflow (`.github/workflows/llm-doc-sync.yaml`) runs on `repository_dispatch` events or manual `workflow_dispatch` triggers. It checks out both this repo and the source repo, runs the sync script, and opens a PR with the label `ai-authored`.
+
+### Run locally
+
+```bash
+export SOURCE_REPO="helix-commerce-api"
+export SOURCE_REF="abc1234"                  # commit SHA to sync to
+export SOURCE_VERSION="v2.43.0"               # optional version string
+export SOURCE_REPO_PATH="/path/to/source/repo" # full clone with history
+export OPENAI_API_KEY="sk-..."
+
+node scripts/docs/llm-sync.mjs
+```
+
+### Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `SOURCE_REPO` | yes | Source repo name (e.g. `helix-commerce-api`) |
+| `SOURCE_REF` | yes | Commit SHA to sync to |
+| `SOURCE_VERSION` | no | Version string (e.g. `v2.43.0`) |
+| `SOURCE_REPO_PATH` | yes | Absolute path to a full clone of the source repo |
+| `OPENAI_API_KEY` | yes | OpenAI API key |
+
+The script filters out test files, CI config, and lock files from the diff so only meaningful code changes drive doc updates. If no docs need content changes, it exits cleanly.
+
 ## Path mapping
 
 Each Markdown file uses its frontmatter `daPath` when present. For example:
