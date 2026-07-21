@@ -26,7 +26,6 @@ import { join, resolve } from 'node:path';
 const OPENAI_MODEL = 'gpt-5.6-terra';
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const MAX_TOKENS = 16000;
-const TEMPERATURE = 0.3;
 
 const DOCS_DIR = resolve('docs');
 const STYLE_GUIDE_PATH = resolve('CLAUDE.md');
@@ -183,7 +182,6 @@ async function callLLM(systemPrompt, userPrompt, apiKey) {
     body: JSON.stringify({
       model: OPENAI_MODEL,
       max_completion_tokens: MAX_TOKENS,
-      temperature: TEMPERATURE,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
