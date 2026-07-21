@@ -58,7 +58,7 @@ Learn more: [Getting Started](/getting-started#your-first-product-ingestion) | [
 
 #### Edge Commerce API
 
-The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk product upserts](/api-reference#bulk-write-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations. Bulk upserts accept up to 50 products per request. Every product is validated before any products are saved, and the response contains a result for each submitted product. Bulk deletion is not supported. PayPal checkout and express flows can be configured to defer payment capture until the buyer completes an order review. Requests with a declared body size greater than 10 MB are rejected.
+The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk product upserts](/api-reference#bulk-write-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations.
 
 Learn more: [Data Ingestion Guide](/data-ingestion#etl-process-overview) | [API Reference](/api-reference#product-operations)
 
