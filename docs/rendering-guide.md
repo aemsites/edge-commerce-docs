@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "8af300d"
+    version: "v2.53.0"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -376,7 +376,7 @@ When a request comes in for `/us/en/products/t1000-blender`, the pipeline:
 
 You can organize products using any URL path structure that makes sense for your site. Common patterns include regional/locale paths like `/us/en/products/blender` or `/ca/fr/produits/melangeur`, category paths like `/products/kitchen/blenders/blender-pro-500`, or flat paths like `/products/blender-pro-500`.
 
-The path structure is determined when you create products through the Edge Commerce API. Whatever path you use in the API endpoint becomes the product's URL.
+The path structure is determined when you create products through the Edge Commerce API. Whatever path you use in the product's `path` field becomes the product's URL.
 
 ## Next steps
 

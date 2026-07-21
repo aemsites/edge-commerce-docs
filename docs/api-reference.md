@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "2731b0a"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -244,11 +244,63 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 ### Bulk create or update products
 
-`POST /{org}/sites/{site}/catalog/*`
+`POST /{org}/sites/{site}/catalog`
 
-Each product in the array must include a `path` field that specifies where it should be stored. Unlike single product operations, bulk operations do not automatically infer the path from the URL. Missing `path` fields will return `400 Bad Request`.
+Use this endpoint to create or update up to 50 products in one request. The request body is an object with an `items` array. Each product must include a `path` field that specifies where it should be stored.
 
-The request body is an array of product objects ([max 50 products per request](/limits)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
+The API validates the complete request before saving products. If the request envelope is invalid, any product is invalid, or two products have the same `path`, the API returns `400 Bad Request` and saves no products. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
+
+Bulk writes return `200 OK` with a `results` array. The array contains one result for each submitted product. Products with no detected changes have a status of `200`; saved products include their individual result status and message.
+
+```bash
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
+  -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "sku": "bulk-001",
+        "name": "Bulk Product 1",
+        "path": "/us/en/products/bulk-product-1",
+        "url": "https://www.example.com/us/en/products/bulk-product-1",
+        "images": [
+          { "url": "https://cdn.example.com/bulk-001.jpg", "label": "main" }
+        ]
+      },
+      {
+        "sku": "bulk-002",
+        "name": "Bulk Product 2",
+        "path": "/us/en/products/bulk-product-2",
+        "url": "https://www.example.com/us/en/products/bulk-product-2",
+        "images": [
+          { "url": "https://cdn.example.com/bulk-002.jpg", "label": "main" }
+        ]
+      }
+    ]
+  }'
+```
+
+Example response:
+
+```json
+{
+  "results": [
+    {
+      "sku": "bulk-001",
+      "path": "/us/en/products/bulk-product-1",
+      "status": 201,
+      "message": "Product saved successfully."
+    },
+    {
+      "sku": "bulk-002",
+      "path": "/us/en/products/bulk-product-2",
+      "status": 200,
+      "message": "No changes detected"
+    }
+  ]
+}
+```
 
 #### Image processing behavior
 
@@ -256,32 +308,17 @@ Image processing is synchronous when you submit 10 or fewer products with 10 or 
 
 Learn more about [image handling](/schema-reference#productbusmedia) in the schema reference.
 
-```bash
-curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/*" \
-  -X POST \
-  -H "Authorization: Bearer {your-api-key}" \
-  -H "Content-Type: application/json" \
-  -d '[
-    {
-      "sku": "bulk-001",
-      "name": "Bulk Product 1",
-      "path": "/us/en/products/bulk-product-1",
-      "url": "https://www.example.com/us/en/products/bulk-product-1",
-      "images": [
-        { "url": "https://cdn.example.com/bulk-001.jpg", "label": "main" }
-      ]
-    },
-    {
-      "sku": "bulk-002",
-      "name": "Bulk Product 2",
-      "path": "/us/en/products/bulk-product-2",
-      "url": "https://www.example.com/us/en/products/bulk-product-2",
-      "images": [
-        { "url": "https://cdn.example.com/bulk-002.jpg", "label": "main" }
-      ]
-    }
-  ]'
-```
+#### Bulk deletion
+
+The bulk request envelope supports a `delete` boolean for future bulk deletion support. Bulk deletion is not currently available. Requests with `"delete": true` return `501 Not Implemented`.
+
+### Deprecated bulk create or update endpoint
+
+`POST /{org}/sites/{site}/catalog/*`
+
+This endpoint is deprecated. Use `POST /{org}/sites/{site}/catalog` with the `{ "items": [...] }` request envelope instead.
+
+The deprecated endpoint accepts an array of up to 50 product objects. Each product must include a `path` field. Its response format differs from the current bulk endpoint.
 
 ### Get a product by path
 

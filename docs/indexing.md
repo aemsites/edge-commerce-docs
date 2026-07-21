@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "90dccc8"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -283,7 +283,7 @@ curl "https://www.example.com/us/en/merchant-center-feed.xml"
 
 ### Indexing performance
 
-Indexing jobs run automatically and asynchronously. To optimize performance, batch product updates when possible using the bulk API, schedule large catalog updates during off-peak hours, monitor index update latency via last-modified timestamps, and keep index configurations lean with only needed properties.
+Indexing jobs run automatically and asynchronously. To optimize performance, batch product updates when possible, schedule large catalog updates during off-peak hours, monitor index update latency via last-modified timestamps, and keep index configurations lean with only needed properties.
 
 ## Next steps
 

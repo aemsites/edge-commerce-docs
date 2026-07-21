@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "2731b0a"
+    version: "v2.53.0"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -58,7 +58,7 @@ Learn more: [Getting Started](/getting-started#your-first-product-ingestion) | [
 
 #### Edge Commerce API
 
-The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk updates](/api-reference#bulk-create-or-update-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations. PayPal checkout and express flows can be configured to defer payment capture until the buyer completes an order review. Requests with a declared body size greater than 10 MB are rejected.
+The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk product upserts](/api-reference#bulk-write-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations.
 
 Learn more: [Data Ingestion Guide](/data-ingestion#etl-process-overview) | [API Reference](/api-reference#product-operations)
 
@@ -82,7 +82,7 @@ Learn more: [Common Use Cases](/network#common-use-cases) | [AEM Network Configu
 
 ### Data flow
 
-Product data originates in your commerce infrastructure, such as PIM systems, ERP platforms, or commerce backends. A customer-built ETL process pulls this data, transforms it into the required format, and sends it through the Edge Commerce API for storage. The API queues each product update for indexing, which builds the searchable Product Index and generates Google Shopping-compatible Merchant Feeds.
+Product data originates in your commerce infrastructure, such as PIM systems, ERP platforms, or commerce backends. A customer-built ETL process pulls this data, transforms it into the required format, and sends it through the Edge Commerce API for storage. After product data is saved, the API initiates indexing, which builds the searchable Product Index and generates Google Shopping-compatible Merchant Feeds.
 
 When a user requests a product page, their request first reaches your CDN. The AEM Network examines the URL pattern and routes the request to the appropriate backend: Edge Delivery Services for content pages, or the Product Pipeline for product pages. The Pipeline fetches the product data and optionally overlays authored AEM content before rendering the final output. This rendered response is cached at your CDN with specific cache keys, enabling selective invalidation when product data changes. Product updates sent through the Edge Commerce API automatically trigger cache invalidation for affected pages.
 
