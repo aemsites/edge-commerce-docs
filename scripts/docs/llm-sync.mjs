@@ -466,8 +466,9 @@ async function main() {
   // tracked docs. This captures everything that changed since the oldest
   // baseline, so gap analysis can find features no doc covers.
   const fullDiffBase = earliestOriginalCommit || sourceRef;
-  const fullDiff = getFilteredDiff(sourceRepoPath, fullDiffBase, sourceRef);
-  const hasNonTrivialDiff = fullDiff && fullDiff.trim() && !isTrivialDiff(fullDiff);
+  const skipGapAnalysis = sameCommit(fullDiffBase, sourceRef);
+  const fullDiff = skipGapAnalysis ? '' : getFilteredDiff(sourceRepoPath, fullDiffBase, sourceRef);
+  const hasNonTrivialDiff = !skipGapAnalysis && fullDiff && fullDiff.trim() && !isTrivialDiff(fullDiff);
 
   if (hasNonTrivialDiff) {
     console.log('\n🔍 Running gap analysis for uncovered changes...');
