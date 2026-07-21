@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "8af300d"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -28,8 +28,8 @@ sources:
     lastContentCommit: "b745180"
   helix-product-shared:
     version: "v1.7.0"
-    lastReviewedCommit: "6ea43b0"
-    lastContentCommit: "6ea43b0"
+    lastReviewedCommit: "b8acff4"
+    lastContentCommit: "b8acff4"
   helix-product-image-collector:
     version: "v2.0.4"
     lastReviewedCommit: "853fc30"
@@ -148,6 +148,66 @@ https://main--{site}--{org}.aem.network/us/en/products/test-product
 ```
 
 You will see an HTML page with the product information, including metadata in the document head and JSON-LD structured data for SEO. The Product Pipeline loads the product data and renders it server-side.
+
+## Bulk product ingestion
+
+To create or update multiple products in one request, send a `POST` request to the catalog collection. Include an `items` array containing up to 50 products.
+
+```bash
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
+  -X POST \
+  -H "Authorization: Bearer {your-admin-or-service-token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "sku": "test-sku",
+        "name": "Test Product",
+        "path": "/us/en/products/test-product",
+        "url": "https://www.example.com/us/en/products/test-product",
+        "price": {
+          "currency": "USD",
+          "regular": "99.99",
+          "final": "79.99"
+        }
+      },
+      {
+        "sku": "test-sku-2",
+        "name": "Test Product 2",
+        "path": "/us/en/products/test-product-2",
+        "url": "https://www.example.com/us/en/products/test-product-2",
+        "price": {
+          "currency": "USD",
+          "regular": "49.99",
+          "final": "39.99"
+        }
+      }
+    ]
+  }'
+```
+
+The request creates or updates each product. The response has a `200 OK` status and contains a `results` array with one result for each submitted product.
+
+```json
+{
+  "results": [
+    {
+      "sku": "test-sku",
+      "path": "/us/en/products/test-product",
+      "status": 200,
+      "message": "Product saved successfully."
+    },
+    {
+      "sku": "test-sku-2",
+      "path": "/us/en/products/test-product-2",
+      "status": 200,
+      "message": "Product saved successfully."
+    }
+  ]
+}
+```
+
+Every product in the request is validated before any products are saved. If an item is invalid, the API returns `400 Bad Request` and does not save any items. Each product path must be unique within the `items` array.
 
 ## Next steps
 

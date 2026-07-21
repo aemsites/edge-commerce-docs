@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "8af300d"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -50,7 +50,7 @@ Before you can use the Product Bus, you need to transform your product data from
 
 1. Extract: Retrieve product data from your source systems (Product Information Management (PIM), Enterprise Resource Planning (ERP), Commerce platform, or other databases)
 2. Transform: Convert your data format into the Product Bus schema (see [Schema Reference](/schema-reference#productbusentry) for complete reference)
-3. Load: Send transformed data to the [Edge Commerce API via HTTP PUT requests](/api-reference#create-or-update-a-product)
+3. Load: Send transformed data to the [Edge Commerce API](/api-reference#create-or-update-a-product) using HTTP PUT requests for individual products or the bulk endpoint for batches
 
 ### Your responsibility
 
@@ -138,9 +138,29 @@ curl -H "Authorization: Bearer {your-api-key}" \
 curl "https://main--{site}--{org}.aem.network/{store}/{locale}/index.json" | grep "{sku}"
 ```
 
-Build a script that fetches a sample of products from your source system, runs them through your ETL transformation, sends them to the Edge Commerce API via POST/PUT, then verifies via GET request that stored data matches expected output. Run this validation daily or after every ETL deployment.
+Build a script that fetches a sample of products from your source system, runs them through your ETL transformation, sends individual products to the Edge Commerce API via PUT or batches to the bulk endpoint via POST, then verifies via GET request that stored data matches expected output. Run this validation daily or after every ETL deployment.
 
-Test bulk operations with realistic product counts and verify your ETL respects the 50 products per request limit. Monitor memory usage and processing time for large batches, and test retry logic by intentionally triggering rate limits. Load test at realistic intervals and rates, so you don't waste resources or exceed quotas. Overzealous testing can lead to unnecessary costs and quota violations.
+Use the bulk endpoint at `POST /{org}/sites/{site}/catalog` with an object containing an `items` array:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
+  --data '{
+    "items": [
+      {
+        "sku": "{sku}",
+        "name": "{product-name}",
+        "path": "/{store}/{locale}/products/{product-path}"
+      }
+    ]
+  }'
+```
+
+The endpoint accepts up to 50 products per request. Every item is validated before products are saved. If any item is invalid, the request is rejected and no products in the batch are saved. A successful response contains a `results` array with one result for each submitted product, including products that were unchanged.
+
+Test bulk operations with realistic product counts and verify your ETL respects the 50 products per request limit. Do not use `delete: true` in bulk requests, because bulk deletion is not currently available. Monitor memory usage and processing time for large batches, and test retry logic by intentionally triggering rate limits. Load test at realistic intervals and rates, so you don't waste resources or exceed quotas. Overzealous testing can lead to unnecessary costs and quota violations.
 
 By implementing these verification steps, you can catch integration issues early and maintain high data quality throughout the product lifecycle.
 
@@ -149,4 +169,4 @@ By implementing these verification steps, you can catch integration issues early
 - [Getting Started](/getting-started#your-first-product-ingestion): Quick example of creating your first product
 - [Limits and guidance](/limits): Bulk operation limits and operational guidance
 - [Schema Reference](/schema-reference#productbusentry): Detailed reference for the target Product Bus schema
-- [API Reference](/api-reference#bulk-create-or-update-products): API endpoints and methods for loading product data
+- [API Reference](/api-reference#bulk-write-products): API endpoints and methods for loading product data

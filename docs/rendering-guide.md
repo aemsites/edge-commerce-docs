@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "2731b0a"
-    lastContentCommit: "8af300d"
+    version: "v2.53.0"
+    lastReviewedCommit: "d180131"
+    lastContentCommit: "d180131"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -376,7 +376,55 @@ When a request comes in for `/us/en/products/t1000-blender`, the pipeline:
 
 You can organize products using any URL path structure that makes sense for your site. Common patterns include regional/locale paths like `/us/en/products/blender` or `/ca/fr/produits/melangeur`, category paths like `/products/kitchen/blenders/blender-pro-500`, or flat paths like `/products/blender-pro-500`.
 
-The path structure is determined when you create products through the Edge Commerce API. Whatever path you use in the API endpoint becomes the product's URL.
+The path structure is determined when you create products through the Edge Commerce API. Whatever path you use in the product's `path` field becomes the product's URL.
+
+### Bulk product writes
+
+To create or update multiple products, send a `POST` request to the catalog collection endpoint. The request body contains an `items` array of up to 50 Product Bus entries. Each entry must include a unique `path`.
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
+  --data '{
+    "items": [
+      {
+        "sku": "BLENDER-PRO-500",
+        "name": "Blender Pro 500",
+        "path": "/us/en/products/blender-pro-500"
+      },
+      {
+        "sku": "MIXER-PLUS",
+        "name": "Mixer Plus",
+        "path": "/us/en/products/mixer-plus"
+      }
+    ]
+  }'
+```
+
+The API validates every item before saving any product. If the request envelope is invalid, a product is invalid, or two items use the same path, the request fails and no products are saved.
+
+A successful response always contains a `results` array, including when the request contains one item:
+
+```json
+{
+  "results": [
+    {
+      "sku": "BLENDER-PRO-500",
+      "path": "/us/en/products/blender-pro-500",
+      "status": 200,
+      "message": "Product saved successfully."
+    },
+    {
+      "sku": "MIXER-PLUS",
+      "path": "/us/en/products/mixer-plus",
+      "status": 200,
+      "message": "Product saved successfully."
+    }
+  ]
+}
+```
 
 ## Next steps
 
