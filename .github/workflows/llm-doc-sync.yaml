@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Create app token for source repos
         id: source-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v4
         with:
           app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
           private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
@@ -73,8 +73,19 @@ jobs:
       - name: Remove source repo checkout
         run: rm -rf .source-repo
 
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No doc changes to commit."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: auto/docs-update-${{ env.SOURCE_REPO }}
           delete-branch: true
