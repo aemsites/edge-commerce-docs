@@ -2,13 +2,13 @@
 title: "Authentication overview"
 description: "How users, roles, bearer tokens, and site scoping work in the Edge Commerce API."
 daPath: "/authentication/overview"
-status: new
-managed: true
-sourceFormat: markdown
+status: "new"
+managed: "true"
+sourceFormat: "markdown"
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
+    version: "2.52.2"
+    lastReviewedCommit: "b5639ec5767e8cb3ea0f9683dd3b895f84363f60"
     lastContentCommit: "ce71bd0"
 ---
 

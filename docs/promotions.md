@@ -2,13 +2,13 @@
 title: "Promotions guide"
 description: "Promotion models for catalog, cart, and conditional discounts."
 daPath: "/promotions"
-status: migrated
-managed: true
-sourceFormat: markdown
+status: "migrated"
+managed: "true"
+sourceFormat: "markdown"
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
+    version: "2.52.2"
+    lastReviewedCommit: "b5639ec5767e8cb3ea0f9683dd3b895f84363f60"
     lastContentCommit: "844b959"
   helix-product-pipeline:
     version: "v2.9.1"

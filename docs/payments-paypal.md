@@ -2,13 +2,13 @@
 title: "PayPal payments"
 description: "Configuration schema for the PayPal Orders v2 provider."
 daPath: "/checkout/payments/paypal"
-status: new
-managed: true
-sourceFormat: markdown
+status: "new"
+managed: "true"
+sourceFormat: "markdown"
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
+    version: "2.52.2"
+    lastReviewedCommit: "b5639ec5767e8cb3ea0f9683dd3b895f84363f60"
     lastContentCommit: "e77382f"
 ---
 

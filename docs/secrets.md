@@ -2,13 +2,13 @@
 title: "Secrets store"
 description: "Encrypted, write-only store for provider credentials, with country and locale scoping."
 daPath: "/checkout/secrets"
-status: new
-managed: true
-sourceFormat: markdown
+status: "new"
+managed: "true"
+sourceFormat: "markdown"
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
+    version: "2.52.2"
+    lastReviewedCommit: "b5639ec5767e8cb3ea0f9683dd3b895f84363f60"
     lastContentCommit: "e77382f"
 ---
 
