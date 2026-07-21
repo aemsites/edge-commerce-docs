@@ -182,7 +182,7 @@ async function callLLM(systemPrompt, userPrompt, apiKey) {
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,
-      max_tokens: MAX_TOKENS,
+      max_completion_tokens: MAX_TOKENS,
       temperature: TEMPERATURE,
       messages: [
         { role: 'system', content: systemPrompt },
