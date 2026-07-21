@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.52.3",
+    "version": "2.53.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -352,6 +352,195 @@
           "description": "Site identifier."
         }
       ],
+      "post": {
+        "operationId": "bulkCatalogOperation",
+        "summary": "Bulk write products",
+        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Every item is validated up front, so a single invalid product rejects the whole request and saves nothing. Always responds with a `results` array, one entry per item, including for single-item requests. A `delete: true` flag is reserved for bulk deletion in a future release.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-item results for the bulk operation.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Bulk operation result: one entry per attempted item.",
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "description": "Outcome of a single product write or delete.",
+                        "type": "object",
+                        "properties": {
+                          "sku": {
+                            "description": "Product SKU.",
+                            "type": "string"
+                          },
+                          "path": {
+                            "description": "Product path.",
+                            "type": "string"
+                          },
+                          "status": {
+                            "description": "Per-product HTTP status (200 unchanged, 201 written).",
+                            "type": "number"
+                          },
+                          "message": {
+                            "description": "Optional human-readable detail.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "status"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "results"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "results": [
+                        {
+                          "sku": "PROD-123",
+                          "path": "/us/en/products/blender-pro-500",
+                          "status": 200,
+                          "message": "Product saved successfully."
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope: non-object body, non-boolean delete, non-array items, too many items, or an invalid product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid request",
+                      "errors": [
+                        {
+                          "path": "$.items",
+                          "message": "too many items",
+                          "details": "maximum 50 per request"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "method_not_allowed",
+                      "message": "method not allowed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "catalog:write"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Bulk operation envelope with an `items` array of products to upsert.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "Bulk operation envelope. Writes are the default; `delete: true` selects deletion.",
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "description": "Products to create or update (max 50 per request).",
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ProductBus"
+                    }
+                  },
+                  "delete": {
+                    "description": "When true, the request is a bulk delete. Defaults to false (write).",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "items": [
+                      {
+                        "sku": "PROD-123",
+                        "name": "Blender Pro 500",
+                        "path": "/us/en/products/blender-pro-500"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Catalog"
+        ]
+      },
       "get": {
         "operationId": "listCatalogProducts",
         "summary": "List catalog products",
@@ -585,8 +774,8 @@
       },
       "post": {
         "operationId": "bulkUpsertCatalogProducts",
-        "summary": "Bulk create/replace products",
-        "description": "Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).",
+        "summary": "Bulk create/replace products (deprecated)",
+        "description": "Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).",
         "parameters": [
           {
             "name": "Authorization",
@@ -741,6 +930,7 @@
             }
           }
         },
+        "deprecated": true,
         "x-permissions": [
           "catalog:write"
         ],

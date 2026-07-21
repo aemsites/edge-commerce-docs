@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Bulk create/replace products (deprecated) — Helix Commerce API</title>
-    <meta name="description" content="Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).">
+    <title>Bulk write products — Helix Commerce API</title>
+    <meta name="description" content="Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Every item is validated up front, so a single invalid product rejects the whole request and saves nothing. Always responds with a `results` array, one entry per item, including for single-item requests. A `delete: true` flag is reserved for bulk deletion in a future release.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -26,10 +26,10 @@
     <main>
       <div>
         <p class="api-eyebrow">Catalog</p>
-        <h1>Bulk create/replace products (deprecated)</h1>
-        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
+        <h1>Bulk write products</h1>
+        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/catalog</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).</p>
+        <p>Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Every item is validated up front, so a single invalid product rejects the whole request and saves nothing. Always responds with a `results` array, one entry per item, including for single-item requests. A `delete: true` flag is reserved for bulk deletion in a future release.</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -37,7 +37,6 @@
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
-            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. `/us/en/products/blender-pro-500.json`), or the literal `*` for bulk writes.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
@@ -48,8 +47,16 @@
             <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
           </table>
         </div>
+        <h2>Request body</h2>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>items</code></td><td><code>ProductBus[]</code></td><td>yes</td><td>Products to create or update (max 50 per request).</td></tr>
+            <tr><td><code>delete</code></td><td><code>boolean</code></td><td>no</td><td>When true, the request is a bulk delete. Defaults to false (write).</td></tr>
+          </table>
+        </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">201</span> Write results.</h3>
+        <h3><span class="status-badge status-2xx">200</span> Per-item results for the bulk operation.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
@@ -59,11 +66,10 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>product</code></td><td><code>object</code></td><td>no</td><td>Outcome of a single product write or delete.</td></tr>
-            <tr><td><code>products</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>results</code></td><td><code>object[]</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> Invalid request: not an array, too many products, missing path, or invalid product.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Invalid envelope: non-object body, non-boolean delete, non-array items, too many items, or an invalid product.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -72,7 +78,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">405</span> Method not allowed at this path.</h3>
+        <h3><span class="status-badge status-4xx">405</span> Method not allowed.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -86,23 +92,26 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/catalog/{path}</span></div>
-          <pre><code class="language-json">[
-  {
-    "sku": "PROD-123",
-    "name": "Blender Pro 500",
-    "path": "/us/en/products/blender-pro-500"
-  }
-]</code></pre>
+          <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/catalog</span></div>
+          <pre><code class="language-json">{
+  "items": [
+    {
+      "sku": "PROD-123",
+      "name": "Blender Pro 500",
+      "path": "/us/en/products/blender-pro-500"
+    }
+  ]
+}</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">201</span></span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
           <pre><code class="language-json">{
-  "products": [
+  "results": [
     {
       "sku": "PROD-123",
       "path": "/us/en/products/blender-pro-500",
-      "status": 201
+      "status": 200,
+      "message": "Product saved successfully."
     }
   ]
 }</code></pre>
@@ -114,8 +123,8 @@
   "message": "invalid request",
   "errors": [
     {
-      "path": "$",
-      "message": "too many products",
+      "path": "$.items",
+      "message": "too many items",
       "details": "maximum 50 per request"
     }
   ]
