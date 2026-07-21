@@ -373,7 +373,7 @@ A single line item in an order. Bundle parents carry their resolved components i
 | `path` | string | Yes | Product page path. |
 | `imageUrl` | string | No | Product image URL for order confirmation display. |
 | `productUrl` | string | No | Canonical product URL. |
-| `quantity` | integer | Yes | Quantity ordered. |
+| `quantity` | integer | Yes | Quantity ordered. Must be a whole number from 1 to 1000. |
 | `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
 | `selectedOptions` | [SelectedOption](#selectedoption)[] | No | Option values selected by the customer. |
@@ -408,7 +408,7 @@ A resolved bundle component nested on a bundle parent line. Components are not c
 | `name` | string | No | Display name of the component. |
 | `sku` | string | No | SKU of the component. |
 | `path` | string | Yes | Product page path of the component. |
-| `quantity` | integer | Yes | Quantity for this component. |
+| `quantity` | integer | Yes | Quantity ordered. Must be a whole number from 1 to 1000. |
 | `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 
 <!-- GENERATED: NestedBundleItem:end -->
