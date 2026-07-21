@@ -378,54 +378,6 @@ You can organize products using any URL path structure that makes sense for your
 
 The path structure is determined when you create products through the Edge Commerce API. Whatever path you use in the product's `path` field becomes the product's URL.
 
-### Bulk product writes
-
-To create or update multiple products, send a `POST` request to the catalog collection endpoint. The request body contains an `items` array of up to 50 Product Bus entries. Each entry must include a unique `path`.
-
-```bash
-curl -X POST \
-  -H "Authorization: Bearer {your-api-key}" \
-  -H "Content-Type: application/json" \
-  "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
-  --data '{
-    "items": [
-      {
-        "sku": "BLENDER-PRO-500",
-        "name": "Blender Pro 500",
-        "path": "/us/en/products/blender-pro-500"
-      },
-      {
-        "sku": "MIXER-PLUS",
-        "name": "Mixer Plus",
-        "path": "/us/en/products/mixer-plus"
-      }
-    ]
-  }'
-```
-
-The API validates every item before saving any product. If the request envelope is invalid, a product is invalid, or two items use the same path, the request fails and no products are saved.
-
-A successful response always contains a `results` array, including when the request contains one item:
-
-```json
-{
-  "results": [
-    {
-      "sku": "BLENDER-PRO-500",
-      "path": "/us/en/products/blender-pro-500",
-      "status": 200,
-      "message": "Product saved successfully."
-    },
-    {
-      "sku": "MIXER-PLUS",
-      "path": "/us/en/products/mixer-plus",
-      "status": 200,
-      "message": "Product saved successfully."
-    }
-  ]
-}
-```
-
 ## Next steps
 
 - [Product Indexing Guide](/indexing#product-indexing-configuration): Configure and optimize product indexes for search and feeds
