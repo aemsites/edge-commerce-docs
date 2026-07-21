@@ -7,8 +7,8 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.10.2"
-    lastReviewedCommit: "8af300d"
+    version: "v2.52.2"
+    lastReviewedCommit: "b5639ec"
     lastContentCommit: "8af300d"
   helix-mixer:
     version: "v1.6.1"

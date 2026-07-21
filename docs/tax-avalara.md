@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.42.1"
-    lastReviewedCommit: "e77382f"
-    lastContentCommit: "e77382f"
+    version: "v2.52.2"
+    lastReviewedCommit: "b5639ec"
+    lastContentCommit: "59c24a6"
 ---
 
 # Avalara tax
@@ -70,6 +70,48 @@ The `originAddress` object requires `line1`, `city`, `region`, `postalCode`, and
 | `adjustmentDescription` | string | Optional description for adjustment calls |
 | `timeoutMs` | number | Request timeout in milliseconds. Defaults to `5000` |
 | `paymentMethodFees` | object | Per-payment-method fee multipliers folded into the tax total, keyed by payment method (e.g. `{ "chase": 0.02 }`) |
+| `taxRules` | array | Conditional rules that select provider-backed or fallback tax and can adjust provider results |
+
+## Conditional tax rules
+
+Use `taxRules` when tax behavior depends on the payment method, checkout flow, or checkout entry point. Each rule requires a `name` and a `taxSource` of `provider` or `fallback`.
+
+```json
+{
+  "taxRules": [
+    {
+      "name": "express-cart-adjustment",
+      "match": {
+        "paymentMethod": "apple-pay",
+        "checkoutFlow": "express",
+        "entryPoint": "cart"
+      },
+      "taxSource": "provider",
+      "adjustments": {
+        "taxAdjustmentRate": 0.1
+      }
+    },
+    {
+      "name": "default-provider",
+      "taxSource": "provider"
+    }
+  ]
+}
+```
+
+The optional `match` object supports these fields:
+
+| Field | Values |
+|-------|--------|
+| `paymentMethod` | A non-empty payment method identifier |
+| `checkoutFlow` | `standard` or `express` |
+| `entryPoint` | `cart`, `checkout`, or `pdp` |
+
+Omitted match fields act as wildcards. A rule without `match` is a default candidate. When multiple rules match, the rule with the most configured match fields wins; configuration order breaks ties.
+
+A `provider` rule uses Avalara. Its optional `adjustments.taxAdjustmentRate` must be between `0` and `1`; `0.1` adds 10% to the provider's total and line-level tax values. A matched rule adjustment takes precedence over `paymentMethodFees`. A `fallback` rule skips Avalara and uses the configured rate-based tax table. Fallback rules cannot include `adjustments`.
+
+Storefronts must send the matching `paymentMethod`, `checkoutFlow`, and `entryPoint` values in order estimates and order previews. See [Estimates and cart totals](/estimates#common-request-fields).
 
 ## Next steps
 

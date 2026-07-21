@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.49.1"
-    lastReviewedCommit: "f18c725"
-    lastContentCommit: "f18c725"
+    version: "v2.52.2"
+    lastReviewedCommit: "b5639ec"
+    lastContentCommit: "1c5a561"
 ---
 
 # Places and address validation
