@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.7.2"
-    lastReviewedCommit: "8af300d"
-    lastContentCommit: "8af300d"
+    version: "v2.52.2"
+    lastReviewedCommit: "b5639ec"
+    lastContentCommit: "43a42c2"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -349,6 +349,8 @@ The full order request body used when placing an order.
 | `shippingMethod` | object | No | Shipping method selected by the customer from the estimate rates. Required for order preview. |
 | `estimateToken` | string | No | Estimate token from a prior order preview. Used to lock in estimates at order creation time. |
 | `paymentMethod` | string | No | Payment method identifier. |
+| `checkoutFlow` | `standard` \| `express` | No | Checkout flow type. `express` identifies wallet or shortcut checkout flows. |
+| `entryPoint` | `cart` \| `checkout` \| `pdp` | No | Page or experience where checkout started. |
 | `couponCode` | string | No | Coupon code applied to the order. |
 | `giftMessage` | string | No | Optional gift message to include with the order. Max 250 characters. max length 250 |
 | `customerTimezone` | string | No | IANA timezone captured from the shopper's browser at checkout. max length 100; pattern constrained |
@@ -371,7 +373,7 @@ A single line item in an order. Bundle parents carry their resolved components i
 | `path` | string | Yes | Product page path. |
 | `imageUrl` | string | No | Product image URL for order confirmation display. |
 | `productUrl` | string | No | Canonical product URL. |
-| `quantity` | integer | Yes | Quantity ordered. Must be a whole number from 1 to 1000. |
+| `quantity` | integer | Yes | Quantity ordered. |
 | `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
 | `selectedOptions` | [SelectedOption](#selectedoption)[] | No | Option values selected by the customer. |
@@ -406,7 +408,7 @@ A resolved bundle component nested on a bundle parent line. Components are not c
 | `name` | string | No | Display name of the component. |
 | `sku` | string | No | SKU of the component. |
 | `path` | string | Yes | Product page path of the component. |
-| `quantity` | integer | Yes | Quantity ordered. Must be a whole number from 1 to 1000. |
+| `quantity` | integer | Yes | Quantity for this component. |
 | `price` | [ProductBusPrice](#productbusprice) | Yes | Price information for a product or variant. |
 
 <!-- GENERATED: NestedBundleItem:end -->
@@ -469,6 +471,8 @@ The relaxed order request used for previews and estimates. `customer` is optiona
 | `shippingMethod` | object | No | Shipping method selected by the customer from the estimate rates. Required for order preview. |
 | `estimateToken` | string | No | Estimate token from a prior order preview. Used to lock in estimates at order creation time. |
 | `paymentMethod` | string | No | Payment method identifier. |
+| `checkoutFlow` | `standard` \| `express` | No | Checkout flow type. `express` identifies wallet or shortcut checkout flows. |
+| `entryPoint` | `cart` \| `checkout` \| `pdp` | No | Page or experience where checkout started. |
 | `couponCode` | string | No | Coupon code applied to the order. |
 | `giftMessage` | string | No | Optional gift message to include with the order. Max 250 characters. max length 250 |
 | `customerTimezone` | string | No | IANA timezone captured from the shopper's browser at checkout. max length 100; pattern constrained |

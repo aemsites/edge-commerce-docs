@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.49.1"
-    lastReviewedCommit: "494256f"
-    lastContentCommit: "5577796"
+    version: "v2.52.2"
+    lastReviewedCommit: "b5639ec"
+    lastContentCommit: "43a42c2"
 ---
 
 # Order lifecycle
@@ -121,6 +121,9 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/preview" 
     "country": "US",
     "locale": "en-US",
     "customerTimezone": "America/Los_Angeles",
+    "paymentMethod": "apple-pay",
+    "checkoutFlow": "express",
+    "entryPoint": "cart",
     "customer": {
       "email": "jane@example.com",
       "firstName": "Jane",
@@ -179,7 +182,7 @@ The response includes the calculated totals and a signed [`estimateToken`](#esti
 
 ### 3. Create the order with the estimate token
 
-Submit the order with the same customer, shipping, item, coupon, and selected shipping method data, plus the [`estimateToken`](#estimate-tokens) from preview.
+Submit the order with the same customer, shipping, item, coupon, selected shipping method, and checkout context, plus the [`estimateToken`](#estimate-tokens) from preview.
 
 ```bash
 curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders" \
@@ -189,6 +192,9 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders" \
     "country": "US",
     "locale": "en-US",
     "customerTimezone": "America/Los_Angeles",
+    "paymentMethod": "apple-pay",
+    "checkoutFlow": "express",
+    "entryPoint": "cart",
     "customer": {
       "email": "jane@example.com",
       "firstName": "Jane",
@@ -320,6 +326,7 @@ Conceptually, the token represents the selected-method checkout result:
 | Selected shipping method | Prevents order creation with a different shipping method than the one previewed |
 | Tax result | Keeps the tax calculation tied to the previewed address, cart, and provider result |
 | Discounts and free-item grants | Prevents unapproved coupon, promotion, or free-item changes during order creation |
+| Payment method and checkout context | Keeps `paymentMethod`, `checkoutFlow`, and `entryPoint` consistent when they affect tax or provider rules |
 | Relevant cart and customer inputs | Lets order creation reject a mismatched or stale checkout submission |
 
 Treat the token as opaque. Do not parse it, modify it, or use it as a source of display data. Use the response fields from preview to render the checkout review screen, and pass the token unchanged in the order creation request.
@@ -331,7 +338,7 @@ Request a new preview, and therefore a new estimate token, whenever the shopper 
 - Selected shipping method
 - Coupon code or coupon source
 - Customer email when discounts or limits depend on customer identity
-- Payment method when tax or provider rules depend on it
+- Payment method, checkout flow, or checkout entry point when tax or provider rules depend on them
 
 If the token is invalid, expired, or does not match the submitted order, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
 

@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.49.1"
-    lastReviewedCommit: "494256f"
-    lastContentCommit: "844b959"
+    version: "v2.52.2"
+    lastReviewedCommit: "b5639ec"
+    lastContentCommit: "43a42c2"
 ---
 
 # Estimates and cart totals
@@ -61,6 +61,16 @@ Estimate request shapes vary by type, but these fields are common across shippin
 | `customer.email` | Optional. Used when coupon rules depend on customer usage limits |
 | `couponCode` | Optional coupon code |
 | `couponSource` | Optional coupon source, such as `manual` or `auto` |
+
+The `order` estimate also accepts checkout context used by tax configuration:
+
+| Field | Description |
+|-------|-------------|
+| `paymentMethod` | Optional payment method identifier, such as `apple-pay` |
+| `checkoutFlow` | Optional flow type: `standard` or `express` |
+| `entryPoint` | Optional place where checkout started: `cart`, `checkout`, or `pdp` |
+
+Pass the same checkout context to order preview and order creation. The values can affect configured [Avalara tax rules](/checkout/tax/avalara#conditional-tax-rules) and are bound into the estimate token returned by preview.
 
 ## Tax estimate
 
@@ -232,7 +242,10 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/order" 
       }
     ],
     "couponCode": "SAVE10",
-    "couponSource": "manual"
+    "couponSource": "manual",
+    "paymentMethod": "apple-pay",
+    "checkoutFlow": "express",
+    "entryPoint": "cart"
   }'
 ```
 
@@ -300,7 +313,7 @@ See [Promotions](/promotions) and [Coupons](/coupons) for rule configuration and
 
 ## Relationship to tax providers
 
-Tax estimate and order estimate use the configured tax provider chain. When [Avalara](/checkout/tax/avalara) is configured, estimates can use Avalara for tax calculation. If the configured provider is unavailable or not configured for the request, the API can fall back to rate-based tax configuration when available.
+Tax estimate and order estimate use the configured tax provider chain. When [Avalara](/checkout/tax/avalara) is configured, estimates can use Avalara for tax calculation. Conditional tax rules can select provider-backed or rate-based tax using the order estimate's `paymentMethod`, `checkoutFlow`, and `entryPoint`. If the configured provider is unavailable or not configured for the request, the API can fall back to rate-based tax configuration when available.
 
 `/orders/preview` performs the final selected-method tax calculation for order creation.
 
