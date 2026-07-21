@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.52.1",
+    "version": "2.52.3",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
