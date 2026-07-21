@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "8af300d"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -58,7 +58,7 @@ Learn more: [Getting Started](/getting-started#your-first-product-ingestion) | [
 
 #### Edge Commerce API
 
-The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk updates](/api-reference#bulk-create-or-update-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations.
+The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk updates](/api-reference#bulk-create-or-update-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations. PayPal checkout and express flows can be configured to defer payment capture until the buyer completes an order review. Requests with a declared body size greater than 10 MB are rejected.
 
 Learn more: [Data Ingestion Guide](/data-ingestion#etl-process-overview) | [API Reference](/api-reference#product-operations)
 

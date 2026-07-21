@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "e77382f"
+    version: "v2.52.3"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
 ---
 
 # Checkout overview
@@ -35,6 +35,8 @@ Every provider needs credentials: API tokens, merchant IDs, client secrets, and 
 
 The mechanics of writing and resolving secrets are identical for every provider, so they are documented once in the [secrets store guide](/checkout/secrets).
 
+For PayPal, the provider configuration can optionally enable an order-review step independently for standard checkout and express flows. When review is enabled, the configuration must include a secure `reviewUrl`.
+
 ## How a checkout flows
 
 At a high level, an order moves through these stages:
@@ -43,7 +45,7 @@ At a high level, an order moves through these stages:
 2. **Order creation**: the customer confirms, and the order is created with its locked-in estimates.
 3. **Payment initiation**: the storefront initiates payment with a [payment provider](/checkout/payments/overview). The API loads that provider's credentials, computes the amount from the stored order, and returns the next step (typically a redirect).
 4. **Fraud screening**: when [Forter](/checkout/fraud/forter) is configured, the transaction is screened before it is approved.
-5. **Confirmation**: the provider confirms the result, the order state is updated, and the customer is returned to the storefront.
+5. **Confirmation**: the provider confirms the result, the order state is updated, and the customer is returned to the storefront. For PayPal flows configured for order review, approval returns a `review` action instead. The storefront sends the customer to the configured review URL, and the order remains in `payment_requires_confirmation` until the storefront explicitly confirms payment capture.
 
 ## Next steps
 
