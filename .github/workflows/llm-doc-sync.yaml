@@ -16,6 +16,10 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: write
+  pull-requests: write
+
 # Only one sync per source repo at a time.
 concurrency:
   group: llm-doc-sync-${{ github.event.inputs.repo || github.event.client_payload.repo }}
@@ -39,14 +43,6 @@ jobs:
           app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
           private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
           owner: adobe-rnd
-
-      - name: Create app token for docs repo
-        id: docs-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
-          private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
-          owner: aemsites
 
       - name: Checkout docs repo
         uses: actions/checkout@v4
@@ -80,7 +76,6 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ steps.docs-token.outputs.token }}
           branch: auto/docs-update-${{ env.SOURCE_REPO }}
           delete-branch: true
           title: 'docs: update for ${{ env.SOURCE_REPO }}@${{ env.SOURCE_REF }}'
