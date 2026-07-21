@@ -323,11 +323,16 @@ async function main() {
 
     if (isTrivialDiff(diff)) {
       console.log(`⏭ ${file}: no meaningful changes since ${lastReviewed}`);
-      // Still bump the reviewed commit so we don't re-check next time.
-      source.lastReviewedCommit = sourceRef;
-      if (sourceVersion) source.version = sourceVersion;
-      const bumped = serializeFrontmatter(attrs, body);
-      await writeFile(filePath, bumped, 'utf-8');
+      // Bump the reviewed commit so we don't re-check next time,
+      // but only write the file if the markers actually changed.
+      if (source.lastReviewedCommit !== sourceRef
+        || (sourceVersion && source.version !== sourceVersion)) {
+        source.lastReviewedCommit = sourceRef;
+        if (sourceVersion) source.version = sourceVersion;
+        const bumped = serializeFrontmatter(attrs, body);
+        // eslint-disable-next-line no-await-in-loop
+        await writeFile(filePath, bumped, 'utf-8');
+      }
       // eslint-disable-next-line no-continue
       continue;
     }
@@ -341,11 +346,14 @@ async function main() {
     const relevant = await isRelevantToDoc(title, description, changedFiles, apiKey);
     if (!relevant) {
       console.log(`⏭ ${file}: diff not relevant (preflight), bumping commit marker`);
-      source.lastReviewedCommit = sourceRef;
-      if (sourceVersion) source.version = sourceVersion;
-      const bumped = serializeFrontmatter(attrs, body);
-      // eslint-disable-next-line no-await-in-loop
-      await writeFile(filePath, bumped, 'utf-8');
+      if (source.lastReviewedCommit !== sourceRef
+        || (sourceVersion && source.version !== sourceVersion)) {
+        source.lastReviewedCommit = sourceRef;
+        if (sourceVersion) source.version = sourceVersion;
+        const bumped = serializeFrontmatter(attrs, body);
+        // eslint-disable-next-line no-await-in-loop
+        await writeFile(filePath, bumped, 'utf-8');
+      }
       // eslint-disable-next-line no-continue
       continue;
     }

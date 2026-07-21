@@ -38,17 +38,17 @@ jobs:
     steps:
       - name: Create app token for source repos
         id: source-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
           private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
           owner: adobe-rnd
 
       - name: Checkout docs repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout source repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: adobe-rnd/${{ env.SOURCE_REPO }}
           token: ${{ steps.source-token.outputs.token }}
@@ -56,7 +56,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
