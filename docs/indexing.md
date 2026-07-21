@@ -285,31 +285,6 @@ curl "https://www.example.com/us/en/merchant-center-feed.xml"
 
 Indexing jobs run automatically and asynchronously. To optimize performance, batch product updates when possible, schedule large catalog updates during off-peak hours, monitor index update latency via last-modified timestamps, and keep index configurations lean with only needed properties.
 
-Use the collection-root bulk catalog endpoint to create or update up to 50 products in one request:
-
-```bash
-curl --request POST \
-  --url "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
-  --header "Authorization: Bearer {your-api-key}" \
-  --header "Content-Type: application/json" \
-  --data '{
-    "items": [
-      {
-        "sku": "PROD-123",
-        "name": "Blender Pro 500",
-        "path": "/us/en/products/blender-pro-500"
-      },
-      {
-        "sku": "PROD-124",
-        "name": "Blender Pro 750",
-        "path": "/us/en/products/blender-pro-750"
-      }
-    ]
-  }'
-```
-
-The request validates every product before saving any products. If the request contains an invalid product or duplicate product path, the entire request is rejected and no products are saved. The response always contains a `results` array with one result for each submitted product. Unchanged products are returned with a `200` status and a `No changes detected` message.
-
 ## Next steps
 
 - [AEM Network Configuration](/network): Configure URL routing to serve your product index
