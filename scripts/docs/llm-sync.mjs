@@ -24,6 +24,7 @@ import { join, resolve } from 'node:path';
 // ---------------------------------------------------------------------------
 
 const OPENAI_MODEL = 'gpt-5.6-terra';
+const OPENAI_PREFLIGHT_MODEL = 'gpt-5.6-luna';
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const MAX_TOKENS = 16000;
 
@@ -178,9 +179,23 @@ function sleep(ms) {
  * Call the OpenAI chat completions API with retry on rate-limit (429).
  * Retries up to 5 times with exponential backoff, respecting the
  * Retry-After header when present.
+ *
+ * @param {string} model - OpenAI model name
+ * @param {string} systemPrompt - system message
+ * @param {string} userPrompt - user message
+ * @param {string} apiKey - OpenAI API key
+ * @param {number} [maxTokens] - max_completion_tokens (omit for default)
  */
-async function callLLM(systemPrompt, userPrompt, apiKey) {
+async function callLLM(model, systemPrompt, userPrompt, apiKey, maxTokens) {
   const maxRetries = 5;
+  const body = {
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  };
+  if (maxTokens) body.max_completion_tokens = maxTokens;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     // eslint-disable-next-line no-await-in-loop
@@ -190,14 +205,7 @@ async function callLLM(systemPrompt, userPrompt, apiKey) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        max_completion_tokens: MAX_TOKENS,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
+      body: JSON.stringify(body),
     });
 
     if (res.ok) {
@@ -222,6 +230,42 @@ async function callLLM(systemPrompt, userPrompt, apiKey) {
   }
 
   throw new Error('Exhausted retries for OpenAI API');
+}
+
+/**
+ * Extract just the changed file paths from a diff string.
+ */
+function extractChangedFiles(diff) {
+  return [...diff.matchAll(/^diff --git a\/(.+?) b\//gm)].map((m) => m[1]);
+}
+
+/**
+ * Cheap preflight check using Luna: given a doc's title/description and the
+ * list of changed files, decide whether the diff is likely relevant to the doc.
+ * Returns true (relevant) or false (skip).
+ */
+async function isRelevantToDoc(title, description, changedFiles, apiKey) {
+  const systemPrompt = [
+    'You are a relevance classifier. Given a documentation page title and',
+    'description, and a list of changed source code file paths, decide whether',
+    'the code changes are likely to affect the content of that documentation page.',
+    'Reply with exactly YES or NO. Nothing else.',
+  ].join(' ');
+
+  const userPrompt = [
+    `Document title: ${title}\n`,
+    `Document description: ${description}\n\n`,
+    'Changed files:\n',
+    changedFiles.map((f) => `- ${f}`).join('\n'),
+  ].join('');
+
+  const answer = await callLLM(
+    OPENAI_PREFLIGHT_MODEL,
+    systemPrompt,
+    userPrompt,
+    apiKey,
+  );
+  return answer.trim().toUpperCase().startsWith('YES');
 }
 
 // ---------------------------------------------------------------------------
@@ -288,6 +332,24 @@ async function main() {
       continue;
     }
 
+    // Preflight: ask Luna whether this diff is relevant to this doc.
+    const changedFiles = extractChangedFiles(diff);
+    const title = attrs.title || file;
+    const description = attrs.description || '';
+
+    // eslint-disable-next-line no-await-in-loop
+    const relevant = await isRelevantToDoc(title, description, changedFiles, apiKey);
+    if (!relevant) {
+      console.log(`⏭ ${file}: diff not relevant (preflight), bumping commit marker`);
+      source.lastReviewedCommit = sourceRef;
+      if (sourceVersion) source.version = sourceVersion;
+      const bumped = serializeFrontmatter(attrs, body);
+      // eslint-disable-next-line no-await-in-loop
+      await writeFile(filePath, bumped, 'utf-8');
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
     console.log(`📝 ${file}: updating from ${lastReviewed} → ${sourceRef}`);
 
     const systemPrompt = [
@@ -317,7 +379,7 @@ async function main() {
       'Return the complete updated Markdown file including frontmatter.',
     ].join('');
 
-    const result = await callLLM(systemPrompt, userPrompt, apiKey);
+    const result = await callLLM(OPENAI_MODEL, systemPrompt, userPrompt, apiKey, MAX_TOKENS);
 
     // Strip wrapping code fences the LLM might add despite instructions.
     const cleaned = result
