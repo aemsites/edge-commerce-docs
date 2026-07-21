@@ -1,0 +1,83 @@
+name: LLM doc sync
+
+on:
+  repository_dispatch:
+    types: [source-repo-updated]
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Source repo name (e.g. helix-commerce-api)'
+        required: true
+      ref:
+        description: 'Commit SHA to sync to'
+        required: true
+      version:
+        description: 'Version string (e.g. v2.43.0)'
+        required: false
+        default: ''
+
+# Only one sync per source repo at a time.
+concurrency:
+  group: llm-doc-sync-${{ github.event.inputs.repo || github.event.client_payload.repo }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    env:
+      # Normalize dispatch vs manual inputs into a single set of env vars.
+      SOURCE_REPO: ${{ github.event.inputs.repo || github.event.client_payload.repo }}
+      SOURCE_REF: ${{ github.event.inputs.ref || github.event.client_payload.ref }}
+      SOURCE_VERSION: ${{ github.event.inputs.version || github.event.client_payload.version || '' }}
+
+    steps:
+      - name: Create app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
+          private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
+          owner: adobe-rnd
+
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          repository: adobe-rnd/${{ env.SOURCE_REPO }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: .source-repo
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run LLM doc sync
+        run: node scripts/docs/llm-sync.mjs
+        env:
+          SOURCE_REPO_PATH: ${{ github.workspace }}/.source-repo
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/docs-update-${{ env.SOURCE_REPO }}
+          delete-branch: true
+          title: 'docs: update for ${{ env.SOURCE_REPO }}@${{ env.SOURCE_REF }}'
+          body: |
+            Automated doc update triggered by changes in `${{ env.SOURCE_REPO }}`.
+
+            - Source ref: `${{ env.SOURCE_REF }}`
+            - Version: `${{ env.SOURCE_VERSION }}`
+
+            Review the changes carefully — this PR was drafted by an LLM.
+          labels: ai-authored
+          commit-message: 'docs: sync with ${{ env.SOURCE_REPO }}@${{ env.SOURCE_REF }}'
