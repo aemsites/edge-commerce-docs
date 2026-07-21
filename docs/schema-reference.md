@@ -134,48 +134,6 @@ See the [Rendering Guide](/rendering-guide#custom-metadata) for more details on 
 
 The `jsonld` field allows you to provide custom schema.org structured data that will be injected verbatim into the HTML output. By default, [the pipeline generates base JSON-LD](/rendering-guide#json-ld-structured-data) with standard product fields (name, SKU, price, availability, etc.). Use this field for complex product schemas beyond the standard fields, industry-specific structured data requirements, or advanced SEO optimizations.
 
-### Bulk catalog operation
-
-Use `POST /{org}/sites/{site}/catalog` to create or update up to 50 products in one request. The request body is an envelope containing an `items` array. Each item must be a valid [ProductBusEntry](#productbusentry), and each item must have a unique `path` within the request.
-
-All items are validated before products are saved. If the envelope or any product is invalid, the API returns HTTP 400 and does not save any products.
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `items` | [ProductBusEntry](#productbusentry)[] | Yes | Products to create or update. Maximum 50 products per request. |
-| `delete` | boolean | No | Selects bulk deletion when `true`. Defaults to `false`, which creates or updates products. Bulk deletion is not currently available and returns HTTP 501. |
-
-The response always contains a `results` array, including when the request contains only one product. Each result describes the outcome for one item.
-
-```json
-{
-  "items": [
-    {
-      "sku": "PROD-123",
-      "name": "Blender Pro 500",
-      "path": "/us/en/products/blender-pro-500"
-    }
-  ]
-}
-```
-
-```json
-{
-  "results": [
-    {
-      "sku": "PROD-123",
-      "path": "/us/en/products/blender-pro-500",
-      "status": 200,
-      "message": "Product saved successfully."
-    }
-  ]
-}
-```
-
-Products with no detected changes are returned with a `status` of `200` and a `message` of `No changes detected`.
-
-The legacy bulk endpoint at the literal `/*` catalog path is deprecated. Use the collection-root endpoint and its `{ "items": [...] }` request envelope for new integrations.
-
 ### ProductBusVariant
 
 Represents a variant of a configurable product (e.g., different color or size). Variants that omit `shippingDimensions` inherit the parent product's `shippingDimensions` in the generated JSON-LD. The `jsonldExtensions` object is limited to 16,000 characters when serialized and is ignored when the product-level `jsonld` override is used.
