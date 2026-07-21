@@ -343,6 +343,13 @@ async function main() {
   const mdFiles = entries.filter((f) => f.endsWith('.md'));
 
   const updated = [];
+  // Track which docs skipped preflight for gap analysis.
+  const skippedByPreflight = []; // { file, title, description }
+  // Track the earliest original lastReviewedCommit (before bumping)
+  // so gap analysis can compute the full diff scope.
+  let earliestOriginalCommit = null;
+  // Collect doc catalog for gap analysis.
+  const docCatalog = [];
 
   for (const file of mdFiles) {
     const filePath = join(DOCS_DIR, file);
@@ -361,6 +368,12 @@ async function main() {
 
     const source = attrs.sources[sourceRepo];
     const lastReviewed = source.lastReviewedCommit;
+
+    // Track for gap analysis.
+    docCatalog.push({ file, title: attrs.title || file, description: attrs.description || '' });
+    if (lastReviewed && (!earliestOriginalCommit || lastReviewed < earliestOriginalCommit)) {
+      earliestOriginalCommit = lastReviewed;
+    }
     if (!lastReviewed) {
       console.log(`⚠ ${file}: no lastReviewedCommit, skipping`);
       // eslint-disable-next-line no-continue
@@ -392,6 +405,7 @@ async function main() {
     const relevant = await isRelevantToDoc(title, description, changedFiles, apiKey);
     if (!relevant) {
       console.log(`⏭ ${file}: diff not relevant (preflight), bumping commit marker`);
+      skippedByPreflight.push({ file, title, description });
       if (!sameCommit(source.lastReviewedCommit, sourceRef)) {
         const bumped = bumpMarkers(content, sourceRepo, sourceRef, sourceVersion);
         // eslint-disable-next-line no-await-in-loop
@@ -400,6 +414,8 @@ async function main() {
       // eslint-disable-next-line no-continue
       continue;
     }
+
+
 
     console.log(`📝 ${file}: updating from ${lastReviewed} → ${sourceRef}`);
 
@@ -441,6 +457,198 @@ async function main() {
     await writeFile(filePath, cleaned, 'utf-8');
     updated.push(file);
   }
+
+  // -------------------------------------------------------------------
+  // Gap analysis: detect new features not covered by any existing doc
+  // -------------------------------------------------------------------
+
+  // Compute the full diff from the earliest original commit across all
+  // tracked docs. This captures everything that changed since the oldest
+  // baseline, so gap analysis can find features no doc covers.
+  const fullDiffBase = earliestOriginalCommit || sourceRef;
+  const fullDiff = getFilteredDiff(sourceRepoPath, fullDiffBase, sourceRef);
+  const hasNonTrivialDiff = fullDiff && fullDiff.trim() && !isTrivialDiff(fullDiff);
+
+  if (hasNonTrivialDiff) {
+    console.log('\n🔍 Running gap analysis for uncovered changes...');
+
+    {
+      const fullChangedFiles = extractChangedFiles(fullDiff);
+      const docList = docCatalog
+        .map((d) => `- ${d.title}: ${d.description}`)
+        .join('\n');
+
+      const gapSystemPrompt = [
+        'You are a documentation gap analyst for a developer platform.',
+        'Given a code diff and a list of existing documentation pages,',
+        'identify new user-facing features, APIs, endpoints, parameters,',
+        'or capabilities introduced in the diff that are NOT adequately',
+        'covered by any existing documentation page.',
+        '',
+        'Reply with a JSON object (no code fences) with this structure:',
+        '{',
+        '  "gaps": [',
+        '    {',
+        '      "type": "existing" or "new",',
+        '      "target": "filename.md" (for existing) or "suggested-slug" (for new),',
+        '      "title": "Page title" (for new docs only),',
+        '      "description": "One-line description" (for new docs only),',
+        '      "summary": "What needs to be documented"',
+        '    }',
+        '  ]',
+        '}',
+        '',
+        'If there are no gaps (all changes are internal, refactors, or already',
+        'covered), return {"gaps": []}.',
+        'Only flag genuinely user-facing changes that a developer would need',
+        'to know about. Do not flag internal refactors, test changes, or',
+        'implementation details.',
+      ].join('\n');
+
+      const gapUserPrompt = [
+        '## Existing documentation pages\n\n',
+        docList,
+        '\n\n## Changed files in this release\n\n',
+        fullChangedFiles.map((f) => `- ${f}`).join('\n'),
+        '\n\n## Code diff\n\n```diff\n',
+        fullDiff.length > 50000 ? fullDiff.slice(0, 50000) + '\n... (truncated)' : fullDiff,
+        '\n```\n',
+      ].join('');
+
+      // eslint-disable-next-line no-await-in-loop
+      const gapResult = await callLLM(
+        OPENAI_MODEL, gapSystemPrompt, gapUserPrompt, apiKey, 4000,
+      );
+
+      let gaps = [];
+      try {
+        const cleaned = gapResult
+          .replace(/^```(?:json)?\s*\n?/, '')
+          .replace(/\n?```\s*$/, '');
+        const parsed = JSON.parse(cleaned);
+        gaps = parsed.gaps || [];
+      } catch {
+        console.log('  ⚠ Could not parse gap analysis response, skipping.');
+      }
+
+      if (gaps.length === 0) {
+        console.log('  ✅ No documentation gaps found.');
+      }
+
+      for (const gap of gaps) {
+        if (gap.type === 'existing') {
+          // Add content to an existing doc.
+          const targetFile = gap.target;
+          const targetPath = join(DOCS_DIR, targetFile);
+          let targetContent;
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            targetContent = await readFile(targetPath, 'utf-8');
+          } catch {
+            console.log(`  ⚠ Gap target ${targetFile} not found, skipping.`);
+            // eslint-disable-next-line no-continue
+            continue;
+          }
+
+          console.log(`📝 ${targetFile}: adding gap content — ${gap.summary}`);
+
+          const addSystemPrompt = [
+            'You are a technical documentation writer for a developer platform.',
+            'You add new sections to existing documentation based on code changes.',
+            'Return ONLY the complete updated Markdown file, including the YAML',
+            'frontmatter block (between --- delimiters). Do not wrap your response',
+            'in code fences or add any commentary outside the document itself.',
+          ].join(' ');
+
+          const addUserPrompt = [
+            '## Style guide\n',
+            styleGuide,
+            '\n\n## Current document\n',
+            targetContent,
+            '\n\n## Code diff\n```diff\n',
+            fullDiff.length > 50000 ? fullDiff.slice(0, 50000) : fullDiff,
+            '\n```\n',
+            '\n## Instructions\n',
+            `Add documentation for the following new feature to this document: ${gap.summary}`,
+            '\nPlace the new content in the most logical location within the existing document structure.',
+            '\nPreserve the existing writing style, structure, and tone.',
+            '\nPreserve the exact YAML frontmatter formatting — do not add or remove quotes around values that already have or lack them.',
+            `\nUpdate sources.${sourceRepo}.lastContentCommit to "${shortSha(sourceRef)}" in the frontmatter.`,
+            '\nReturn the complete updated Markdown file including frontmatter.',
+          ].join('');
+
+          // eslint-disable-next-line no-await-in-loop
+          const addResult = await callLLM(
+            OPENAI_MODEL, addSystemPrompt, addUserPrompt, apiKey, MAX_TOKENS,
+          );
+          const addCleaned = addResult
+            .replace(/^```(?:markdown|md)?\s*\n?/, '')
+            .replace(/\n?```\s*$/, '');
+
+          // eslint-disable-next-line no-await-in-loop
+          await writeFile(targetPath, addCleaned, 'utf-8');
+          if (!updated.includes(targetFile)) updated.push(targetFile);
+        } else if (gap.type === 'new') {
+          // Create a brand new doc.
+          const slug = gap.target.replace(/\.md$/, '');
+          const newFile = `${slug}.md`;
+          const newPath = join(DOCS_DIR, newFile);
+
+          console.log(`🆕 ${newFile}: drafting new doc — ${gap.summary}`);
+
+          const newSystemPrompt = [
+            'You are a technical documentation writer for a developer platform.',
+            'You create new documentation pages based on code changes.',
+            'Return ONLY the complete Markdown file, including YAML frontmatter.',
+            'Do not wrap your response in code fences or add any commentary.',
+          ].join(' ');
+
+          const newUserPrompt = [
+            '## Style guide\n',
+            styleGuide,
+            '\n\n## Code diff\n```diff\n',
+            fullDiff.length > 50000 ? fullDiff.slice(0, 50000) : fullDiff,
+            '\n```\n',
+            '\n## Instructions\n',
+            `Create a new documentation page about: ${gap.summary}`,
+            `\n\nUse this frontmatter template (adjust title and description):`,
+            `\n---`,
+            `\ntitle: "${gap.title || slug}"`,
+            `\ndescription: "${gap.description || gap.summary}"`,
+            `\ndaPath: "/${slug}"`,
+            `\nstatus: draft`,
+            `\nmanaged: true`,
+            `\nsourceFormat: markdown`,
+            `\nsources:`,
+            `\n  ${sourceRepo}:`,
+            `\n    version: "${sourceVersion || 'unknown'}"`,
+            `\n    lastReviewedCommit: "${shortSha(sourceRef)}"`,
+            `\n    lastContentCommit: "${shortSha(sourceRef)}"`,
+            `\n---`,
+            '\n\nWrite a complete, well-structured documentation page.',
+            '\nFollow the style guide strictly.',
+            '\nFocus only on user-facing behavior and configuration — no internal implementation details.',
+          ].join('');
+
+          // eslint-disable-next-line no-await-in-loop
+          const newResult = await callLLM(
+            OPENAI_MODEL, newSystemPrompt, newUserPrompt, apiKey, MAX_TOKENS,
+          );
+          const newCleaned = newResult
+            .replace(/^```(?:markdown|md)?\s*\n?/, '')
+            .replace(/\n?```\s*$/, '');
+
+          // eslint-disable-next-line no-await-in-loop
+          await writeFile(newPath, newCleaned, 'utf-8');
+          updated.push(newFile);
+        }
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // Summary
+  // -------------------------------------------------------------------
 
   if (updated.length === 0) {
     console.log('\n✅ No docs required content updates.');
