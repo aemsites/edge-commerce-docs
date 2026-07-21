@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "90dccc8"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -30,6 +30,10 @@ sources:
     version: "v1.7.0"
     lastReviewedCommit: "afa6c86"
     lastContentCommit: "afa6c86"
+  helix-product-image-collector:
+    version: "v2.0.1"
+    lastReviewedCommit: "853fc30"
+    lastContentCommit: "853fc30"
   helix-product-image-collector:
     version: "v2.0.1"
     lastReviewedCommit: "853fc30"
@@ -64,6 +68,10 @@ Authorization: Bearer {your-admin-or-service-token}
 `GET` operations for published data do not require authentication.
 
 For authored guidance on token types, roles, and service tokens, see [Authentication overview](/authentication/overview), [Roles and permissions](/authentication/roles-permissions), and [Service tokens](/authentication/service-tokens).
+
+## Request body size
+
+`POST`, `PUT`, and `PATCH` requests with a declared request body larger than 10 MB are rejected with `413 Payload Too Large` and the error code `ADOBE_COMMERCE_PAYLOAD_TOO_LARGE`.
 
 ## Path-based storage
 
@@ -149,7 +157,7 @@ Body: { "sku": "123", "path": "/us/en/products/mixer", ... }
 
 The request body should be a product object (see [Schema Reference](/schema-reference#productbusentry)).
 
-When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid.
+When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json" \
@@ -240,7 +248,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 Each product in the array must include a `path` field that specifies where it should be stored. Unlike single product operations, bulk operations do not automatically infer the path from the URL. Missing `path` fields will return `400 Bad Request`.
 
-The request body is an array of product objects ([max 50 products per request](/limits)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product.
+The request body is an array of product objects ([max 50 products per request](/limits)). When all products are processed successfully, you'll receive a `200 OK` status. If there are validation errors, the API returns a `400 Bad Request` with an `errors` array containing details for each failed product. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
 #### Image processing behavior
 

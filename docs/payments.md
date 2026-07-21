@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
 ---
 
 # Payments overview
@@ -33,7 +33,7 @@ Payment builds on the order estimate flow:
 2. **Order creation**: the order is created with its locked-in estimates. The customer agrees to pay.
 3. **Payment initiation**: the storefront initiates payment for the order, naming the provider. The API loads the provider's credentials from the secrets store, computes the amount from the stored order (never from client input), and returns the next step for the customer.
 4. **Customer completes payment**: for redirect-based providers, the customer is sent to the provider's hosted page to enter payment details. Card data never passes through the storefront or the API.
-5. **Verification and confirmation**: the provider returns the result, the API verifies it directly with the provider, updates the order state, and redirects the customer back to the configured success or cancel URL.
+5. **Verification and confirmation**: the provider returns the result, and the API verifies it directly with the provider. For standard flows, payment is captured and the order state is updated before the customer is redirected to the configured success or cancel URL. For PayPal order-review flows, capture is deferred until the customer explicitly confirms the order on the storefront review page.
 
 ### Next-step actions
 
@@ -42,7 +42,22 @@ When payment is initiated, the API returns an action that tells the storefront w
 | Action | Meaning |
 |--------|---------|
 | `redirect` | Send the customer to the provider's hosted page (Chase card, PayPal, Affirm) |
+| `review` | Route the customer to the storefront order-review page after PayPal approval. Payment capture is deferred until the customer confirms the order. |
 | `complete` | Payment completed without a redirect; no further customer action (wallet flows) |
+
+### PayPal order review
+
+PayPal can require an order-review step independently for the standard checkout and Express flows. Configure `orderReview.checkout` for the redirect checkout flow or `orderReview.express` for inline Express buttons.
+
+When enabled for a flow:
+
+1. The customer approves the payment in PayPal.
+2. The API returns the customer to the configured `reviewUrl`, appending the order ID as a query parameter.
+3. The order enters the `payment_requires_confirmation` state and the API returns the `review` action.
+4. The storefront displays the order review and calls the payment confirmation endpoint only after the customer selects **Complete order**.
+5. The API captures the approved PayPal payment and completes the order payment.
+
+Set `reviewUrl` when either order-review option is enabled. When order review is not enabled, PayPal captures payment immediately after approval and sends the customer to `successUrl`.
 
 ## Shared credentials across provider variants
 

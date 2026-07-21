@@ -8,13 +8,13 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
 ---
 
 # PayPal payments
 
-PayPal is integrated through the Orders v2 REST API. The customer is redirected to PayPal's checkout to approve the payment, then returned to the storefront. The PayPal Express variant uses the same configuration.
+PayPal is integrated through the Orders v2 REST API. The customer is redirected to PayPal's checkout to approve the payment, then returned to the storefront. When order review is enabled, payment capture is deferred until the customer explicitly confirms the order on the storefront. The PayPal Express variant uses the same configuration.
 
 Configuration is stored in the secrets store as `payments-paypal.json`. See the [secrets store guide](/checkout/secrets) for how to write it and how country/locale resolution works.
 
@@ -59,8 +59,13 @@ The `apiBaseUrl` is restricted to PayPal's two known hostnames so a misconfigura
 | `brandName` | string | Merchant name shown on PayPal's checkout page |
 | `landingPage` | string | Which page PayPal shows first: `login`, `guest_checkout`, or `no_preference` (default) |
 | `shippingPreference` | string | Which shipping address PayPal uses: `set_provided_address` (use the order's address), `get_from_file` (use the buyer's PayPal address), or `no_shipping` |
-| `userAction` | string | Call-to-action on PayPal's review page: `pay_now` or `continue` |
+| `orderReview` | object | Controls whether payment capture waits for storefront order confirmation. Set `checkout` to `true` for the standard redirected checkout flow, `express` to `true` for PayPal Express, or both. Each flow defaults to `false` when omitted. |
+| `orderReview.checkout` | boolean | Enables order review for the standard redirected checkout flow |
+| `orderReview.express` | boolean | Enables order review for the PayPal Express flow |
+| `reviewUrl` | string (HTTPS) | Storefront URL to return to after PayPal approval when order review is enabled. The order ID is appended as a query parameter. Required when `orderReview.checkout` or `orderReview.express` is `true`; ignored otherwise. |
 | `locale` | string | PayPal checkout page locale (e.g. `en-US`). When empty, PayPal auto-detects from the browser |
+
+When order review is enabled for a flow, PayPal approval returns the customer to `reviewUrl` and leaves the order in `payment_requires_confirmation`. Your storefront must display an order-review step and explicitly confirm the order to capture payment. Without order review, payment is captured after approval and the customer is sent to `successUrl`.
 
 > The `enabled` field is reserved for future use. Configuring it does not currently change provider behavior.
 

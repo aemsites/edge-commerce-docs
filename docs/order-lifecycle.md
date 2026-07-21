@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "43a42c2"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
 ---
 
 # Order lifecycle
@@ -28,7 +28,7 @@ Checkout uses three different order-related APIs because they answer different q
 | Shopper is ready to place the order and has selected a shipping method | `POST /{org}/sites/{site}/orders/preview` | Performs final pre-submit validation and returns an [`estimateToken`](#estimate-tokens) that locks tax, shipping, and discounts |
 | Shopper confirms the order | `POST /{org}/sites/{site}/orders` | Persists the committed cart as an order in `pending` state |
 | Shopper chooses a payment method | `POST /{org}/sites/{site}/orders/{orderId}/payments` | Starts a provider-specific payment flow for a pending order |
-| Provider returns the payment result | Provider callback routes | Verifies the provider result and moves the order to a terminal state |
+| Provider returns the payment result | Provider callback routes | Verifies the provider result and moves the order to a terminal state or, for PayPal order review, to confirmation-required state |
 | Customer, admin, or integration needs order data | `GET /{org}/sites/{site}/orders/{orderId}` | Reads one order by full or friendly ID |
 | Admin needs order reporting | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state |
 | Integration needs to attach metadata | `PATCH /{org}/sites/{site}/orders/{orderId}/custom` | Adds or removes custom order fields |
@@ -56,6 +56,7 @@ The short version: use estimates while the cart is still changing, use preview w
 |-------|---------|
 | `pending` | The order has been created and can accept a first payment initiation |
 | `payment_processing` | A redirect-based payment has been initiated and the API is waiting for a provider return or cancel callback |
+| `payment_requires_confirmation` | The buyer approved a PayPal payment configured for order review, but payment capture is deferred until the shopper explicitly confirms the order |
 | `payment_completed` | The provider result was verified and the payment completed |
 | `payment_cancelled` | The customer cancelled, the provider declined, fraud evaluation failed, or the payment flow otherwise ended without completion |
 
@@ -365,6 +366,10 @@ See [Payments overview](/checkout/payments/overview) for provider-specific payme
 
 Redirect-based providers move the order to `payment_processing` when initiation succeeds. The provider then redirects to an API callback URL. The callback verifies the payment with the provider before updating the order.
 
+PayPal can be configured with an order review step independently for standard checkout and express flows. When order review is enabled, PayPal approval does not capture payment immediately. Instead, the API returns a `review` action, sends the shopper to the configured review URL, and moves the order to `payment_requires_confirmation`. The storefront displays its final order review and requires an explicit shopper confirmation before payment capture.
+
+When configuring PayPal order review, provide a secure `reviewUrl`. The API appends the order ID as a query parameter. A review URL is required when order review is enabled for either checkout flow.
+
 Wallet or direct-charge flows may complete during initiation. These flows can move directly from `pending` to `payment_completed` or `payment_cancelled` without a separate `payment_processing` step.
 
 Provider callbacks guard against replay. Once an order is terminal, later callbacks do not move it backward.
@@ -421,6 +426,7 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 - Only `pending` orders accept a new payment initiation.
 - Idempotency keys make safe retries possible.
 - Provider callbacks verify the result directly with the provider before changing terminal state.
+- Requests with a declared body larger than 10 MiB are rejected with HTTP 413 before the API processes the body.
 - Service tokens can be scoped to narrow order permissions for automation.
 
 ## Related configuration

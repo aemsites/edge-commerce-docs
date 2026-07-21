@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b5639ec"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "2731b0a"
+    lastContentCommit: "2731b0a"
 ---
 
 # Secrets store
@@ -52,14 +52,15 @@ A successful write returns `204 No Content` with an empty body; the API does not
 
 Each write request runs through a strict sequence before anything is stored:
 
-1. **Authentication**: the request must carry a valid admin token.
-2. **Permission**: the token must have the `secrets:write` permission.
-3. **Service-token block**: service tokens are rejected with `403`, even with the permission.
-4. **Org/site scope**: the token must be scoped to the same organization and site as the path.
-5. **Path validation**: the path must end with `.json`, must not contain `..`, and must match the secrets-path pattern.
-6. **Schema lookup**: the filename (without `.json`) must be a known provider schema; otherwise the request is rejected with `404`.
-7. **Payload validation**: the body is validated against the matching schema. Unknown fields are rejected, and every URL field must use HTTPS.
-8. **Encrypt and store**: the validated payload is encrypted and written.
+1. **Request body size**: requests that declare a body larger than 10 MiB are rejected with `413`.
+2. **Authentication**: the request must carry a valid admin token.
+3. **Permission**: the token must have the `secrets:write` permission.
+4. **Service-token block**: service tokens are rejected with `403`, even with the permission.
+5. **Org/site scope**: the token must be scoped to the same organization and site as the path.
+6. **Path validation**: the path must end with `.json`, must not contain `..`, and must match the secrets-path pattern.
+7. **Schema lookup**: the filename (without `.json`) must be a known provider schema; otherwise the request is rejected with `404`.
+8. **Payload validation**: the body is validated against the matching schema. Unknown fields are rejected, and every URL field must use HTTPS.
+9. **Encrypt and store**: the validated payload is encrypted and written.
 
 ### Response codes
 
@@ -69,6 +70,7 @@ Each write request runs through a strict sequence before anything is stored:
 | `400` | Invalid secrets path, or the body failed schema validation |
 | `403` | The caller is a service token (secret writes are forbidden for service tokens) |
 | `404` | The filename is not a known secret store |
+| `413` | Request body is larger than 10 MiB |
 | `500` | Storage error while writing the secret |
 
 ## Country and locale scoping
@@ -115,6 +117,24 @@ The filename (without `.json`) selects the validation schema. Only these filenam
 | `recaptcha` | reCAPTCHA verification | [reCAPTCHA](/checkout/recaptcha) |
 
 Each provider page documents that provider's full schema, every field, and any provider-specific behavior. Writing any of them uses the same `PUT` request and lifecycle described above; only the filename and body schema change.
+
+### PayPal order review
+
+The `payments-paypal.json` secret can configure an order-review step separately for standard checkout and express PayPal flows:
+
+```json
+{
+  "orderReview": {
+    "checkout": true,
+    "express": false
+  },
+  "reviewUrl": "https://www.example.com/checkout/review"
+}
+```
+
+Set `orderReview.checkout` to enable review after approval in the standard checkout flow. Set `orderReview.express` to enable it for express PayPal buttons. When either value is `true`, `reviewUrl` is required and must use HTTPS.
+
+With order review enabled, the buyer returns to `reviewUrl` after approving the payment. Payment capture is deferred until the buyer explicitly confirms the order. The API appends the order ID as a query parameter to `reviewUrl`. When order review is omitted or disabled for a flow, payment is captured immediately after approval and the buyer is sent to `successUrl`.
 
 ### reCAPTCHA
 
