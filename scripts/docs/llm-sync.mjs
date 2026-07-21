@@ -61,6 +61,55 @@ const TRIVIAL_ONLY_PATTERNS = [
 // ---------------------------------------------------------------------------
 
 /**
+ * Compare two commit SHAs, handling short (7-char) vs full (40-char) forms.
+ * Returns true if one is a prefix of the other.
+ */
+function sameCommit(a, b) {
+  if (!a || !b) return false;
+  return a.startsWith(b) || b.startsWith(a);
+}
+
+/**
+ * Shorten a full commit SHA to a 7-char abbreviated form.
+ */
+function shortSha(sha) {
+  return sha.slice(0, 7);
+}
+
+/**
+ * Surgically update frontmatter marker values in the raw file content
+ * without reformatting anything else. Only touches lastReviewedCommit
+ * and version values under the given repo key.
+ */
+function bumpMarkers(content, repoKey, newCommit, newVersion) {
+  let result = content;
+  const repoBlock = `(${repoKey}:[\\s\\S]*?)`;
+  // Replace lastReviewedCommit value
+  result = result.replace(
+    new RegExp(`(${repoBlock}lastReviewedCommit:\\s*")([^"]+)(")`),
+    `$1${shortSha(newCommit)}$4`,
+  );
+  // Replace version if provided, preserving existing v-prefix convention
+  if (newVersion) {
+    const vm = result.match(
+      new RegExp(`${repoKey}:[\\s\\S]*?version:\\s*"([^"]+)"`),
+    );
+    if (vm) {
+      const hadV = vm[1].startsWith('v');
+      const newHasV = newVersion.startsWith('v');
+      let ver = newVersion;
+      if (hadV && !newHasV) ver = `v${newVersion}`;
+      if (!hadV && newHasV) ver = newVersion.slice(1);
+      result = result.replace(
+        new RegExp(`(${repoBlock}version:\\s*")([^"]+)(")`),
+        `$1${ver}$4`,
+      );
+    }
+  }
+  return result;
+}
+
+/**
  * Parse YAML-ish frontmatter from a markdown string.
  * Returns { attrs: {…}, body: string, raw: string }.
  *
@@ -325,11 +374,8 @@ async function main() {
       console.log(`⏭ ${file}: no meaningful changes since ${lastReviewed}`);
       // Bump the reviewed commit so we don't re-check next time,
       // but only write the file if the markers actually changed.
-      if (source.lastReviewedCommit !== sourceRef
-        || (sourceVersion && source.version !== sourceVersion)) {
-        source.lastReviewedCommit = sourceRef;
-        if (sourceVersion) source.version = sourceVersion;
-        const bumped = serializeFrontmatter(attrs, body);
+      if (!sameCommit(source.lastReviewedCommit, sourceRef)) {
+        const bumped = bumpMarkers(content, sourceRepo, sourceRef, sourceVersion);
         // eslint-disable-next-line no-await-in-loop
         await writeFile(filePath, bumped, 'utf-8');
       }
@@ -346,11 +392,8 @@ async function main() {
     const relevant = await isRelevantToDoc(title, description, changedFiles, apiKey);
     if (!relevant) {
       console.log(`⏭ ${file}: diff not relevant (preflight), bumping commit marker`);
-      if (source.lastReviewedCommit !== sourceRef
-        || (sourceVersion && source.version !== sourceVersion)) {
-        source.lastReviewedCommit = sourceRef;
-        if (sourceVersion) source.version = sourceVersion;
-        const bumped = serializeFrontmatter(attrs, body);
+      if (!sameCommit(source.lastReviewedCommit, sourceRef)) {
+        const bumped = bumpMarkers(content, sourceRepo, sourceRef, sourceVersion);
         // eslint-disable-next-line no-await-in-loop
         await writeFile(filePath, bumped, 'utf-8');
       }
@@ -381,9 +424,10 @@ async function main() {
       `Update the document above to reflect the code changes shown in the diff from the ${sourceRepo} repository.`,
       'Only modify sections that are affected by the diff.',
       'Preserve the existing writing style, structure, and tone.',
-      `In the frontmatter, set sources.${sourceRepo}.lastReviewedCommit to "${sourceRef}"`,
+      `In the frontmatter, set sources.${sourceRepo}.lastReviewedCommit to "${shortSha(sourceRef)}"`,
       sourceVersion ? ` and sources.${sourceRepo}.version to "${sourceVersion}".` : '.',
-      `Also set sources.${sourceRepo}.lastContentCommit to "${sourceRef}".`,
+      `Also set sources.${sourceRepo}.lastContentCommit to "${shortSha(sourceRef)}".`,
+      'Preserve the exact YAML frontmatter formatting — do not add or remove quotes around values that already have or lack them.',
       'Return the complete updated Markdown file including frontmatter.',
     ].join('');
 
