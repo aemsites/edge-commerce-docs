@@ -32,13 +32,21 @@ jobs:
       SOURCE_VERSION: ${{ github.event.inputs.version || github.event.client_payload.version || '' }}
 
     steps:
-      - name: Create app token
-        id: app-token
+      - name: Create app token for source repos
+        id: source-token
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
           private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
           owner: adobe-rnd
+
+      - name: Create app token for docs repo
+        id: docs-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
+          private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
+          owner: aemsites
 
       - name: Checkout docs repo
         uses: actions/checkout@v4
@@ -47,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: adobe-rnd/${{ env.SOURCE_REPO }}
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ steps.source-token.outputs.token }}
           path: .source-repo
           fetch-depth: 0
 
@@ -66,9 +74,13 @@ jobs:
           SOURCE_REPO_PATH: ${{ github.workspace }}/.source-repo
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Remove source repo checkout
+        run: rm -rf .source-repo
+
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ steps.docs-token.outputs.token }}
           branch: auto/docs-update-${{ env.SOURCE_REPO }}
           delete-branch: true
           title: 'docs: update for ${{ env.SOURCE_REPO }}@${{ env.SOURCE_REF }}'
