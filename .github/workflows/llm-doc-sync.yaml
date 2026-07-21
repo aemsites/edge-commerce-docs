@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Create app token for source repos
         id: source-token
-        uses: actions/create-github-app-token@v4
+        uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.HELIX_REVIEW_BOT_APP_ID }}
           private-key: ${{ secrets.HELIX_REVIEW_BOT_PRIVATE_KEY }}
