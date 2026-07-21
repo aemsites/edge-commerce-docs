@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Update a coupon type — Helix Commerce API</title>
+    <meta name="description" content="Merges the request body into the existing coupon type. `id` and `createdAt` are immutable. Setting `country` clears `countries` (and vice versa); switching between the flat and product-list shapes clears the opposing fields. Switching to the flat shape requires both `discountType` and `discountValue`.">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Coupons</p>
+        <h1>Update a coupon type</h1>
+        <p class="endpoint"><span class="http-method http-put">PUT</span> <code class="http-path">/{org}/sites/{site}/coupons/types/{typeId}</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Merges the request body into the existing coupon type. `id` and `createdAt` are immutable. Setting `country` clears `countries` (and vice versa); switching between the flat and product-list shapes clears the opposing fields. Switching to the flat shape requires both `discountType` and `discountValue`.</p>
+        <p class="permissions">Required permissions: <code>coupons:write</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+            <tr><td><code>typeId</code></td><td><code>string</code></td><td>yes</td><td>Coupon type identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+          </table>
+        </div>
+        <h2>Request body</h2>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>name</code></td><td><code>string</code></td><td>no</td><td>Human-readable name.</td></tr>
+            <tr><td><code>minimumOrderAmount</code></td><td><code>number</code></td><td>no</td><td>Minimum pre-discount subtotal required to apply. Defaults to 0.</td></tr>
+            <tr><td><code>maximumDiscountAmount</code></td><td><code>number | null</code></td><td>no</td><td>Cap on the discount amount (percentage coupons); null for no cap.</td></tr>
+            <tr><td><code>freeShipping</code></td><td><code>boolean</code></td><td>no</td><td>Grants free shipping when applied.</td></tr>
+            <tr><td><code>includedShippingTypes</code></td><td><code>string[]</code></td><td>no</td><td>When set, free shipping applies only to these shipping method types.</td></tr>
+            <tr><td><code>includedCategories</code></td><td><code>string[]</code></td><td>no</td><td>Categories the coupon applies to.</td></tr>
+            <tr><td><code>excludedCategories</code></td><td><code>string[]</code></td><td>no</td><td>Categories excluded from the coupon.</td></tr>
+            <tr><td><code>stackable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.</td></tr>
+            <tr><td><code>autoApply</code></td><td><code>boolean</code></td><td>no</td><td>Apply automatically without manual code entry. Defaults to false.</td></tr>
+            <tr><td><code>allowManualEntry</code></td><td><code>boolean</code></td><td>no</td><td>Allow the code to be entered manually at checkout. Defaults to true.</td></tr>
+            <tr><td><code>defaultUsageLimit</code></td><td><code>number | null</code></td><td>no</td><td>Default total usage limit for codes of this type; null for unlimited.</td></tr>
+            <tr><td><code>defaultUsesPerCode</code></td><td><code>number | null</code></td><td>no</td><td>Default per-code usage limit; null for unlimited.</td></tr>
+            <tr><td><code>notes</code></td><td><code>string</code></td><td>no</td><td>Free-form operator notes.</td></tr>
+            <tr><td><code>country</code></td><td><code>string</code></td><td>no</td><td>Single ISO 3166-1 alpha-2 country the coupon is valid in. Mutually exclusive with `countries`.</td></tr>
+            <tr><td><code>countries</code></td><td><code>string[]</code></td><td>no</td><td>ISO 3166-1 alpha-2 countries the coupon is valid in. Mutually exclusive with `country`.</td></tr>
+            <tr><td><code>locale</code></td><td><code>string</code></td><td>no</td><td>BCP-47 locale the coupon is scoped to.</td></tr>
+            <tr><td><code>discountType</code></td><td><code>"percentage" | "fixed"</code></td><td>no</td><td>Whether `discountValue` is a percentage or a fixed cash amount.</td></tr>
+            <tr><td><code>discountValue</code></td><td><code>number</code></td><td>no</td><td>Discount magnitude — a percentage (0–100) when `discountType` is "percentage", otherwise a cash amount. Defaults to 0.</td></tr>
+            <tr><td><code>includedProducts</code></td><td><code>[]</code></td><td>no</td><td>When non-empty, only these products count toward the coupon. Each entry is a path string or a `{ path, sku? }` object.</td></tr>
+            <tr><td><code>excludedProducts</code></td><td><code>[]</code></td><td>no</td><td>Products excluded from the coupon. Each entry is a path string or a `{ path, sku? }` object.</td></tr>
+            <tr><td><code>excludeDiscountedProducts</code></td><td><code>boolean</code></td><td>no</td><td>When true, apply only to full-price lines (regular price equals sale price).</td></tr>
+            <tr><td><code>applyToSalePrice</code></td><td><code>boolean</code></td><td>no</td><td>When false (default) the discount is computed against the regular price with cheaper-wins; when true it stacks on the current sale price.</td></tr>
+            <tr><td><code>discountedProducts</code></td><td><code>DiscountedProduct[]</code></td><td>no</td><td>Per-product absolute price overrides. Exact duplicates (same path, or same path + sku) are rejected.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">200</span> The updated coupon type.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Validation failed (mutually exclusive fields, category overlap, invalid country/locale, incomplete flat discount).</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code.</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message.</td></tr>
+            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">404</span> No coupon type with this id.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">PUT /{org}/sites/{site}/coupons/types/{typeId}</span></div>
+          <pre><code class="language-json">{
+  "discountValue": 15
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
+          <pre><code class="language-json">{
+  "id": "summer-10",
+  "name": "10% Off Summer",
+  "discountType": "percentage",
+  "discountValue": 15,
+  "minimumOrderAmount": 50,
+  "maximumDiscountAmount": 100,
+  "freeShipping": false,
+  "stackable": true,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
+          <pre><code class="language-json">{
+  "code": "validation_failed",
+  "message": "invalid request",
+  "errors": [
+    {
+      "path": "$.country",
+      "message": "invalid country code"
+    }
+  ]
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
+          <pre><code class="language-json">{
+  "code": "not_found",
+  "message": "coupon type not found",
+  "resource": "coupon_type"
+}</code></pre>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

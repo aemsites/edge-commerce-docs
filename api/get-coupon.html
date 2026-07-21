@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Retrieve a coupon code — Helix Commerce API</title>
+    <meta name="description" content="Retrieve a coupon code">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Coupons</p>
+        <h1>Retrieve a coupon code</h1>
+        <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/coupons/{code}</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p class="permissions">Required permissions: <code>coupons:read</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Coupon code (case-insensitive; normalized to uppercase).</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">200</span> The coupon code object.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>The coupon code (case-insensitive; normalized to uppercase). Letters, digits, hyphens, underscores; max 64 chars.</td></tr>
+            <tr><td><code>typeId</code></td><td><code>string</code></td><td>yes</td><td>Identifier of the coupon type this code draws its discount from.</td></tr>
+            <tr><td><code>discountOverride</code></td><td><code>object | null</code></td><td>no</td><td>Overrides the coupon type's flat discount for this code. Not allowed when the type is a product-list coupon.</td></tr>
+            <tr><td><code>usageLimit</code></td><td><code>number | null</code></td><td>no</td><td>Total redemption limit; null for unlimited.</td></tr>
+            <tr><td><code>usageCount</code></td><td><code>integer</code></td><td>no</td><td>Times redeemed. Managed by the service; ignored on write.</td></tr>
+            <tr><td><code>usesPerCustomer</code></td><td><code>number | null</code></td><td>no</td><td>Per-customer redemption limit; null for unlimited.</td></tr>
+            <tr><td><code>expiresAt</code></td><td><code>string</code></td><td>no</td><td>Expiry timestamp (ISO 8601). Omit for a code that never expires.</td></tr>
+            <tr><td><code>active</code></td><td><code>boolean</code></td><td>no</td><td>Whether the code can be redeemed. Defaults to true.</td></tr>
+            <tr><td><code>createdAt</code></td><td><code>string</code></td><td>no</td><td>Creation timestamp (ISO 8601). Managed by the service.</td></tr>
+            <tr><td><code>updatedAt</code></td><td><code>string</code></td><td>no</td><td>Last-update timestamp (ISO 8601). Managed by the service.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">404</span> No coupon with this code.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
+          <pre><code class="language-json">{
+  "code": "SAVE10",
+  "typeId": "summer-10",
+  "expiresAt": "2027-01-01T00:00:00Z",
+  "discountOverride": null,
+  "usageLimit": null,
+  "usageCount": 0,
+  "usesPerCustomer": null,
+  "active": true,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
+          <pre><code class="language-json">{
+  "code": "not_found",
+  "message": "coupon not found",
+  "resource": "coupon"
+}</code></pre>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>
