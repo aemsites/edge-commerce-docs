@@ -169,33 +169,59 @@ function isTrivialDiff(diff) {
   return files.every((f) => TRIVIAL_ONLY_PATTERNS.some((p) => p.test(f)));
 }
 
+/** Sleep for `ms` milliseconds. */
+function sleep(ms) {
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
+}
+
 /**
- * Call the OpenAI chat completions API.
+ * Call the OpenAI chat completions API with retry on rate-limit (429).
+ * Retries up to 5 times with exponential backoff, respecting the
+ * Retry-After header when present.
  */
 async function callLLM(systemPrompt, userPrompt, apiKey) {
-  const res = await fetch(OPENAI_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      max_completion_tokens: MAX_TOKENS,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  });
+  const maxRetries = 5;
 
-  if (!res.ok) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // eslint-disable-next-line no-await-in-loop
+    const res = await fetch(OPENAI_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        max_completion_tokens: MAX_TOKENS,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      }),
+    });
+
+    if (res.ok) {
+      // eslint-disable-next-line no-await-in-loop
+      const data = await res.json();
+      return data.choices[0].message.content;
+    }
+
+    if (res.status === 429 && attempt < maxRetries) {
+      const retryAfter = res.headers.get('retry-after');
+      const waitSec = retryAfter ? Math.ceil(parseFloat(retryAfter)) : 2 ** attempt * 5;
+      console.log(`  ⏳ rate-limited, retrying in ${waitSec}s (attempt ${attempt + 1}/${maxRetries})`);
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(waitSec * 1000);
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
     const text = await res.text();
     throw new Error(`OpenAI API error ${res.status}: ${text}`);
   }
 
-  const data = await res.json();
-  return data.choices[0].message.content;
+  throw new Error('Exhausted retries for OpenAI API');
 }
 
 // ---------------------------------------------------------------------------
