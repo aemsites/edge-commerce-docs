@@ -118,24 +118,6 @@ The filename (without `.json`) selects the validation schema. Only these filenam
 
 Each provider page documents that provider's full schema, every field, and any provider-specific behavior. Writing any of them uses the same `PUT` request and lifecycle described above; only the filename and body schema change.
 
-### PayPal order review
-
-The `payments-paypal.json` secret can configure an order-review step separately for standard checkout and express PayPal flows:
-
-```json
-{
-  "orderReview": {
-    "checkout": true,
-    "express": false
-  },
-  "reviewUrl": "https://www.example.com/checkout/review"
-}
-```
-
-Set `orderReview.checkout` to enable review after approval in the standard checkout flow. Set `orderReview.express` to enable it for express PayPal buttons. When either value is `true`, `reviewUrl` is required and must use HTTPS.
-
-With order review enabled, the buyer returns to `reviewUrl` after approving the payment. Payment capture is deferred until the buyer explicitly confirms the order. The API appends the order ID as a query parameter to `reviewUrl`. When order review is omitted or disabled for a flow, payment is captured immediately after approval and the buyer is sent to `successUrl`.
-
 ### reCAPTCHA
 
 The `recaptcha.json` secret provides the Google project and API key values used for reCAPTCHA verification on unauthenticated write endpoints, such as order creation, order preview, and login. Enforcement is enabled in [site configuration](/configuration/site#recaptcha-settings) with `recaptcha.enabled`. Unlike the providers above, the secret is configured site-wide and does not use country or locale scoping. See the [reCAPTCHA page](/checkout/recaptcha) for the full schema and protected endpoints.
