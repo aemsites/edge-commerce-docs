@@ -248,7 +248,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 Use this endpoint to create or update up to 50 products in one request. The request body is an object with an `items` array. Each product must include a `path` field that specifies where it should be stored.
 
-The API validates the complete request before saving products. If the request envelope is invalid, any product is invalid, or two products have the same `path`, the API returns `400 Bad Request` and saves no products.
+The API validates the complete request before saving products. If the request envelope is invalid, any product is invalid, or two products have the same `path`, the API returns `400 Bad Request` and saves no products. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
 Bulk writes return `200 OK` with a `results` array. The array contains one result for each submitted product. Products with no detected changes have a status of `200`; saved products include their individual result status and message.
 
