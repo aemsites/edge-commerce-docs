@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.53.0",
+    "version": "2.55.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -5679,6 +5679,18 @@
             "description": "Global Trade Item Number (barcode).",
             "type": "string"
           },
+          "mpn": {
+            "description": "Manufacturer Part Number. Used as a product identifier when no GTIN is available.",
+            "type": "string"
+          },
+          "productType": {
+            "description": "Merchant-defined product category, e.g. \"Home > Kitchen > Blenders\".",
+            "type": "string"
+          },
+          "googleProductCategory": {
+            "description": "Google product taxonomy category, as a numeric taxonomy ID or full category path.",
+            "type": "string"
+          },
           "url": {
             "description": "Canonical absolute URL for the product.",
             "type": "string"
@@ -5936,6 +5948,10 @@
                   "description": "Global Trade Item Number (barcode).",
                   "type": "string"
                 },
+                "mpn": {
+                  "description": "Manufacturer Part Number. Used as a product identifier when no GTIN is available.",
+                  "type": "string"
+                },
                 "description": {
                   "description": "Variant-specific description.",
                   "type": "string"
@@ -5957,6 +5973,10 @@
                     "Reserved",
                     "SoldOut"
                   ]
+                },
+                "availabilityDate": {
+                  "description": "ISO 8601 date when the variant becomes available.",
+                  "type": "string"
                 },
                 "options": {
                   "description": "Option values that identify this variant (e.g. color=Red, size=Large).",

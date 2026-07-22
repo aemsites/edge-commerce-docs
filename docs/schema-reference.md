@@ -65,6 +65,9 @@ The main product schema supports rich product data with HTML content, variants, 
 | `metaTitle` | string | No | HTML meta title override. |
 | `metaDescription` | string | No | HTML meta description override. |
 | `gtin` | string | No | Global Trade Item Number (barcode). |
+| `mpn` | string | No | Manufacturer Part Number. Used as a product identifier when no GTIN is available. |
+| `productType` | string | No | Merchant-defined product category, e.g. "Home > Kitchen > Blenders". |
+| `googleProductCategory` | string | No | Google product taxonomy category, as a numeric taxonomy ID or full category path. |
 | `url` | string | No | Canonical absolute URL for the product. |
 | `brand` | string | No | Brand or manufacturer name. |
 | `type` | string | No | Product type identifier (e.g. "simple", "configurable", "bundle"). |
@@ -149,8 +152,10 @@ Represents a variant of a configurable product (e.g., different color or size). 
 | `url` | string | Yes | Canonical URL for this variant. |
 | `images` | [ProductBusMedia](#productbusmedia)[] | Yes | Images for this variant. |
 | `gtin` | string | No | Global Trade Item Number (barcode). |
+| `mpn` | string | No | Manufacturer Part Number. Used as a product identifier when no GTIN is available. |
 | `description` | string | No | Variant-specific description. |
 | `availability` | [SchemaOrgAvailability](#schemaorgavailability) | No | schema.org availability status for a product or offer. |
+| `availabilityDate` | string | No | ISO 8601 date when the variant becomes available. |
 | `options` | object[] | No | Option values that identify this variant (e.g. color=Red, size=Large). |
 | `itemCondition` | [SchemaOrgItemCondition](#schemaorgitemcondition) | No | schema.org item condition. |
 | `custom` | Record<string, any> | No |  |
