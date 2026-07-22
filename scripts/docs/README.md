@@ -122,8 +122,14 @@ node scripts/docs/llm-sync.mjs
 | `SOURCE_VERSION` | no | Version string (e.g. `v2.43.0`) |
 | `SOURCE_REPO_PATH` | yes | Absolute path to a full clone of the source repo |
 | `OPENAI_API_KEY` | yes | OpenAI API key |
+| `OPENAI_MODEL` | no | Writer model for rewrites/additions (default `gpt-5.6-luna`) |
+| `OPENAI_PREFLIGHT_MODEL` | no | Relevance classifier model (default `gpt-5-nano`) |
 
 The script filters out test files, CI config, and lock files from the diff so only meaningful code changes drive doc updates. If no docs need content changes, it exits cleanly.
+
+### Model selection and cost
+
+The writer model (`OPENAI_MODEL`) handles the full-file rewrites and gap-analysis additions — its output tokens dominate cost. It defaults to `gpt-5.6-luna` (same GPT-5.6 family as the previous `gpt-5.6-terra` default, roughly 2.5x cheaper on both input and output). The preflight classifier (`OPENAI_PREFLIGHT_MODEL`) runs once per tracked doc and only answers YES/NO, so it defaults to the inexpensive `gpt-5-nano`. Both are overridable per run.
 
 ## Path mapping
 

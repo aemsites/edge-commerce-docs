@@ -23,8 +23,15 @@ import { join, resolve } from 'node:path';
 // Config
 // ---------------------------------------------------------------------------
 
-const OPENAI_MODEL = 'gpt-5.6-terra';
-const OPENAI_PREFLIGHT_MODEL = 'gpt-5.6-luna';
+// Writer model for narrative rewrites/additions; its output tokens dominate
+// cost. Defaults to gpt-5.6-luna (same GPT-5.6 family as the former
+// gpt-5.6-terra default, ~2.5x cheaper on input and output). Override with
+// OPENAI_MODEL when quality evals justify a higher tier (e.g. gpt-5.6-terra).
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
+// Preflight relevance classifier. Runs once per tracked doc and only answers
+// YES/NO, so it defaults to the inexpensive gpt-5-nano. Override with
+// OPENAI_PREFLIGHT_MODEL.
+const OPENAI_PREFLIGHT_MODEL = process.env.OPENAI_PREFLIGHT_MODEL || 'gpt-5-nano';
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const MAX_TOKENS = 16000;
 
@@ -295,9 +302,19 @@ function extractChangedFiles(diff) {
  */
 async function isRelevantToDoc(title, description, changedFiles, apiKey) {
   const systemPrompt = [
-    'You are a relevance classifier. Given a documentation page title and',
-    'description, and a list of changed source code file paths, decide whether',
-    'the code changes are likely to affect the content of that documentation page.',
+    'You are a relevance router for a documentation set. Given a documentation',
+    'page title and description, and a list of changed source code file paths,',
+    'decide whether THIS page is an appropriate home for the change at its own',
+    'level of detail.',
+    '',
+    'Answer YES only if the change would alter content a reader needs on THIS',
+    'specific page. Answer NO when the change belongs on a more detailed page',
+    '(e.g. a schema or API reference) and this page only describes the topic at',
+    'a higher, conceptual level. A new field, parameter, endpoint detail, or',
+    'date format almost never belongs on an overview or high-level guide — it',
+    'belongs on the reference page. When in doubt, prefer NO so the change lands',
+    'in one authoritative place instead of being sprinkled across many pages.',
+    '',
     'Reply with exactly YES or NO. Nothing else.',
   ].join(' ');
 
@@ -422,6 +439,10 @@ async function main() {
     const systemPrompt = [
       'You are a technical documentation writer for a developer platform.',
       'You update existing narrative documentation based on code changes.',
+      'You make the smallest change that keeps the page correct. Making no',
+      'substantive change is a valid and common outcome; do not invent edits',
+      'just because a diff exists. Never sprinkle the same fact across multiple',
+      'pages — a given detail belongs in the single most appropriate page.',
       'Return ONLY the complete updated Markdown file, including the YAML',
       'frontmatter block (between --- delimiters). Do not wrap your response',
       'in code fences or add any commentary outside the document itself.',
@@ -437,8 +458,15 @@ async function main() {
       diff,
       '\n```\n',
       '\n## Instructions\n',
-      `Update the document above to reflect the code changes shown in the diff from the ${sourceRepo} repository.`,
-      'Only modify sections that are affected by the diff.',
+      `Update the document above ONLY if the code changes in the diff from the ${sourceRepo} repository genuinely affect content at THIS document's level of detail.`,
+      'Making no substantive change is a valid and often correct outcome: if the change is already covered, or only matters at a more detailed level than this page operates at, leave the body unchanged and only update the frontmatter markers described below.',
+      "Respect this document's role and abstraction level:",
+      '- Overview / intro pages: conceptual only. Do NOT add field names, parameter names, endpoint paths, date formats, or other reference-level specifics. A new field or parameter almost never justifies an overview edit.',
+      '- Guides (getting started, data ingestion, rendering, etc.): task-oriented. Mention a new field or behavior only when it changes a step the reader must perform. Do not enumerate new fields for completeness.',
+      '- Reference pages (schema reference, API reference): the authoritative home for field-, parameter-, and endpoint-level detail. Full detail belongs here.',
+      'Each fact should live in the single most appropriate page. Do not restate the same field or behavior across multiple pages just because it is loosely related.',
+      'Change as few sentences as possible. Prefer editing an existing sentence over adding a new standalone sentence or paragraph. Do not add standalone sentences or paragraphs to pages whose purpose is broader than the change.',
+      'Only modify sections that are directly affected by the diff.',
       'Preserve the existing writing style, structure, and tone.',
       `In the frontmatter, set sources.${sourceRepo}.lastReviewedCommit to "${shortSha(sourceRef)}"`,
       sourceVersion ? ` and sources.${sourceRepo}.version to "${sourceVersion}".` : '.',
@@ -555,6 +583,9 @@ async function main() {
           const addSystemPrompt = [
             'You are a technical documentation writer for a developer platform.',
             'You add new sections to existing documentation based on code changes.',
+            'You add content only to the single most appropriate page and only at',
+            'that page\'s level of detail; you never sprinkle the same fact across',
+            'multiple pages or push reference-level detail into conceptual pages.',
             'Return ONLY the complete updated Markdown file, including the YAML',
             'frontmatter block (between --- delimiters). Do not wrap your response',
             'in code fences or add any commentary outside the document itself.',
@@ -570,7 +601,9 @@ async function main() {
             '\n```\n',
             '\n## Instructions\n',
             `Add documentation for the following new feature to this document: ${gap.summary}`,
-            '\nPlace the new content in the most logical location within the existing document structure.',
+            '\nOnly add content if this page is the appropriate home for it at this page\'s level of detail. If the feature belongs on a more detailed reference page, or is already covered, leave the body unchanged and only update the frontmatter marker below.',
+            '\nRespect this document\'s role: keep conceptual/overview and guide pages free of field-, parameter-, and endpoint-level specifics; that detail belongs on reference pages.',
+            '\nPlace the new content in the most logical location within the existing document structure, and add as little as needed to cover the feature at this page\'s level.',
             '\nPreserve the existing writing style, structure, and tone.',
             '\nPreserve the exact YAML frontmatter formatting — do not add or remove quotes around values that already have or lack them.',
             `\nUpdate sources.${sourceRepo}.lastContentCommit to "${shortSha(sourceRef)}" in the frontmatter.`,
