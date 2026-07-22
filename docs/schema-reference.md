@@ -95,23 +95,6 @@ The main product schema supports rich product data with HTML content, variants, 
 
 <!-- GENERATED: ProductBusEntry:end -->
 
-#### Product identifiers and categories
-
-Use `mpn` to provide the manufacturer part number when a Global Trade Item Number (GTIN) is unavailable. You can provide `mpn` on the parent product, an individual variant, or both when identifiers differ by variant.
-
-Use `productType` for your merchant-defined category hierarchy. Use `googleProductCategory` for a Google product taxonomy category, specified as either a numeric taxonomy ID or a full category path.
-
-```json
-{
-  "sku": "blender-pro",
-  "name": "Blender Pro",
-  "gtin": "0123456789012",
-  "mpn": "BP-1000",
-  "productType": "Home > Kitchen > Blenders",
-  "googleProductCategory": "638"
-}
-```
-
 #### URL field and sitemap generation
 
 The `url` field controls how product URLs appear in XML sitemaps. When `url` is present, it is used directly in the sitemap (highest priority). When `url` is absent, URLs are constructed from the product's `path` field.
@@ -159,24 +142,6 @@ The `jsonld` field allows you to provide custom schema.org structured data that 
 ### ProductBusVariant
 
 Represents a variant of a configurable product (e.g., different color or size). Variants that omit `shippingDimensions` inherit the parent product's `shippingDimensions` in the generated JSON-LD. The `jsonldExtensions` object is limited to 16,000 characters when serialized and is ignored when the product-level `jsonld` override is used.
-
-Use variant-level `mpn` when a manufacturer part number identifies the specific variant. Use `availabilityDate` to specify the ISO 8601 date when that variant becomes available, such as for a pre-order or scheduled release.
-
-```json
-{
-  "sku": "blender-pro-red",
-  "name": "Blender Pro — Red",
-  "url": "https://example.com/products/blender-pro/red",
-  "images": [
-    {
-      "url": "https://images.example.com/blender-pro-red.jpg"
-    }
-  ],
-  "mpn": "BP-1000-RED",
-  "availability": "PreOrder",
-  "availabilityDate": "2026-09-15"
-}
-```
 
 <!-- GENERATED: ProductBusVariant:start -->
 <!-- Generated from helix-commerce-api schemas (npm run docs:schema). Do not edit by hand. -->
