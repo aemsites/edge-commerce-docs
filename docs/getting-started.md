@@ -113,9 +113,6 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/t
     "url": "https://www.example.com/us/en/products/test-product",
     "description": "A test product with <strong>HTML support</strong>",
     "brand": "test-brand",
-    "mpn": "TEST-BLENDER-500",
-    "productType": "Home > Kitchen > Blenders",
-    "googleProductCategory": "Appliances > Kitchen Appliances > Blenders",
     "price": {
       "currency": "USD",
       "regular": "99.99",
@@ -128,8 +125,6 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/t
     ]
   }'
 ```
-
-Use `mpn` to provide a Manufacturer Part Number when a Global Trade Item Number (GTIN) is unavailable. The optional `productType` field identifies your merchant-defined category, while `googleProductCategory` accepts either a numeric Google product taxonomy ID or a full category path.
 
 When the request succeeds, you'll receive a `201 Created` status along with the complete product object. The response will include any fields that were automatically populated by the system during creation.
 

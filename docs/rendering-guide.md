@@ -309,9 +309,7 @@ The Product Pipeline combines data from two sources:
 
 ### Product Bus (primary source)
 
-The Product Bus provides authoritative commerce data including SKU, pricing, inventory, product variants and options, and media assets. Product entries can also include a manufacturer part number (`mpn`) when no Global Trade Item Number (GTIN) is available, a merchant-defined category in `productType`, and a Google product taxonomy category in `googleProductCategory`. Set `googleProductCategory` to either a numeric taxonomy ID or a full category path.
-
-Variants can include their own `mpn` and an ISO 8601 `availabilityDate` indicating when the variant becomes available.
+The Product Bus provides authoritative commerce data including SKU, pricing, and inventory, as well as product variants and options, and media assets.
 
 ### AEM Edge Delivery (enrichment source)
 

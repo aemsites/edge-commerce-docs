@@ -110,8 +110,6 @@ Validate all required fields are present (`sku`, `name`, `path`). Verify data ty
 
 Compare source data with Product Bus output for a sample of products. Verify prices, descriptions, and attributes map to correct fields. Check that HTML content renders correctly (no escaped entities, proper markup), and ensure variant relationships are preserved (parent-child SKU linkage).
 
-Verify that `gtin` and `mpn` values map to the correct product or variant. Check that `productType` preserves the intended merchant category hierarchy and that `googleProductCategory` contains either a valid numeric taxonomy ID or full category path. For variants with `availabilityDate`, verify that the value is an ISO 8601 date.
-
 #### Image handling
 
 Verify all image URLs are publicly accessible via HTTP `GET`. Test with products that have missing images to ensure graceful handling, and confirm HTTPS is used for all image URLs.
