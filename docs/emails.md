@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "e8f6b93"
+    version: "v2.56.0"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
 ---
 
 # Transactional email

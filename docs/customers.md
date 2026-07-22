@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "683f17d"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
 ---
 
 # Customers and account data
@@ -24,7 +24,7 @@ Customers can enter the system in two ways:
 
 | Flow | What happens |
 |------|--------------|
-| Order creation | `POST /orders` validates the order customer, creates the customer if one does not already exist, links the order to the customer email, and saves the shipping address to the customer's address book |
+| Order creation | `POST /orders` validates the order customer, creates the customer if one does not already exist, links the order to the customer email, saves the shipping address to the customer's address book, and sets `customerCreated` to `true` on the order when it creates the profile |
 | Direct customer creation | `POST /customers` creates a customer profile directly and requires `customers:write` |
 
 Most storefront checkout flows do not need to call `POST /customers` before placing an order. [Order creation](/orders/lifecycle#create-the-order) handles the customer profile when needed.
@@ -148,6 +148,8 @@ Address updates are replacements, not partial patches. Send the full address bod
 
 [Order creation](/orders/lifecycle#create-the-order) links each order to the order customer's email address. This enables account order history and guest order-status flows.
 
+When order creation creates a new customer profile, the stored order includes `customerCreated: true`. The API derives this value; clients cannot set it. Orders for customers whose profiles already existed include `customerCreated: false`.
+
 ### List customer orders
 
 Listing a customer's orders requires `orders:read`, an authenticated token for the same email address, and matching organization/site scope. The response returns up to 1,000 order links for client-side sorting. See [Roles and permissions](/authentication/roles-permissions) for permission details.
@@ -186,6 +188,7 @@ See [Roles and permissions](/authentication/roles-permissions) for the full perm
 Checkout and customer data are connected but separate. When `POST /orders` creates an order, it also:
 
 - Creates a customer profile if one does not already exist.
+- Sets the server-derived `customerCreated` order field to indicate whether it created that profile.
 - Links the order to the customer email for later customer order lookup.
 - Saves the shipping address to the customer's address book.
 

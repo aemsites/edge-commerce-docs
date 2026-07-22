@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -108,6 +108,7 @@ The `description` field supports full HTML for rich product descriptions. Varian
 #### Metadata rendering
 
 The `metadata` object allows you to add custom meta tags to the product page HTML. Each key-value pair in the metadata object is rendered as a `<meta>` tag in the page `<head>`.
+
 ```json
 {
   "sku": "product-123",
@@ -121,6 +122,7 @@ The `metadata` object allows you to add custom meta tags to the product page HTM
 ```
 
 **Renders as:**
+
 ```html
 <head>
   ...
@@ -297,6 +299,7 @@ Product availability status using schema.org vocabulary. These values are render
 <!-- GENERATED: SchemaOrgAvailability:end -->
 
 **Example:**
+
 ```json
 {
   "sku": "product-123",
@@ -322,6 +325,7 @@ Product condition using schema.org vocabulary. These values are rendered in the 
 <!-- GENERATED: SchemaOrgItemCondition:end -->
 
 **Example:**
+
 ```json
 {
   "sku": "product-123",
