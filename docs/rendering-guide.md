@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.53.0"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    version: "v2.56.0"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -309,7 +309,9 @@ The Product Pipeline combines data from two sources:
 
 ### Product Bus (primary source)
 
-The Product Bus provides authoritative commerce data including SKU, pricing, and inventory, as well as product variants and options, and media assets.
+The Product Bus provides authoritative commerce data including SKU, pricing, inventory, product variants and options, and media assets. Product entries can also include a manufacturer part number (`mpn`) when no Global Trade Item Number (GTIN) is available, a merchant-defined category in `productType`, and a Google product taxonomy category in `googleProductCategory`. Set `googleProductCategory` to either a numeric taxonomy ID or a full category path.
+
+Variants can include their own `mpn` and an ISO 8601 `availabilityDate` indicating when the variant becomes available.
 
 ### AEM Edge Delivery (enrichment source)
 

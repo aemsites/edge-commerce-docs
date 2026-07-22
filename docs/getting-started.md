@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    version: "v2.56.0"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -113,6 +113,9 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/t
     "url": "https://www.example.com/us/en/products/test-product",
     "description": "A test product with <strong>HTML support</strong>",
     "brand": "test-brand",
+    "mpn": "TEST-BLENDER-500",
+    "productType": "Home > Kitchen > Blenders",
+    "googleProductCategory": "Appliances > Kitchen Appliances > Blenders",
     "price": {
       "currency": "USD",
       "regular": "99.99",
@@ -125,6 +128,9 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/t
     ]
   }'
 ```
+
+Use `mpn` to provide a Manufacturer Part Number when a Global Trade Item Number (GTIN) is unavailable. The optional `productType` field identifies your merchant-defined category, while `googleProductCategory` accepts either a numeric Google product taxonomy ID or a full category path.
+
 When the request succeeds, you'll receive a `201 Created` status along with the complete product object. The response will include any fields that were automatically populated by the system during creation.
 
 If something goes wrong, you might encounter a `400 Bad Request` error, which typically means that some required fields are missing or improperly formatted. Double-check your JSON structure and ensure all mandatory fields are present. A `401 Unauthorized` error indicates that your API key isn't valid, so you'll want to verify that you're using the correct key.
@@ -137,6 +143,7 @@ Retrieve the product you just created to confirm it was stored correctly.
 curl -H "Authorization: Bearer {your-admin-or-service-token}" \
   "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/test-product.json"
 ```
+
 If the product was created successfully, you'll receive a `200 OK` status code along with the full product object that matches what you created in Step 2. If you see a `404 Not Found` error instead, double-check that the product path in your request matches exactly what you used when creating the product in Step 2.
 
 ### Step 4: View the rendered HTML

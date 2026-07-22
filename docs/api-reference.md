@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -172,6 +172,9 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
     "metaTitle": "Product Name | Brand",
     "metaDescription": "Short SEO description...",
     "gtin": "0123456789012",
+    "mpn": "BLENDER-PRO-500",
+    "productType": "Home > Kitchen > Blenders",
+    "googleProductCategory": "674",
     "url": "https://www.example.com/us/en/products/product-url-key",
     "brand": "ExampleBrand",
     "availability": "InStock",
@@ -224,8 +227,10 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
           { "url": "https://cdn.example.com/images/sku-123/red.jpg", "label": "red" }
         ],
         "gtin": "0123456789013",
+        "mpn": "BLENDER-PRO-500-RED",
         "description": "Red variant description with <strong>HTML</strong>",
         "availability": "InStock",
+        "availabilityDate": "2026-08-01",
         "options": [ { "value": "Red", "id": "color", "uid": "opt-1" } ],
         "itemCondition": "NewCondition",
         "custom": { "material": "aluminum" }

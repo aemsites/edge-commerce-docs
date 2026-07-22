@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.3"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "2731b0a"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
 ---
 
 # Checkout overview
@@ -42,7 +42,7 @@ For PayPal, the provider configuration can optionally enable an order-review ste
 At a high level, an order moves through these stages:
 
 1. **Estimate**: the storefront previews shipping, tax, and discounts for the cart. Tax can be calculated by the [Avalara](/checkout/tax/avalara) provider when configured. See [Estimates and cart totals](/estimates).
-2. **Order creation**: the customer confirms, and the order is created with its locked-in estimates.
+2. **Order creation**: the customer confirms, and the order is created with its locked-in estimates. The API sets `customerCreated` to `true` when the order creates a new customer profile, or `false` for a returning customer. This value is server-derived; clients cannot set it.
 3. **Payment initiation**: the storefront initiates payment with a [payment provider](/checkout/payments/overview). The API loads that provider's credentials, computes the amount from the stored order, and returns the next step (typically a redirect).
 4. **Fraud screening**: when [Forter](/checkout/fraud/forter) is configured, the transaction is screened before it is approved.
 5. **Confirmation**: the provider confirms the result, the order state is updated, and the customer is returned to the storefront. For PayPal flows configured for order review, approval returns a `review` action instead. The storefront sends the customer to the configured review URL, and the order remains in `payment_requires_confirmation` until the storefront explicitly confirms payment capture.

@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "2731b0a"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
 ---
 
 # Order lifecycle
@@ -309,10 +309,11 @@ At creation time, the API:
 - Rejects unauthorized free items that are not covered by a promotion grant.
 - Creates or associates the customer record when needed.
 - Records `customerType` as `registered` when the authenticated human caller has an email, or `guest` for unauthenticated and service-token checkout.
+- Records `customerCreated` as `true` when the order creates a new customer profile for the email address, or `false` when the shopper already has a customer profile.
 - Persists the order with state `pending`.
 - Creates the first order history entry.
 
-The response wraps the stored order as `{ "order": { ... } }`. The `customerType` value is generated from authenticated request context; clients cannot set it in the request.
+The response wraps the stored order as `{ "order": { ... } }`. The `customerType` and `customerCreated` values are generated from server-side request and customer-profile context; clients cannot set them in the request.
 
 ### Estimate tokens
 

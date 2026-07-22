@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -68,6 +68,8 @@ Event-driven updates are the most efficient approach for ongoing product synchro
 
 [Map your source data fields to Product Bus schema fields](/schema-reference#productbusentry). Watch out for missing required fields like `sku`, `name`, and `path`, which cause API rejections. Avoid mapping the wrong source field to Product Bus fields. Don't use internal product codes instead of customer-facing SKUs. Don't ignore optional but important fields like `metaDescription` and `metaTitle` that affect SEO performance.
 
+Map product identifiers consistently. Use `gtin` for a Global Trade Item Number (barcode), or `mpn` for a Manufacturer Part Number when no GTIN is available. Map merchant-defined category hierarchies to `productType`, for example `"Home > Kitchen > Blenders"`. If your catalog provides a Google product taxonomy category, map it to `googleProductCategory` as either its numeric taxonomy ID or full category path.
+
 #### Handle data type conversions
 
 Be careful with price formatting. Sending prices as strings (`"99.99"`) instead of properly formatted values is a common mistake. Also watch for inconsistent decimal precision for prices across products, which can cause display issues.
@@ -79,6 +81,8 @@ Be careful with price formatting. Sending prices as strings (`"99.99"`) instead 
 #### Transform pricing and variant data
 
 Transform [pricing](/schema-reference#productbusprice), inventory, and [variant data](/schema-reference#productbusvariant). Currency codes must match ISO 4217 standards (use "USD" not "dollars"). Make sure to correctly distinguish between regular price and final/sale price, and verify that availability status accurately reflects inventory (avoid showing out-of-stock items as available).
+
+For variants that are not yet available, map `availabilityDate` as an ISO 8601 date. Map variant-level `gtin` or `mpn` when identifiers differ from the parent product.
 
 #### Handle multi-store configurations
 
@@ -105,6 +109,8 @@ Validate all required fields are present (`sku`, `name`, `path`). Verify data ty
 #### Field mapping accuracy
 
 Compare source data with Product Bus output for a sample of products. Verify prices, descriptions, and attributes map to correct fields. Check that HTML content renders correctly (no escaped entities, proper markup), and ensure variant relationships are preserved (parent-child SKU linkage).
+
+Verify that `gtin` and `mpn` values map to the correct product or variant. Check that `productType` preserves the intended merchant category hierarchy and that `googleProductCategory` contains either a valid numeric taxonomy ID or full category path. For variants with `availabilityDate`, verify that the value is an ISO 8601 date.
 
 #### Image handling
 

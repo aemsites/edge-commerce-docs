@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -220,6 +220,10 @@ The Merchant Feed is generated automatically without configuration. It extracts 
 | `availability` | `availability` (mapped: `InStock`→`in_stock`, `OutOfStock`→`out_of_stock`, `PreOrder`→`preorder`, `BackOrder`→`backorder`) |
 | `condition` | `itemCondition` (mapped: `NewCondition`→`new`, `RefurbishedCondition`→`refurbished`, `UsedCondition`→`used`; defaults to `new`) |
 | `brand` | `brand` |
+| `gtin` | `gtin` |
+| `mpn` | `mpn` |
+| `product_type` | `productType` |
+| `google_product_category` | `googleProductCategory` |
 | `adult` | Derived from `adultOnly` boolean field (`yes` / `no`) |
 | `shipping` | `shipping` field, falling back to `custom.shipping`. Expected shape: `{ country, service, price }` |
 | `item_group_id` | Set to the parent product's `sku` for variant entries, linking variants in Google Merchant Center |

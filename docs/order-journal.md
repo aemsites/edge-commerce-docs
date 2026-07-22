@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.52.2"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "e77382f"
+    version: "v2.56.0"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
 ---
 
 # Order journal
@@ -68,6 +68,8 @@ Common fields include:
 | `state` | Order state for state transition events |
 
 Event-specific fields vary. Payment events can include provider, attempt, reason, transaction, or authorization fields. Email events can include recipient, sender, outcome, attempt count, and message identifiers. Provider request entries can include service, method, status, duration, and non-sensitive diagnostic response details.
+
+For failed provider requests, diagnostic response bodies are limited to 512 characters and receive basic redaction for apparent bearer tokens and payment card number patterns. Treat all diagnostic response details as sensitive and do not expose them in storefronts or other customer-facing views.
 
 ## Access
 

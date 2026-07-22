@@ -7,9 +7,9 @@ managed: true
 sourceFormat: markdown
 sources:
   helix-commerce-api:
-    version: "v2.53.0"
-    lastReviewedCommit: "d180131"
-    lastContentCommit: "d180131"
+    version: "v2.56.0"
+    lastReviewedCommit: "59379a6"
+    lastContentCommit: "59379a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -52,13 +52,13 @@ The architecture consists of five main components: product data storage, the Edg
 
 #### Product data storage
 
-Product data storage contains product data from one or more sources such as PIM systems, Enterprise Resource Planning (ERP) platforms, and commerce backends, aggregated into a single [unified data model](/schema-reference#productbusentry). It provides low-latency retrieval for API and rendering flows, while rendered content is cached by the customer's CDN.
+Product data storage contains product data from one or more sources such as PIM systems, Enterprise Resource Planning (ERP) platforms, and commerce backends, aggregated into a single [unified data model](/schema-reference#productbusentry). The model supports product identifiers, including Global Trade Item Numbers (GTINs) and Manufacturer Part Numbers (MPNs), as well as merchant-defined and Google product categories for feed generation. It provides low-latency retrieval for API and rendering flows, while rendered content is cached by the customer's CDN.
 
 Learn more: [Getting Started](/getting-started#your-first-product-ingestion) | [Schema Reference](/schema-reference#productbusentry)
 
 #### Edge Commerce API
 
-The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk product upserts](/api-reference#bulk-write-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations.
+The Edge Commerce API is a REST API for product data, checkout, customer data, configuration, and operations. It handles [product Create, Read, Update, Delete (CRUD) operations](/api-reference#product-operations), [bulk product upserts](/api-reference#bulk-write-products), [cache management](/api-reference#cache-management-api), [authentication](/authentication/overview), validation, and checkout operations. When an order creates a customer profile for the first time, the API records this server-derived result on the order.
 
 Learn more: [Data Ingestion Guide](/data-ingestion#etl-process-overview) | [API Reference](/api-reference#product-operations)
 
