@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Delete a product — Helix Commerce API</title>
-    <meta name="description" content="Deletes the product at the given path. The literal `/*` path is rejected.">
+    <meta name="description" content="Deletes the product at the given path. Supports `If-Match` / `If-None-Match` for conditional deletes; a precondition miss returns `412` and the product is left in place.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -29,7 +29,7 @@
         <h1>Delete a product</h1>
         <p class="endpoint"><span class="http-method http-delete">DELETE</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Deletes the product at the given path. The literal `/*` path is rejected.</p>
+        <p>Deletes the product at the given path. Supports `If-Match` / `If-None-Match` for conditional deletes; a precondition miss returns `412` and the product is left in place.</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -45,6 +45,8 @@
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>If-Match</code></td><td><code>string</code></td><td>no</td><td>Conditional request. `"&lt;etag&gt;"` proceeds only if the current eTag matches; `*` proceeds only if the product exists. Returns `412` when unmet.</td></tr>
+            <tr><td><code>If-None-Match</code></td><td><code>string</code></td><td>no</td><td>Conditional request. `*` proceeds only if the product does not exist (create-only). Returns `412` when the product already exists.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -56,6 +58,39 @@
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> Wildcard delete attempted, or malformed path.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">404</span> The product was not found.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">412</span> A conditional request precondition (If-Match / If-None-Match) was not met.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-5xx">500</span> A conditional storage delete failed. The request may be retried.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -83,6 +118,28 @@
           <pre><code class="language-json">{
   "code": "bad_request",
   "message": "wildcard delete is not supported"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_NOT_FOUND",
+  "message": "product not found"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">412</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_PRECONDITION_FAILED",
+  "message": "precondition failed (etag mismatch)"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">500</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_INTERNAL_ERROR",
+  "message": "internal server error",
+  "retryable": true
 }</code></pre>
         </div>
       </div>
