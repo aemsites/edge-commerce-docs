@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "59379a6"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "fef463d"
+    lastContentCommit: "fef463d"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -155,6 +155,12 @@ Body: { "sku": "123", "path": "/us/en/products/mixer", ... }
 # Error: 400 Bad Request
 ```
 
+#### Conditional requests
+
+Product responses include an `ETag` header that identifies the stored version. Send this value in `If-Match` to update or delete a product only when it has not changed since it was retrieved. Send `If-Match: *` to require that the product exists, or `If-None-Match: *` to allow a create only when the product does not already exist.
+
+A failed precondition returns `412 Precondition Failed`, and the product is not modified. A successful conditional update returns `200 OK` with a new `ETag`; a create-only request returns `201 Created`. Successful single-product `PUT` requests return the new `ETag` even when no conditional header was provided.
+
 The request body should be a product object (see [Schema Reference](/schema-reference#productbusentry)).
 
 When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
@@ -163,6 +169,7 @@ When the request succeeds and the product was created or updated, you'll receive
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json" \
   -X PUT \
   -H "Authorization: Bearer {your-api-key}" \
+  -H "If-Match: {product-etag}" \
   -H "Content-Type: application/json" \
   -d '{
     "sku": "sku-123",
@@ -255,7 +262,7 @@ Use this endpoint to create or update up to 50 products in one request. The requ
 
 The API validates the complete request before saving products. If the request envelope is invalid, any product is invalid, or two products have the same `path`, the API returns `400 Bad Request` and saves no products. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
-Bulk writes return `200 OK` with a `results` array. The array contains one result for each submitted product. Products with no detected changes have a status of `200`; saved products include their individual result status and message.
+Bulk writes return `200 OK` with a `results` array. The array contains one result for each submitted product. Products with no detected changes have a status of `200`; saved products include their individual result status, message, and `etag`.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
@@ -295,7 +302,8 @@ Example response:
       "sku": "bulk-001",
       "path": "/us/en/products/bulk-product-1",
       "status": 201,
-      "message": "Product saved successfully."
+      "message": "Product saved successfully.",
+      "etag": "\"9f0e\""
     },
     {
       "sku": "bulk-002",
@@ -329,21 +337,22 @@ The deprecated endpoint accepts an array of up to 50 product objects. Each produ
 
 `GET /{org}/sites/{site}/catalog{path}`
 
-Authentication is not required for published data. The API returns the product object if found, or a `404 Not Found` if no product exists at the specified path.
+Authentication is not required for published data. The API returns the product object and an `ETag` response header if found, or a `404 Not Found` if no product exists at the specified path.
 
 ```bash
-curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json"
+curl -i "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json"
 ```
 
 ### Delete a product
 
 `DELETE /{org}/sites/{site}/catalog{path}`
 
-This endpoint requires authentication. A successful deletion returns `204 No Content`. If the product doesn't exist at the specified path, you'll receive a `404 Not Found` response.
+This endpoint requires authentication. A successful deletion returns `204 No Content`. If the product doesn't exist at the specified path, you'll receive a `404 Not Found` response. You can send `If-Match` or `If-None-Match` to conditionally delete the product. A failed precondition returns `412 Precondition Failed`, and the product remains in place.
 
 ```bash
 curl -X DELETE \
   -H "Authorization: Bearer {your-api-key}" \
+  -H "If-Match: {product-etag}" \
   "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json"
 ```
 
