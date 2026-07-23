@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.56.1",
+    "version": "2.56.2",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -354,8 +354,8 @@
       ],
       "post": {
         "operationId": "bulkCatalogOperation",
-        "summary": "Bulk write products",
-        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Every item is validated up front, so a single invalid product rejects the whole request and saves nothing. Always responds with a `results` array, one entry per item, including for single-item requests. A `delete: true` flag is reserved for bulk deletion in a future release.",
+        "summary": "Bulk write or delete products",
+        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -374,6 +374,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "delete",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "When `true`, the request is a bulk delete; `false` (or absent) is a write. Canonical selector; the body `delete` flag is an alias that must agree when both are present."
           }
         ],
         "responses": {
@@ -436,10 +445,15 @@
                     "value": {
                       "results": [
                         {
-                          "sku": "PROD-123",
+                          "sku": "BLENDER-PRO-500",
                           "path": "/us/en/products/blender-pro-500",
                           "status": 200,
-                          "message": "Product saved successfully."
+                          "message": "Product deleted successfully."
+                        },
+                        {
+                          "path": "/us/en/products/blender-pro-750",
+                          "status": 404,
+                          "message": "Product not found."
                         }
                       ]
                     }
@@ -449,7 +463,7 @@
             }
           },
           "400": {
-            "description": "Invalid envelope: non-object body, non-boolean delete, non-array items, too many items, or an invalid product.",
+            "description": "Invalid request: non-object body, invalid `?delete`/`delete` selector, query/body selector conflict, non-array items, too many items, an invalid product, or a malformed/`.json` delete item path.",
             "content": {
               "application/json": {
                 "schema": {
@@ -462,9 +476,8 @@
                       "message": "invalid request",
                       "errors": [
                         {
-                          "path": "$.items",
-                          "message": "too many items",
-                          "details": "maximum 50 per request"
+                          "path": "$.items[1]",
+                          "message": "invalid path format"
                         }
                       ]
                     }
@@ -501,28 +514,62 @@
           }
         ],
         "requestBody": {
-          "description": "Bulk operation envelope with an `items` array of products to upsert.",
+          "description": "Bulk operation envelope (any-of). In write mode `items` are products to upsert; in delete mode `items` are `{ path }` objects. See the delete request example in the operation description.",
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "description": "Bulk operation envelope. Writes are the default; `delete: true` selects deletion.",
-                "type": "object",
-                "properties": {
-                  "items": {
-                    "description": "Products to create or update (max 50 per request).",
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ProductBus"
-                    }
+                "anyOf": [
+                  {
+                    "description": "Bulk write envelope: create or update (upsert) products (max 50 per request).",
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "description": "Products to create or update (max 50 per request).",
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/ProductBus"
+                        }
+                      },
+                      "delete": {
+                        "description": "Optional write-mode selector; must be `false` or omitted (see the delete envelope).",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "items"
+                    ]
                   },
-                  "delete": {
-                    "description": "When true, the request is a bulk delete. Defaults to false (write).",
-                    "type": "boolean"
+                  {
+                    "description": "Bulk delete envelope: delete products by path (max 50 per request). Selected by `?delete=true` or a body `delete: true` alias.",
+                    "type": "object",
+                    "properties": {
+                      "items": {
+                        "description": "Products to delete, each an object with an extensionless `path` (max 50 per request).",
+                        "type": "array",
+                        "items": {
+                          "description": "Delete item: an object identifying the product to delete by path.",
+                          "type": "object",
+                          "properties": {
+                            "path": {
+                              "description": "Extensionless product path, e.g. `/us/en/products/blender-pro-500`.",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "path"
+                          ]
+                        }
+                      },
+                      "delete": {
+                        "description": "Selects delete mode; alias for the canonical `?delete` query parameter. When both are present they must agree, otherwise the request is 400.",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "items"
+                    ]
                   }
-                },
-                "required": [
-                  "items"
                 ]
               },
               "examples": {
@@ -1848,6 +1895,33 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Lower bound on order creation time (ISO 8601)."
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Upper bound on order creation time (ISO 8601)."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter to orders in this state."
           }
         ],
         "responses": {

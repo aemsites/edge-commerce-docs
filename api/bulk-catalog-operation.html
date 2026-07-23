@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Bulk write products — Helix Commerce API</title>
-    <meta name="description" content="Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Every item is validated up front, so a single invalid product rejects the whole request and saves nothing. Always responds with a `results` array, one entry per item, including for single-item requests. A `delete: true` flag is reserved for bulk deletion in a future release.">
+    <title>Bulk write or delete products — Helix Commerce API</title>
+    <meta name="description" content="Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ "items": [{ "path": "/us/en/products/blender-pro-500" }, { "path": "/us/en/products/blender-pro-750" }] }` with `?delete=true`.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -26,10 +26,10 @@
     <main>
       <div>
         <p class="api-eyebrow">Catalog</p>
-        <h1>Bulk write products</h1>
+        <h1>Bulk write or delete products</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/catalog</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Every item is validated up front, so a single invalid product rejects the whole request and saves nothing. Always responds with a `results` array, one entry per item, including for single-item requests. A `delete: true` flag is reserved for bulk deletion in a future release.</p>
+        <p>Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ "items": [{ "path": "/us/en/products/blender-pro-500" }, { "path": "/us/en/products/blender-pro-750" }] }` with `?delete=true`.</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -39,20 +39,19 @@
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
           </table>
         </div>
+        <h2>Query parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>delete</code></td><td><code>boolean</code></td><td>no</td><td>When `true`, the request is a bulk delete; `false` (or absent) is a write. Canonical selector; the body `delete` flag is an alias that must agree when both are present.</td></tr>
+          </table>
+        </div>
         <h2>Request headers</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
             <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
-          </table>
-        </div>
-        <h2>Request body</h2>
-        <div class="table">
-          <table>
-            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>items</code></td><td><code>ProductBus[]</code></td><td>yes</td><td>Products to create or update (max 50 per request).</td></tr>
-            <tr><td><code>delete</code></td><td><code>boolean</code></td><td>no</td><td>When true, the request is a bulk delete. Defaults to false (write).</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -69,7 +68,7 @@
             <tr><td><code>results</code></td><td><code>object[]</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> Invalid envelope: non-object body, non-boolean delete, non-array items, too many items, or an invalid product.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Invalid request: non-object body, invalid `?delete`/`delete` selector, query/body selector conflict, non-array items, too many items, an invalid product, or a malformed/`.json` delete item path.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -108,10 +107,15 @@
           <pre><code class="language-json">{
   "results": [
     {
-      "sku": "PROD-123",
+      "sku": "BLENDER-PRO-500",
       "path": "/us/en/products/blender-pro-500",
       "status": 200,
-      "message": "Product saved successfully."
+      "message": "Product deleted successfully."
+    },
+    {
+      "path": "/us/en/products/blender-pro-750",
+      "status": 404,
+      "message": "Product not found."
     }
   ]
 }</code></pre>
@@ -123,9 +127,8 @@
   "message": "invalid request",
   "errors": [
     {
-      "path": "$.items",
-      "message": "too many items",
-      "details": "maximum 50 per request"
+      "path": "$.items[1]",
+      "message": "invalid path format"
     }
   ]
 }</code></pre>
