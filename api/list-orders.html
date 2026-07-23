@@ -39,6 +39,15 @@
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
           </table>
         </div>
+        <h2>Query parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>since</code></td><td><code>string</code></td><td>no</td><td>Lower bound on order creation time (ISO 8601).</td></tr>
+            <tr><td><code>until</code></td><td><code>string</code></td><td>no</td><td>Upper bound on order creation time (ISO 8601).</td></tr>
+            <tr><td><code>state</code></td><td><code>string</code></td><td>no</td><td>Filter to orders in this state.</td></tr>
+          </table>
+        </div>
         <h2>Request headers</h2>
         <div class="table">
           <table>
