@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "fef463d"
-    lastContentCommit: "fef463d"
+    lastReviewedCommit: "43a89f0"
+    lastContentCommit: "43a89f0"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -502,7 +502,7 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `name` | string | No | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
 | `address1` | string | No | Primary street address line. max length 255 |
-| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
+| `address2` | string | No | Secondary address line. max length 255 |
 | `city` | string | No | City name. max length 255 |
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |
