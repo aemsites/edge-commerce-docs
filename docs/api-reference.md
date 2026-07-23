@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "fef463d"
-    lastContentCommit: "fef463d"
+    lastReviewedCommit: "43a89f0"
+    lastContentCommit: "43a89f0"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -323,7 +323,22 @@ Learn more about [image handling](/schema-reference#productbusmedia) in the sche
 
 #### Bulk deletion
 
-The bulk request envelope supports a `delete` boolean for future bulk deletion support. Bulk deletion is not currently available. Requests with `"delete": true` return `501 Not Implemented`.
+The same endpoint supports bulk deletion when `?delete=true` is provided. The request body contains an `items` array of objects with extensionless product paths:
+
+```bash
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?delete=true" \
+  -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      { "path": "/us/en/products/blender-pro-500" },
+      { "path": "/us/en/products/blender-pro-750" }
+    ]
+  }'
+```
+
+The body may include `"delete": true` as an alias for the query parameter. If both selectors are present, they must agree. Deletion requests validate all items before deleting anything, accept up to 50 items, deduplicate repeated paths, and return `200 OK` with a `results` array. Each distinct item reports `200` when deleted, `404` when the product does not exist, or `500` when deletion fails. An empty `items` array returns an empty results array.
 
 ### Deprecated bulk create or update endpoint
 
@@ -371,7 +386,7 @@ When you delete a product, several systems are updated:
 
 The product is removed from storage immediately, so direct requests to the product's JSON or HTML endpoints will return `404` right away. However, the product index, merchant feed, and sitemap are updated asynchronously by the Product Indexer, which processes deletion events within its normal indexing cycle.
 
-If you have [push invalidation](/caching#push-invalidation) enabled, the CDN cache for the deleted product is also purged, ensuring the `404` response propagates immediately. Without push invalidation, cached responses may persist until the CDN TTL expires.
+Cache invalidation is also performed for successfully deleted products. If cache invalidation fails, cached responses may persist until the cache TTL expires.
 
 ## Authentication API
 
