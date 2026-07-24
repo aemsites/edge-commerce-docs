@@ -28,7 +28,8 @@
         <p class="api-eyebrow">Orders</p>
         <h1>Create an order</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
         <p>Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. The optional customerTimezone field stores the shopper browser timezone for customer-facing uses, such as formatting order confirmation email timestamps. reCAPTCHA-gated for unauthenticated callers.</p>
         <p class="permissions">Required permissions: <code>orders:write</code></p>
         <h2>Path parameters</h2>
@@ -43,8 +44,8 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. `Bearer &lt;jwt&gt;`. Optional — guest checkout is supported.</td></tr>
-            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>. Optional — guest checkout is supported.</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be <code>application/json</code>.</td></tr>
             <tr><td><code>X-Recaptcha-Token</code></td><td><code>string</code></td><td>no</td><td>reCAPTCHA Enterprise token; required for unauthenticated callers.</td></tr>
           </table>
         </div>
@@ -61,7 +62,7 @@
             <tr><td><code>shippingMethod</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>estimateToken</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>paymentMethod</code></td><td><code>string</code></td><td>no</td><td></td></tr>
-            <tr><td><code>checkoutFlow</code></td><td><code>"standard" | "express"</code></td><td>no</td><td>Checkout flow type. `express` identifies wallet or shortcut checkout flows.</td></tr>
+            <tr><td><code>checkoutFlow</code></td><td><code>"standard" | "express"</code></td><td>no</td><td>Checkout flow type. <code>express</code> identifies wallet or shortcut checkout flows.</td></tr>
             <tr><td><code>entryPoint</code></td><td><code>"cart" | "checkout" | "pdp"</code></td><td>no</td><td>Page or experience where checkout started.</td></tr>
             <tr><td><code>couponCode</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>giftMessage</code></td><td><code>string</code></td><td>no</td><td></td></tr>
@@ -70,7 +71,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The created order, wrapped as `{ order }`.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The created order, wrapped as <code>{ order }</code>.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
@@ -90,8 +91,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
@@ -101,8 +102,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>

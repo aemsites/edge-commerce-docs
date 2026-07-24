@@ -28,7 +28,8 @@
         <p class="api-eyebrow">Payments</p>
         <h1>Initiate a payment</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders/{orderId}/payments</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
         <p>Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result (synchronous charge outcome or a requires_action redirect). No authentication required.</p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -43,8 +44,8 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. `Bearer &lt;jwt&gt;`. Optional — guest checkout is supported.</td></tr>
-            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>. Optional — guest checkout is supported.</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be <code>application/json</code>.</td></tr>
           </table>
         </div>
         <h2>Request body</h2>
@@ -78,8 +79,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
@@ -89,8 +90,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
@@ -100,8 +101,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
@@ -111,8 +112,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
@@ -122,8 +123,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>

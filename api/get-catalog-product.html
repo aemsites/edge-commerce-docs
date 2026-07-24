@@ -28,7 +28,8 @@
         <p class="api-eyebrow">Catalog</p>
         <h1>Retrieve a product</h1>
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
         <p>Returns the stored ProductBus entry for the given path.</p>
         <p class="permissions">Required permissions: <code>catalog:read</code></p>
         <h2>Path parameters</h2>
@@ -37,14 +38,14 @@
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
-            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. `/us/en/products/blender-pro-500.json`), or the literal `*` for bulk writes.</td></tr>
+            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. <code>/us/en/products/blender-pro-500.json</code>), or the literal <code>*</code> for bulk writes.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -53,7 +54,7 @@
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
-            <tr><td><code>ETag</code></td><td>Opaque strong validator for the stored product. Send it back as `If-Match` on a later write or delete for optimistic concurrency.</td></tr>
+            <tr><td><code>ETag</code></td><td>Opaque strong validator for the stored product. Send it back as <code>If-Match</code> on a later write or delete for optimistic concurrency.</td></tr>
           </table>
         </div>
         <div class="table">

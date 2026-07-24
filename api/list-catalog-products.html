@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>List catalog products — Helix Commerce API</title>
-    <meta name="description" content="Returns a page of product summaries (sku, name, path). Pass a `cursor` (from a prior truncated response) to page through results.">
+    <meta name="description" content="Returns a page of product summaries (sku, name, path). Pass a cursor (from a prior truncated response) to page through results.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,8 +28,9 @@
         <p class="api-eyebrow">Catalog</p>
         <h1>List catalog products</h1>
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/catalog</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Returns a page of product summaries (sku, name, path). Pass a `cursor` (from a prior truncated response) to page through results.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Returns a page of product summaries (sku, name, path). Pass a <code>cursor</code> (from a prior truncated response) to page through results.</p>
         <p class="permissions">Required permissions: <code>catalog:read</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -43,7 +44,7 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -66,8 +67,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>

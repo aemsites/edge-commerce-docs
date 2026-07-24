@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>List coupon codes — Helix Commerce API</title>
-    <meta name="description" content="Returns coupon code names, optionally filtered by `type` and/or `active`, with cursor-based pagination.">
+    <meta name="description" content="Returns coupon code names, optionally filtered by type and/or active, with cursor-based pagination.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,8 +28,9 @@
         <p class="api-eyebrow">Coupons</p>
         <h1>List coupon codes</h1>
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/coupons</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Returns coupon code names, optionally filtered by `type` and/or `active`, with cursor-based pagination.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Returns coupon code names, optionally filtered by <code>type</code> and/or <code>active</code>, with cursor-based pagination.</p>
         <p class="permissions">Required permissions: <code>coupons:read</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -43,7 +44,7 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>

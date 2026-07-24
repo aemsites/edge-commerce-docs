@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Compute an estimate — Helix Commerce API</title>
-    <meta name="description" content="Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.">
+    <meta name="description" content="Request shape depends on estimateType. All variants accept a partial shipping address and (for price/shipping/order) a cart items array and optional couponCode. An optional BCP-47 locale (e.g. fr-CA) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,8 +28,9 @@
         <p class="api-eyebrow">Estimate</p>
         <h1>Compute an estimate</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/estimate/{estimateType}</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Request shape depends on <code>estimateType</code>. All variants accept a partial shipping address and (for price/shipping/order) a cart <code>items</code> array and optional <code>couponCode</code>. An optional BCP-47 <code>locale</code> (e.g. <code>fr-CA</code>) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -40,14 +41,14 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The computed estimate. Body shape varies by `estimateType`.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The computed estimate. Body shape varies by <code>estimateType</code>.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> The request failed schema validation or `country` could not be resolved.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The request failed schema validation or <code>country</code> could not be resolved.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -56,12 +57,12 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">404</span> Unknown `estimateType`.</h3>
+        <h3><span class="status-badge status-4xx">404</span> Unknown <code>estimateType</code>.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>

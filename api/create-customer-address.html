@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Create an address — Helix Commerce API</title>
-    <meta name="description" content="Creates an address for the customer (`subroute=addresses` only). Requires ownership of the email.">
+    <meta name="description" content="Creates an address for the customer (subroute=addresses only). Requires ownership of the email.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,8 +28,9 @@
         <p class="api-eyebrow">Customers</p>
         <h1>Create an address</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/customers/{email}/{subroute}</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Creates an address for the customer (`subroute=addresses` only). Requires ownership of the email.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Creates an address for the customer (<code>subroute=addresses</code> only). Requires ownership of the email.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -37,15 +38,15 @@
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
             <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td>Customer email address.</td></tr>
-            <tr><td><code>subroute</code></td><td><code>"addresses" | "orders"</code></td><td>yes</td><td>Either `addresses` or `orders`.</td></tr>
+            <tr><td><code>subroute</code></td><td><code>"addresses" | "orders"</code></td><td>yes</td><td>Either <code>addresses</code> or <code>orders</code>.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
-            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be <code>application/json</code>.</td></tr>
           </table>
         </div>
         <h2>Request body</h2>
