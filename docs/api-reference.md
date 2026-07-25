@@ -1,6 +1,7 @@
 ---
 title: "Edge Commerce API reference"
 description: "Human-readable API reference for Edge Commerce operations."
+llmScope: "Covers the core platform HTTP APIs: product catalog operations, authentication and access, product indexing, site configuration, and cache management. EXCLUDES checkout, payments, orders, estimates, and journals — those are documented on their own topic pages (payments, payments-*, order-lifecycle, order-journal, checkout, estimates), not here."
 daPath: "/api-reference"
 status: migrated
 managed: true
