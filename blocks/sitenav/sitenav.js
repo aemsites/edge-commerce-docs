@@ -45,8 +45,13 @@ function decorateEntry(li) {
   btn.innerHTML = EXP_ICON;
   const toggle = () => li.classList.toggle('is-open');
   btn.addEventListener('click', toggle);
-  // The group label is not a link, so let it toggle the section too.
-  label.addEventListener('click', toggle);
+  // A span label can't navigate, so let it toggle the section. A link label
+  // (e.g. "API reference" -> /api-reference) keeps its default navigation; the
+  // chevron button handles expand/collapse, and setActive() opens the section
+  // when its page is the current one.
+  if (label.tagName !== 'A') {
+    label.addEventListener('click', toggle);
+  }
   label.insertAdjacentElement('afterend', btn);
 
   // Expand the section containing the current page.
