@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Bulk create/replace products (deprecated) — Helix Commerce API</title>
-    <meta name="description" content="Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).">
+    <meta name="description" content="Deprecated: use POST /{org}/sites/{site}/catalog (the collection root) instead, which shares one request/response envelope. Only valid at the literal /* path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,8 +28,9 @@
         <p class="api-eyebrow">Catalog</p>
         <h1>Bulk create/replace products (deprecated)</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Deprecated: use <code>POST /{org}/sites/{site}/catalog</code> (the collection root) instead, which shares one request/response envelope. Only valid at the literal <code>/*</code> path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -37,15 +38,15 @@
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
-            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. `/us/en/products/blender-pro-500.json`), or the literal `*` for bulk writes.</td></tr>
+            <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. <code>/us/en/products/blender-pro-500.json</code>), or the literal <code>*</code> for bulk writes.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
-            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be <code>application/json</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -76,8 +77,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>

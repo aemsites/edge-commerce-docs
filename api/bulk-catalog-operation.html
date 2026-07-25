@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Bulk write or delete products — Helix Commerce API</title>
-    <meta name="description" content="Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ "items": [{ "path": "/us/en/products/blender-pro-500" }, { "path": "/us/en/products/blender-pro-750" }] }` with `?delete=true`.">
+    <meta name="description" content="Unified bulk catalog endpoint. Accepts an { items } envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting ?delete=true (or a body delete: true alias) switches to bulk delete, whose items are { path } objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a results array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: 200 deleted, 404 not found, 500 failed. Delete request example: { "items": [{ "path": "/us/en/products/blender-pro-500" }, { "path": "/us/en/products/blender-pro-750" }] } with ?delete=true.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -28,8 +28,9 @@
         <p class="api-eyebrow">Catalog</p>
         <h1>Bulk write or delete products</h1>
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/catalog</code></p>
-        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code> · Staging <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ "items": [{ "path": "/us/en/products/blender-pro-500" }, { "path": "/us/en/products/blender-pro-750" }] }` with `?delete=true`.</p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Unified bulk catalog endpoint. Accepts an <code>{ items }</code> envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting <code>?delete=true</code> (or a body <code>delete: true</code> alias) switches to bulk delete, whose items are <code>{ path }</code> objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a <code>results</code> array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: <code>200</code> deleted, <code>404</code> not found, <code>500</code> failed. Delete request example: <code>{ "items": [{ "path": "/us/en/products/blender-pro-500" }, { "path": "/us/en/products/blender-pro-750" }] }</code> with <code>?delete=true</code>.</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -43,15 +44,15 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>delete</code></td><td><code>boolean</code></td><td>no</td><td>When `true`, the request is a bulk delete; `false` (or absent) is a write. Canonical selector; the body `delete` flag is an alias that must agree when both are present.</td></tr>
+            <tr><td><code>delete</code></td><td><code>boolean</code></td><td>no</td><td>When <code>true</code>, the request is a bulk delete; <code>false</code> (or absent) is a write. Canonical selector; the body <code>delete</code> flag is an alias that must agree when both are present.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. `Bearer &lt;jwt&gt;`.</td></tr>
-            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be `application/json`.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
+            <tr><td><code>Content-Type</code></td><td><code>string</code></td><td>yes</td><td>Must be <code>application/json</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -68,7 +69,7 @@
             <tr><td><code>results</code></td><td><code>object[]</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> Invalid request: non-object body, invalid `?delete`/`delete` selector, query/body selector conflict, non-array items, too many items, an invalid product, or a malformed/`.json` delete item path.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Invalid request: non-object body, invalid <code>?delete</code>/<code>delete</code> selector, query/body selector conflict, non-array items, too many items, an invalid product, or a malformed/<code>.json</code> delete item path.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -81,8 +82,8 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the `x-error-code` header).</td></tr>
-            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the `x-error` header).</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
             <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
             <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
