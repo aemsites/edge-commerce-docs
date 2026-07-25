@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "fef463d"
-    lastContentCommit: "fef463d"
+    lastReviewedCommit: "5f10b2f"
+    lastContentCommit: "5f10b2f"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -258,9 +258,9 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 `POST /{org}/sites/{site}/catalog`
 
-Use this endpoint to create or update up to 50 products in one request. The request body is an object with an `items` array. Each product must include a `path` field that specifies where it should be stored.
+Use this endpoint to create or update up to 50 products in one request. The request body is an object with an `items` array. Each product must include a `path` field that specifies where it should be stored. By default, the request performs writes. Set the `delete` query parameter to `true` to delete products instead; a body `delete` flag is supported as an alias and must agree with the query parameter when both are provided.
 
-The API validates the complete request before saving products. If the request envelope is invalid, any product is invalid, or two products have the same `path`, the API returns `400 Bad Request` and saves no products. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
+The API validates the complete request before saving or deleting products. If the request envelope is invalid, an item is invalid, or two products have the same `path`, the API returns `400 Bad Request` and performs no operation. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
 Bulk writes return `200 OK` with a `results` array. The array contains one result for each submitted product. Products with no detected changes have a status of `200`; saved products include their individual result status, message, and `etag`.
 
@@ -323,7 +323,22 @@ Learn more about [image handling](/schema-reference#productbusmedia) in the sche
 
 #### Bulk deletion
 
-The bulk request envelope supports a `delete` boolean for future bulk deletion support. Bulk deletion is not currently available. Requests with `"delete": true` return `501 Not Implemented`.
+To delete products, send the bulk request with `?delete=true`. Each item must be an object containing an extensionless product `path`. Deletes are unconditional and duplicate paths are processed once. The API validates all items before deleting anything.
+
+```bash
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?delete=true" \
+  -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      { "path": "/us/en/products/blender-pro-500" },
+      { "path": "/us/en/products/blender-pro-750" }
+    ]
+  }'
+```
+
+The response is `200 OK` with a `results` array. Each result reports `200` for a deleted product, `404` when the product was not found, or `500` when deletion failed. The body `delete: true` flag can be used instead of the query parameter. If both selectors are present, they must have the same value.
 
 ### Deprecated bulk create or update endpoint
 
@@ -371,7 +386,7 @@ When you delete a product, several systems are updated:
 
 The product is removed from storage immediately, so direct requests to the product's JSON or HTML endpoints will return `404` right away. However, the product index, merchant feed, and sitemap are updated asynchronously by the Product Indexer, which processes deletion events within its normal indexing cycle.
 
-If you have [push invalidation](/caching#push-invalidation) enabled, the CDN cache for the deleted product is also purged, ensuring the `404` response propagates immediately. Without push invalidation, cached responses may persist until the CDN TTL expires.
+The API also attempts to purge the cache for successfully deleted products. Cache purging is best-effort; if it fails, cached responses may persist until the cache TTL expires.
 
 ## Authentication API
 
