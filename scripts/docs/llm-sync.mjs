@@ -296,32 +296,40 @@ function extractChangedFiles(diff) {
 }
 
 /**
- * Cheap preflight check using Luna: given a doc's title/description and the
- * list of changed files, decide whether the diff is likely relevant to the doc.
- * Returns true (relevant) or false (skip).
+ * Cheap preflight relevance router. Given one page (title, description, and an
+ * optional explicit scope) and the list of changed source files, decide whether
+ * THIS page is the single most appropriate home for the change. Returns true
+ * (relevant) or false (skip).
+ *
+ * The router is tier-aware so feature narrative lands on the matching topic page
+ * instead of collapsing onto the reference page:
+ *   - overview / getting-started: conceptual only.
+ *   - topic / feature pages: the home for narrative about their subject.
+ *   - reference pages: detailed field/endpoint tables for the APIs they cover.
+ * An explicit `scope` (from frontmatter `llmScope`) is authoritative and can
+ * exclude a subject from a page even when it is a reference page.
  */
-async function isRelevantToDoc(title, description, changedFiles, apiKey) {
+async function isRelevantToDoc(title, description, scope, changedFiles, apiKey) {
   const systemPrompt = [
-    'You are a relevance router for a documentation set. Given a documentation',
-    'page title and description, and a list of changed source code file paths,',
-    'decide whether THIS page is an appropriate home for the change at its own',
-    'level of detail.',
+    'You are a relevance router for a documentation set. Every change should land on the single most appropriate page. Given ONE documentation page (its title, description, and optional explicit scope) and a list of changed source code file paths, decide whether THIS page is that page.',
     '',
-    'Answer YES only if the change would alter content a reader needs on THIS',
-    'specific page. Answer NO when the change belongs on a more detailed page',
-    '(e.g. a schema or API reference) and this page only describes the topic at',
-    'a higher, conceptual level. A new field, parameter, endpoint detail, or',
-    'date format almost never belongs on an overview or high-level guide — it',
-    'belongs on the reference page. When in doubt, prefer NO so the change lands',
-    'in one authoritative place instead of being sprinkled across many pages.',
+    'Documentation pages fall into three tiers:',
+    '- Overview / getting-started pages: conceptual only. Answer NO for field-, parameter-, endpoint-, or format-level changes; those belong on a topic or reference page.',
+    "- Topic / feature pages (e.g. a specific payment provider, orders, checkout, coupons, indexing, journals): the home for narrative about THAT subject. Answer YES when the changed files fall in this page's subject area, including new endpoints, fields, or behaviors for that feature.",
+    '- Reference pages (API reference, schema reference): the home for detailed field/endpoint tables for the APIs they cover.',
+    '',
+    "If the page provides an explicit scope, it is AUTHORITATIVE: answer NO when the change falls under the scope's exclusions (even for a reference page), and YES only when it falls under what the scope includes.",
+    '',
+    'Match the changed file paths to the page subject — e.g. files under an orders/payments/checkout path map to order/payment/checkout pages, not to a catalog or auth reference. Do NOT answer YES for a page merely because the change is loosely related; pick the page whose subject or scope actually matches.',
     '',
     'Reply with exactly YES or NO. Nothing else.',
-  ].join(' ');
+  ].join('\n');
 
   const userPrompt = [
     `Document title: ${title}\n`,
-    `Document description: ${description}\n\n`,
-    'Changed files:\n',
+    `Document description: ${description}\n`,
+    scope ? `Document scope: ${scope}\n` : '',
+    '\nChanged files:\n',
     changedFiles.map((f) => `- ${f}`).join('\n'),
   ].join('');
 
@@ -387,7 +395,12 @@ async function main() {
     const lastReviewed = source.lastReviewedCommit;
 
     // Track for gap analysis.
-    docCatalog.push({ file, title: attrs.title || file, description: attrs.description || '' });
+    docCatalog.push({
+      file,
+      title: attrs.title || file,
+      description: attrs.description || '',
+      scope: attrs.llmScope || '',
+    });
     if (lastReviewed && (!earliestOriginalCommit || lastReviewed < earliestOriginalCommit)) {
       earliestOriginalCommit = lastReviewed;
     }
@@ -417,9 +430,10 @@ async function main() {
     const changedFiles = extractChangedFiles(diff);
     const title = attrs.title || file;
     const description = attrs.description || '';
+    const scope = attrs.llmScope || '';
 
     // eslint-disable-next-line no-await-in-loop
-    const relevant = await isRelevantToDoc(title, description, changedFiles, apiKey);
+    const relevant = await isRelevantToDoc(title, description, scope, changedFiles, apiKey);
     if (!relevant) {
       console.log(`⏭ ${file}: diff not relevant (preflight), bumping commit marker`);
       skippedByPreflight.push({ file, title, description });
@@ -504,7 +518,10 @@ async function main() {
     {
       const fullChangedFiles = extractChangedFiles(fullDiff);
       const docList = docCatalog
-        .map((d) => `- ${d.title}: ${d.description}`)
+        .map((d) => {
+          const scopeNote = d.scope ? ` (scope: ${d.scope})` : '';
+          return `- ${d.file} — ${d.title}: ${d.description}${scopeNote}`;
+        })
         .join('\n');
 
       const gapSystemPrompt = [
@@ -532,6 +549,12 @@ async function main() {
         'Only flag genuinely user-facing changes that a developer would need',
         'to know about. Do not flag internal refactors, test changes, or',
         'implementation details.',
+        '',
+        'Respect each page\'s stated scope. Never target a page ("existing") with',
+        'content its scope excludes; route the change to the page whose subject or',
+        'scope matches, or propose a "new" page when none fits. A reference page',
+        'that excludes a subject (e.g. orders/checkout/journals) must not be the',
+        'target for that subject.',
       ].join('\n');
 
       const gapUserPrompt = [
