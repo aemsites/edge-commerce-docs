@@ -69,7 +69,7 @@
             <tr><td><code>results</code></td><td><code>object[]</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> Invalid request: non-object body, invalid <code>?delete</code>/<code>delete</code> selector, query/body selector conflict, non-array items, too many items, an invalid product, or a malformed/<code>.json</code> delete item path.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Request validation failed. See <code>errors</code> for the specific problems.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -108,15 +108,10 @@
           <pre><code class="language-json">{
   "results": [
     {
-      "sku": "BLENDER-PRO-500",
+      "sku": "PROD-123",
       "path": "/us/en/products/blender-pro-500",
       "status": 200,
-      "message": "Product deleted successfully."
-    },
-    {
-      "path": "/us/en/products/blender-pro-750",
-      "status": 404,
-      "message": "Product not found."
+      "message": "Product saved successfully."
     }
   ]
 }</code></pre>
