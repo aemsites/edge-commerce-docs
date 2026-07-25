@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.57.1",
+    "version": "2.57.2",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -34,7 +34,7 @@
     },
     {
       "name": "Payments",
-      "description": "Initiate a payment for an order. Entry point for starting a payment flow — the client picks a provider/payment method and supplies an idempotency key. Guest checkout is supported (no auth required)."
+      "description": "Cancel a PayPal order the buyer approved but abandoned on the order-review page. Transitions the order to payment_cancelled. No PayPal call is made — nothing was captured, and any approved order expires on PayPal. Guest checkout is supported (no auth required)."
     },
     {
       "name": "Customers",
@@ -2787,6 +2787,229 @@
                     "paymentMethod": "card",
                     "idempotencyKey": "idem-9f2c1a"
                   }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders/{orderId}/payments/confirm": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Order identifier (full or friendly id)."
+        }
+      ],
+      "post": {
+        "operationId": "confirmPayment",
+        "summary": "Confirm (capture) an approved order",
+        "description": "Requires the order to be in `payment_requires_confirmation`. Serializes concurrent confirms so only one capture is sent; duplicates replay the stored result or receive a retryable 503. No authentication required.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Bearer token. `Bearer <jwt>`. Optional — guest checkout is supported.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The confirm result — `{ status: \"completed\", ... }` or `{ status: \"failed\", reason }`.",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing `idempotencyKey`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Order is not in a confirmable state, has no approved PayPal order, or PayPal is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A concurrent confirm is in flight, or a transient capture error occurred — retry with the same idempotencyKey.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "description": "Confirmation request. `idempotencyKey` is required; repeats replay the prior result.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idempotencyKey": {
+                    "description": "Caller-supplied idempotency key; replays return the prior result.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "idempotencyKey"
+                ],
+                "additionalProperties": true
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "idempotencyKey": "confirm-9f2c1a"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/{org}/sites/{site}/orders/{orderId}/payments/cancel": {
+      "parameters": [
+        {
+          "name": "org",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Organization identifier."
+        },
+        {
+          "name": "site",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Site identifier."
+        },
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Order identifier (full or friendly id)."
+        }
+      ],
+      "post": {
+        "operationId": "cancelPayment",
+        "summary": "Cancel an approved-but-unconfirmed order",
+        "description": "Requires the order to be in `payment_requires_confirmation`. Idempotent — cancelling an already-cancelled order replays. No authentication required.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "description": "Bearer token. `Bearer <jwt>`. Optional — guest checkout is supported.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order was cancelled (or was already cancelled).",
+            "headers": {
+              "Content-Type": {
+                "description": "application/json",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Order is not in a cancellable state (not payment_requires_confirmation).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
