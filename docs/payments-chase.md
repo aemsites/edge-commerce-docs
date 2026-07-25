@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "5f10b2f"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "c6ded82"
+    lastContentCommit: "c6ded82"
 ---
 
 # Chase payments

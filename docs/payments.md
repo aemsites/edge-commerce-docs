@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "5f10b2f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "c6ded82"
+    lastContentCommit: "c6ded82"
 ---
 
 # Payments overview
@@ -58,6 +58,13 @@ When enabled for a flow:
 5. The API captures the approved PayPal payment and completes the order payment.
 
 Set `reviewUrl` when either order-review option is enabled. When order review is not enabled, PayPal captures payment immediately after approval and sends the customer to `successUrl`.
+
+For order-review payments, the storefront can complete or abandon the review:
+
+- `POST /{org}/sites/{site}/orders/{orderId}/payments/confirm` captures the approved PayPal payment. Send a JSON body with a required `idempotencyKey`. Concurrent confirmation requests are serialized so only one capture is sent. The response reports `completed`, `pending`, or `failed`. A retryable `503` means the capture is in progress or encountered a transient error; retry with the same idempotency key.
+- `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` abandons the review without calling PayPal. It transitions an order in `payment_requires_confirmation` to `payment_cancelled`, supports unauthenticated guest checkout, and is idempotent when called again for an already-cancelled order.
+
+A PayPal capture can be accepted while its funds remain unsettled, such as for an eCheck or bank-funded payment. In that case, the order moves to `payment_pending` rather than `payment_completed`. The storefront can show the payment as pending, and settlement processing updates the order when the payment provider's settlement webhook is received.
 
 ## Shared credentials across provider variants
 
