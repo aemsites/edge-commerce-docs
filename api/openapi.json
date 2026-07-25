@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.57.0",
+    "version": "2.57.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -200,7 +200,18 @@
                       ],
                       "auth": {
                         "enabled": true
-                      }
+                      },
+                      "friendlyId": {
+                        "prefix": "US-"
+                      },
+                      "geoOverrides": [
+                        {
+                          "country": "ca",
+                          "friendlyId": {
+                            "prefix": "CA-"
+                          }
+                        }
+                      ]
                     }
                   }
                 }
@@ -445,15 +456,10 @@
                     "value": {
                       "results": [
                         {
-                          "sku": "BLENDER-PRO-500",
+                          "sku": "PROD-123",
                           "path": "/us/en/products/blender-pro-500",
                           "status": 200,
-                          "message": "Product deleted successfully."
-                        },
-                        {
-                          "path": "/us/en/products/blender-pro-750",
-                          "status": 404,
-                          "message": "Product not found."
+                          "message": "Product saved successfully."
                         }
                       ]
                     }
@@ -463,7 +469,7 @@
             }
           },
           "400": {
-            "description": "Invalid request: non-object body, invalid `?delete`/`delete` selector, query/body selector conflict, non-array items, too many items, an invalid product, or a malformed/`.json` delete item path.",
+            "description": "Request validation failed. See `errors` for the specific problems.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4846,7 +4852,7 @@
                 "example": {
                   "value": {
                     "typeId": "summer-10",
-                    "count": 50,
+                    "count": 2,
                     "prefix": "SUMMER"
                   }
                 }
