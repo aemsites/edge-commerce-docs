@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cancel an approved-but-unconfirmed order — Helix Commerce API</title>
+    <meta name="description" content="Requires the order to be in payment_requires_confirmation. Idempotent — cancelling an already-cancelled order replays. No authentication required.">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Payments</p>
+        <h1>Cancel an approved-but-unconfirmed order</h1>
+        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders/{orderId}/payments/cancel</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <p>Requires the order to be in <code>payment_requires_confirmation</code>. Idempotent — cancelling an already-cancelled order replays. No authentication required.</p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+            <tr><td><code>orderId</code></td><td><code>string</code></td><td>yes</td><td>Order identifier (full or friendly id).</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>. Optional — guest checkout is supported.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">200</span> The order was cancelled (or was already cancelled).</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">404</span> Order not found.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">422</span> Order is not in a cancellable state (not payment_requires_confirmation).</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>
