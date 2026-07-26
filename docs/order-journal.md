@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "5f10b2f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "c6ded82"
+    lastContentCommit: "c6ded82"
 ---
 
 # Order journal
@@ -40,6 +40,7 @@ Journal entries are appended as order-related work happens. Common events includ
 | `create` | An order is created in `pending` state |
 | `custom_updated` | Custom order data is updated |
 | `payment_initiated` | A payment attempt starts |
+| `payment_pending` | A payment is accepted but has not settled |
 | `payment_completed` | A provider result is verified and the order reaches `payment_completed` |
 | `payment_cancelled` | A payment flow ends without completion |
 | `payment_attempt_save_failed` | The API could not persist a payment attempt after retries |

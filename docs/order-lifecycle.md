@@ -8,13 +8,13 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "5f10b2f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "c6ded82"
+    lastContentCommit: "c6ded82"
 ---
 
 # Order lifecycle
 
-The Edge Commerce API supports guest and authenticated checkout. A typical order starts as a cart estimate, becomes a persisted order in `pending` state, moves into payment processing, and then reaches a terminal payment state after the provider callback or wallet response is verified.
+The Edge Commerce API supports guest and authenticated checkout. A typical order starts as a cart estimate, becomes a persisted order in `pending` state, moves into payment processing, and then reaches a payment state after the provider callback, wallet response, or explicit payment confirmation is verified.
 
 Use this guide to understand the sequence of API calls, order states, and safeguards that keep checkout totals and payment attempts consistent.
 
@@ -28,13 +28,15 @@ Checkout uses three different order-related APIs because they answer different q
 | Shopper is ready to place the order and has selected a shipping method | `POST /{org}/sites/{site}/orders/preview` | Performs final pre-submit validation and returns an [`estimateToken`](#estimate-tokens) that locks tax, shipping, and discounts |
 | Shopper confirms the order | `POST /{org}/sites/{site}/orders` | Persists the committed cart as an order in `pending` state |
 | Shopper chooses a payment method | `POST /{org}/sites/{site}/orders/{orderId}/payments` | Starts a provider-specific payment flow for a pending order |
-| Provider returns the payment result | Provider callback routes | Verifies the provider result and moves the order to a terminal state or, for PayPal order review, to confirmation-required state |
+| Shopper confirms an approved PayPal order-review payment | `POST /{org}/sites/{site}/orders/{orderId}/payments/confirm` | Captures the approved payment and completes the order |
+| Shopper abandons an approved PayPal order-review payment | `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` | Cancels the payment and moves the order to `payment_cancelled` |
+| Provider returns the payment result | Provider callback routes | Verifies the provider result and moves the order to a payment state |
 | Customer, admin, or integration needs order data | `GET /{org}/sites/{site}/orders/{orderId}` | Reads one order by full or friendly ID |
 | Admin needs order reporting | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state |
 | Integration needs to attach metadata | `PATCH /{org}/sites/{site}/orders/{orderId}/custom` | Adds or removes custom order fields |
 | Operations needs state history | `GET /{org}/sites/{site}/orders/journal` | Reads order state transition entries |
 
-The short version: use estimates while the cart is still changing, use preview when the cart is ready to become an order, use order creation to persist that committed cart, and use payment initiation only after the order exists.
+The short version: use estimates while the cart is still changing, use preview when the cart is ready to become an order, use order creation to persist that committed cart, and use payment initiation only after the order exists. For PayPal order review, use the confirmation or cancellation action after the buyer returns from PayPal.
 
 ## Lifecycle summary
 
@@ -44,6 +46,8 @@ The short version: use estimates while the cart is still changing, use preview w
 | Order preview | `POST /{org}/sites/{site}/orders/preview` | Produces the final committed estimate and [`estimateToken`](#estimate-tokens) | Optional, reCAPTCHA-gated for guests |
 | Order creation | `POST /{org}/sites/{site}/orders` | Creates a persisted `pending` order from the committed cart | Optional, reCAPTCHA-gated for guests |
 | Payment initiation | `POST /{org}/sites/{site}/orders/{orderId}/payments` | Starts payment for a pending order | Optional |
+| PayPal order-review confirmation | `POST /{org}/sites/{site}/orders/{orderId}/payments/confirm` | Captures an approved PayPal payment and completes the order | Optional |
+| PayPal order-review cancellation | `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` | Cancels an approved but unconfirmed PayPal payment | Optional |
 | Payment callback or wallet result | Provider callback routes | Verifies payment and updates the order state | Provider-controlled |
 | Order lookup | `GET /{org}/sites/{site}/orders/{orderId}` | Retrieves one order by full or friendly ID | Required |
 | Order listing | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state | Admin only |
@@ -56,7 +60,8 @@ The short version: use estimates while the cart is still changing, use preview w
 |-------|---------|
 | `pending` | The order has been created and can accept a first payment initiation |
 | `payment_processing` | A redirect-based payment has been initiated and the API is waiting for a provider return or cancel callback |
-| `payment_requires_confirmation` | The buyer approved a PayPal payment configured for order review, but payment capture is deferred until the shopper explicitly confirms the order |
+| `payment_requires_confirmation` | The buyer approved a PayPal payment configured for order review, but payment capture is deferred until the shopper explicitly confirms or cancels the order |
+| `payment_pending` | Payment was accepted but has not settled yet; the order awaits a settlement update |
 | `payment_completed` | The provider result was verified and the payment completed |
 | `payment_cancelled` | The customer cancelled, the provider declined, fraud evaluation failed, or the payment flow otherwise ended without completion |
 
@@ -367,11 +372,15 @@ See [Payments overview](/checkout/payments/overview) for provider-specific payme
 
 Redirect-based providers move the order to `payment_processing` when initiation succeeds. The provider then redirects to an API callback URL. The callback verifies the payment with the provider before updating the order.
 
-PayPal can be configured with an order review step independently for standard checkout and express flows. When order review is enabled, PayPal approval does not capture payment immediately. Instead, the API returns a `review` action, sends the shopper to the configured review URL, and moves the order to `payment_requires_confirmation`. The storefront displays its final order review and requires an explicit shopper confirmation before payment capture.
+PayPal can be configured with an order review step independently for standard checkout and express flows. When order review is enabled, PayPal approval does not capture payment immediately. Instead, the API returns a `review` action, sends the shopper to the configured review URL, and moves the order to `payment_requires_confirmation`. The storefront displays its final order review and calls `POST /orders/{orderId}/payments/confirm` to capture the payment. If the shopper abandons the review, call `POST /orders/{orderId}/payments/cancel` to move the order to `payment_cancelled`.
+
+The confirmation request requires an idempotency key. Concurrent confirmation requests are serialized, and retries with the same key replay the stored result or return a retryable response while another confirmation is in progress.
 
 When configuring PayPal order review, provide a secure `reviewUrl`. The API appends the order ID as a query parameter. A review URL is required when order review is enabled for either checkout flow.
 
 Wallet or direct-charge flows may complete during initiation. These flows can move directly from `pending` to `payment_completed` or `payment_cancelled` without a separate `payment_processing` step.
+
+Some PayPal payments can be accepted before settlement. These payments move the order to `payment_pending`; the order is completed after a settlement update.
 
 Provider callbacks guard against replay. Once an order is terminal, later callbacks do not move it backward.
 
@@ -425,6 +434,7 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 - Order creation verifies product prices, country availability, and preview tokens.
 - Payment initiation uses stored order totals, not client-supplied totals.
 - Only `pending` orders accept a new payment initiation.
+- PayPal order-review confirmation requires an idempotency key and captures only an order still awaiting confirmation.
 - Idempotency keys make safe retries possible.
 - Provider callbacks verify the result directly with the provider before changing terminal state.
 - Requests with a declared body larger than 10 MiB are rejected with HTTP 413 before the API processes the body.
