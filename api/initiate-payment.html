@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Initiate a payment — Helix Commerce API</title>
-    <meta name="description" content="Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result (synchronous charge outcome or a requires_action redirect). No authentication required.">
+    <meta name="description" content="Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result: a synchronous charge outcome, a requires_action redirect, or — when order review is enabled for the flow — a requires_action result with action: 'review' that moves the order to payment_requires_confirmation for the order-review confirm step. No authentication required.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders/{orderId}/payments</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result (synchronous charge outcome or a requires_action redirect). No authentication required.</p>
+        <p>Validates the request, looks up the payment provider, enforces the pending order-state guard (with idempotent replay), and delegates to the provider. Returns the provider result: a synchronous charge outcome, a <code>requires_action</code> redirect, or — when order review is enabled for the flow — a <code>requires_action</code> result with <code>action: 'review'</code> that moves the order to <code>payment_requires_confirmation</code> for the order-review confirm step. No authentication required.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -59,7 +59,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The provider result (terminal charge outcome or a requires_action redirect).</h3>
+        <h3><span class="status-badge status-2xx">200</span> The provider result: a terminal charge outcome, a <code>requires_action</code> redirect, or a <code>requires_action</code> <code>action: 'review'</code> result that hands off to the order-review confirm step.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
