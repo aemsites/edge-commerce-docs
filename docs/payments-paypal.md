@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c6ded82"
-    lastContentCommit: "c6ded82"
+    lastReviewedCommit: "2199e74"
+    lastContentCommit: "2199e74"
 ---
 
 # PayPal payments
@@ -65,7 +65,9 @@ The `apiBaseUrl` is restricted to PayPal's two known hostnames so a misconfigura
 | `reviewUrl` | string (HTTPS) | Storefront URL to return to after PayPal approval when order review is enabled. The order ID is appended as a query parameter. Required when `orderReview.checkout` or `orderReview.express` is `true`; ignored otherwise. |
 | `locale` | string | PayPal checkout page locale (e.g. `en-US`). When empty, PayPal auto-detects from the browser |
 
-When order review is enabled for a flow, PayPal approval returns the customer to `reviewUrl` and leaves the order in `payment_requires_confirmation`. Your storefront must display an order-review step and explicitly confirm the order to capture payment. Without order review, payment is processed after approval and the customer is sent to `successUrl`. If PayPal reports the payment as pending, the order enters `payment_pending` while settlement completes.
+When order review is enabled for either flow, `reviewUrl` must be a valid HTTPS URL with a hostname. PayPal uses `CONTINUE` checkout behavior for that flow; when review is disabled, it uses `PAY_NOW`. The checkout behavior is derived from the applicable `orderReview` flag. The standalone `userAction` setting is no longer supported and should be removed from existing configurations.
+
+When order review is enabled for a flow, PayPal approval returns the customer to `reviewUrl` and leaves the order in `payment_requires_confirmation`. No funds are captured at approval. Your storefront must display an order-review step and explicitly confirm the order to capture payment. Without order review, payment is processed after approval and the customer is sent to `successUrl`. If PayPal reports the payment as pending, the order enters `payment_pending` while settlement completes.
 
 > The `enabled` field is reserved for future use. Configuring it does not currently change provider behavior.
 
