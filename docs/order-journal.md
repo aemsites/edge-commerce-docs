@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "c6ded82"
-    lastContentCommit: "c6ded82"
+    lastReviewedCommit: "2199e74"
+    lastContentCommit: "2199e74"
 ---
 
 # Order journal
@@ -41,6 +41,7 @@ Journal entries are appended as order-related work happens. Common events includ
 | `custom_updated` | Custom order data is updated |
 | `payment_initiated` | A payment attempt starts |
 | `payment_pending` | A payment is accepted but has not settled |
+| `payment_requires_confirmation` | A buyer approves a payment but capture is deferred to an explicit confirmation step |
 | `payment_completed` | A provider result is verified and the order reaches `payment_completed` |
 | `payment_cancelled` | A payment flow ends without completion |
 | `payment_attempt_save_failed` | The API could not persist a payment attempt after retries |
@@ -69,6 +70,10 @@ Common fields include:
 | `state` | Order state for state transition events |
 
 Event-specific fields vary. Payment events can include provider, attempt, reason, transaction, or authorization fields. Email events can include recipient, sender, outcome, attempt count, and message identifiers. Provider request entries can include service, method, status, duration, and non-sensitive diagnostic response details.
+
+The `payment_requires_confirmation` event is emitted when a buyer has approved a PayPal payment but capture is deferred to an explicit confirmation step. Its `provider` identifies the PayPal flow, and `attemptId` correlates the entry with the payment attempt and related provider request entries. Redirect flows can also include `paypalOrderId`; express flows can include `method` and `idempotencyKey`.
+
+For `payment_cancelled` entries, `configuration_error` indicates that review mode could not resolve a valid review URL. `order_not_approved` indicates that express review validation found that the PayPal order was not approved or was not found. Other upstream validation failures remain retryable and do not cancel the order.
 
 For failed provider requests, diagnostic response bodies are limited to 512 characters and receive basic redaction for apparent bearer tokens and payment card number patterns. Treat all diagnostic response details as sensitive and do not expose them in storefronts or other customer-facing views.
 

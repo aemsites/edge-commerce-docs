@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c6ded82"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "2199e74"
+    lastContentCommit: "2199e74"
 ---
 
 # Secrets store
