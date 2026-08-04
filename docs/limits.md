@@ -6,14 +6,6 @@ managed: true
 sourceFormat: markdown
 ---
 
----
-title: "Limits and guidance"
-description: "API limits and operational guidance for Edge Delivery Commerce."
-status: migrated
-managed: true
-sourceFormat: markdown
----
-
 # Limits and guidance
 
 In addition to the [standard limits for AEM](https://www.aem.live/docs/limits), there are specific considerations for the Edge Commerce API:
