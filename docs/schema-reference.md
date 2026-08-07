@@ -84,7 +84,7 @@ The main product schema supports rich product data with HTML content, variants, 
 | `custom` | Record<string, any> | No |  |
 | `jsonldExtensions` | Record<string, any> | No | Additional schema.org properties shallow-merged into the auto-generated Product JSON-LD object. Ignored when jsonld override is used. Max 32,000 characters when serialized. max length 32000 |
 | `shipping` | string \| object \| object[] | No | Shipping options, as a packed string, a single option object, or an array of option objects. |
-| `bundleItems` | object[] | No | Bundle composition. Presence of this array (regardless of contents) marks this product as a bundle. |
+| `bundleItems` | [BundleItem](#bundleitem)[] | No | Bundle composition. Presence of this array (regardless of contents) marks this product as a bundle. |
 | `feeds` | object | No | Feed configuration for product distribution. |
 | `weight` | [ProductBusWeight](#productbusweight) | No | Product weight for display and JSON-LD structured data. |
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
@@ -94,6 +94,8 @@ The main product schema supports rich product data with HTML content, variants, 
 | `locale` | string | No | BCP-47 locale tag for this product entry. pattern constrained |
 
 <!-- GENERATED: ProductBusEntry:end -->
+
+For guidance on modeling standalone products, products with variants, and bundle compositions, see [Product catalog modeling](/product-catalog-modeling). The catalog accepts an empty `bundleItems` array, but checkout processes a bundle only when the array has at least one component.
 
 #### URL field and sitemap generation
 
@@ -166,6 +168,70 @@ Represents a variant of a configurable product (e.g., different color or size). 
 | `shippingDimensions` | [ShippingDimensions](#shippingdimensions) | No | Physical dimensions used for shipping rate calculation. |
 
 <!-- GENERATED: ProductBusVariant:end -->
+
+### BundleItem
+
+A component in a bundle product's composition. For behavior and modeling guidance, see [Product catalog modeling](/product-catalog-modeling#bundle-compositions).
+
+<!-- GENERATED: BundleItem:start -->
+<!-- Generated from helix-commerce-api schemas (npm run docs:schema). Do not edit by hand. -->
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `sku` | string | No | SKU for a simple bundle item. |
+| `name` | string | No | Display name for a simple bundle item. |
+| `price` | [BundleItemPrice](#bundleitemprice) | No | Price for a bundle component. Narrower than ProductBusPrice -- no currency field (currency comes from the parent line item). |
+| `variants` | [BundleItemVariant](#bundleitemvariant)[] | No | Variants for a configurable bundle item. When present, the server selects one variant at preview time. |
+| `taxCode` | string | No | Per-component tax classification code. Falls back to the bundle parent's taxCode when absent. max length 255 |
+| `taxData` | Record<string, any> | No | Supplementary tax data. Falls back to the bundle parent's taxData when absent. |
+
+<!-- GENERATED: BundleItem:end -->
+
+### BundleItemVariant
+
+A selectable component variant. The service resolves a component variant from the parent order item's selected options.
+
+<!-- GENERATED: BundleItemVariant:start -->
+<!-- Generated from helix-commerce-api schemas (npm run docs:schema). Do not edit by hand. -->
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `sku` | string | Yes | SKU for this variant. |
+| `name` | string | No | Display name for this variant. |
+| `price` | [BundleItemPrice](#bundleitemprice) | Yes | Price for a bundle component. Narrower than ProductBusPrice -- no currency field (currency comes from the parent line item). |
+| `options` | [BundleItemVariantOption](#bundleitemvariantoption)[] | Yes | Option pairs that identify this variant. |
+| `taxCode` | string | No | Per-variant tax classification code. Falls back to the bundle parent's taxCode when absent. max length 255 |
+| `taxData` | Record<string, any> | No | Supplementary tax data. Falls back to the bundle parent's taxData when absent. |
+
+<!-- GENERATED: BundleItemVariant:end -->
+
+### BundleItemVariantOption
+
+An option value that identifies a bundle component variant.
+
+<!-- GENERATED: BundleItemVariantOption:start -->
+<!-- Generated from helix-commerce-api schemas (npm run docs:schema). Do not edit by hand. -->
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | Option identifier, matched against selectedOptions[].id. |
+| `name` | string | Yes | Option value label, matched against selectedOptions[].value. |
+
+<!-- GENERATED: BundleItemVariantOption:end -->
+
+### BundleItemPrice
+
+Price information for a bundle component. Currency comes from the parent order item.
+
+<!-- GENERATED: BundleItemPrice:start -->
+<!-- Generated from helix-commerce-api schemas (npm run docs:schema). Do not edit by hand. -->
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `final` | string | Yes | Component price as a decimal string. |
+| `regular` | string | No | Pre-discount price for display purposes. |
+
+<!-- GENERATED: BundleItemPrice:end -->
 
 ### ProductBusPrice
 
