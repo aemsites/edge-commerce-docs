@@ -217,7 +217,7 @@ The `weight` value uses UN/CEFACT unit codes: `kg`→`KGM`, `g`→`GRM`, `lb`→
 
 #### Offer objects
 
-If the product has `variants`, each variant becomes an Offer. If no variants, the product itself becomes a single Offer.
+If the product has `variants`, each variant becomes an Offer. If no variants, the product itself becomes a single Offer. A bundle's `bundleItems` do not create component Offers or otherwise change the automatically generated JSON-LD. See [Product catalog modeling](/product-catalog-modeling#rendering-and-structured-data) for bundle checkout behavior.
 
 Each Offer includes `@type` set to "Offer", `sku`, `name`, `image` array, `priceCurrency` from `price.currency`, `price` from `price.final`, `availability` as a schema.org URL (e.g., "https://schema.org/InStock"), `itemCondition` as a schema.org URL if provided, `gtin` if provided, `url`, `options` if provided, and `shippingDetails` as a schema.org `OfferShippingDetails` when the product or variant carries a `shippingDimensions` object.
 
