@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "2199e74"
-    lastContentCommit: "43a42c2"
+    lastReviewedCommit: "b95c8fa"
+    lastContentCommit: "b95c8fa"
 ---
 
 # Estimates and cart totals
@@ -328,6 +328,10 @@ Preview differs from estimates because it:
 - Validates item country availability.
 - Computes the committed tax, shipping, and discount result.
 - Returns an [`estimateToken`](/orders/lifecycle#estimate-tokens).
+
+Preview responses also include server-calculated discount allocations on `lineItems`. The signed `estimateToken` carries these allocations as sparse `lineItemDiscounts` data so order creation can persist the verified values rather than relying on client-supplied line discounts. For bundle products, each parent discount is distributed proportionally across the bundle components using their effective extended prices.
+
+Parent and component allocations are alternate, non-additive views of the same discount. Use the parent allocation when calculating a parent line total, or use the component allocations when calculating component line totals; never subtract both levels.
 
 See [Order lifecycle](/orders/lifecycle) for the full checkout sequence.
 

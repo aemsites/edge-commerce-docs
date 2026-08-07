@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.49.1"
-    lastReviewedCommit: "494256f"
-    lastContentCommit: "6fcc9f2"
+    lastReviewedCommit: "b95c8fa"
+    lastContentCommit: "b95c8fa"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
