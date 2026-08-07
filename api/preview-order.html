@@ -71,11 +71,23 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The estimate: subtotal, tax, shipping method, discounts, total, lineItems, and a signed estimateToken.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The estimate and signed token. Line allocations are server-calculated; bundle component allocations sum to and replace the parent allocation for component-line consumers, so never subtract both levels. <code>price.final</code> remains the validated catalog price.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+          </table>
+        </div>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>subtotal</code></td><td><code>string</code></td><td>yes</td><td>Merchandise subtotal before tax and shipping.</td></tr>
+            <tr><td><code>taxAmount</code></td><td><code>string</code></td><td>yes</td><td>Estimated tax amount.</td></tr>
+            <tr><td><code>shippingMethod</code></td><td><code>object</code></td><td>yes</td><td>Selected shipping method and rate.</td></tr>
+            <tr><td><code>discounts</code></td><td><code>object[]</code></td><td>yes</td><td>Order-level discounts, including shipping-only discounts.</td></tr>
+            <tr><td><code>total</code></td><td><code>string</code></td><td>yes</td><td>Estimated order total.</td></tr>
+            <tr><td><code>lineItems</code></td><td><code>StoredOrderItem[]</code></td><td>yes</td><td>Server-resolved lines. Bundle parent and component allocations are non-additive alternate views; use only the parent or the component level when deriving effective prices.</td></tr>
+            <tr><td><code>estimateToken</code></td><td><code>string</code></td><td>yes</td><td>Signed estimate token for order creation.</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.</h3>
@@ -123,6 +135,74 @@
   "shippingMethod": {
     "id": "standard-us"
   }
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
+          <pre><code class="language-json">{
+  "subtotal": "100.00",
+  "taxAmount": "8.00",
+  "shippingMethod": {
+    "id": "standard-us",
+    "rate": "10.00"
+  },
+  "discounts": [
+    {
+      "id": "coupon:EXAMPLE",
+      "amount": 20
+    }
+  ],
+  "total": "98.00",
+  "lineItems": [
+    {
+      "sku": "bundle-1",
+      "path": "bundle-1",
+      "quantity": 1,
+      "price": {
+        "final": "100.00",
+        "currency": "USD"
+      },
+      "discounts": [
+        {
+          "id": "coupon:EXAMPLE",
+          "amount": "20.00"
+        }
+      ],
+      "bundleItems": [
+        {
+          "sku": "component-a",
+          "path": "bundle-1",
+          "quantity": 1,
+          "price": {
+            "final": "40.00",
+            "currency": "USD"
+          },
+          "discounts": [
+            {
+              "id": "coupon:EXAMPLE",
+              "amount": "8.00"
+            }
+          ]
+        },
+        {
+          "sku": "component-b",
+          "path": "bundle-1",
+          "quantity": 1,
+          "price": {
+            "final": "60.00",
+            "currency": "USD"
+          },
+          "discounts": [
+            {
+              "id": "coupon:EXAMPLE",
+              "amount": "12.00"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "estimateToken": "signed-estimate-token"
 }</code></pre>
         </div>
         <div class="code-sample">

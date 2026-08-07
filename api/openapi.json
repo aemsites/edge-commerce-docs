@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.59.0",
+    "version": "2.61.3",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -2000,12 +2000,128 @@
         ],
         "responses": {
           "200": {
-            "description": "The created order, wrapped as `{ order }`.",
+            "description": "The created order, wrapped as `{ order }`. Item allocations are server-calculated from the verified estimate token. Bundle component allocations sum to and replace the parent allocation for component-line consumers; never subtract both levels.",
             "headers": {
               "Content-Type": {
                 "description": "application/json",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "description": "Server-assigned order ID.",
+                          "type": "string"
+                        },
+                        "state": {
+                          "description": "Current order state.",
+                          "type": "string"
+                        },
+                        "items": {
+                          "description": "Stored order lines. Bundle parent and component allocations are non-additive alternate views; use only the parent or the component level when deriving effective prices.",
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/StoredOrderItem"
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "items"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "order"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "order": {
+                        "customer": {
+                          "email": "jane@example.com",
+                          "firstName": "Jane",
+                          "lastName": "Doe"
+                        },
+                        "shipping": {
+                          "name": "Jane Doe",
+                          "email": "jane@example.com",
+                          "address1": "123 Main St",
+                          "city": "Anytown",
+                          "state": "CA",
+                          "zip": "12345",
+                          "country": "US"
+                        },
+                        "country": "us",
+                        "locale": "en-US",
+                        "customerTimezone": "America/Los_Angeles",
+                        "items": [
+                          {
+                            "name": "Bundle 1",
+                            "sku": "bundle-1",
+                            "path": "bundle-1",
+                            "quantity": 1,
+                            "price": {
+                              "final": "100.00",
+                              "currency": "USD"
+                            },
+                            "discounts": [
+                              {
+                                "id": "coupon:EXAMPLE",
+                                "amount": "20.00"
+                              }
+                            ],
+                            "bundleItems": [
+                              {
+                                "name": "Component A",
+                                "sku": "component-a",
+                                "path": "bundle-1",
+                                "quantity": 1,
+                                "price": {
+                                  "final": "40.00",
+                                  "currency": "USD"
+                                },
+                                "discounts": [
+                                  {
+                                    "id": "coupon:EXAMPLE",
+                                    "amount": "8.00"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Component B",
+                                "sku": "component-b",
+                                "path": "bundle-1",
+                                "quantity": 1,
+                                "price": {
+                                  "final": "60.00",
+                                  "currency": "USD"
+                                },
+                                "discounts": [
+                                  {
+                                    "id": "coupon:EXAMPLE",
+                                    "amount": "12.00"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "id": "order-123",
+                        "state": "pending"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -2167,12 +2283,128 @@
         ],
         "responses": {
           "200": {
-            "description": "The order, wrapped as `{ order }`.",
+            "description": "The stored order, wrapped as `{ order }`, including server-calculated item allocations. Bundle component allocations sum to and replace the parent allocation for component-line consumers; never subtract both levels.",
             "headers": {
               "Content-Type": {
                 "description": "application/json",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "description": "Server-assigned order ID.",
+                          "type": "string"
+                        },
+                        "state": {
+                          "description": "Current order state.",
+                          "type": "string"
+                        },
+                        "items": {
+                          "description": "Stored order lines. Bundle parent and component allocations are non-additive alternate views; use only the parent or the component level when deriving effective prices.",
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/StoredOrderItem"
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "items"
+                      ],
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "order"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "order": {
+                        "customer": {
+                          "email": "jane@example.com",
+                          "firstName": "Jane",
+                          "lastName": "Doe"
+                        },
+                        "shipping": {
+                          "name": "Jane Doe",
+                          "email": "jane@example.com",
+                          "address1": "123 Main St",
+                          "city": "Anytown",
+                          "state": "CA",
+                          "zip": "12345",
+                          "country": "US"
+                        },
+                        "country": "us",
+                        "locale": "en-US",
+                        "customerTimezone": "America/Los_Angeles",
+                        "items": [
+                          {
+                            "name": "Bundle 1",
+                            "sku": "bundle-1",
+                            "path": "bundle-1",
+                            "quantity": 1,
+                            "price": {
+                              "final": "100.00",
+                              "currency": "USD"
+                            },
+                            "discounts": [
+                              {
+                                "id": "coupon:EXAMPLE",
+                                "amount": "20.00"
+                              }
+                            ],
+                            "bundleItems": [
+                              {
+                                "name": "Component A",
+                                "sku": "component-a",
+                                "path": "bundle-1",
+                                "quantity": 1,
+                                "price": {
+                                  "final": "40.00",
+                                  "currency": "USD"
+                                },
+                                "discounts": [
+                                  {
+                                    "id": "coupon:EXAMPLE",
+                                    "amount": "8.00"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Component B",
+                                "sku": "component-b",
+                                "path": "bundle-1",
+                                "quantity": 1,
+                                "price": {
+                                  "final": "60.00",
+                                  "currency": "USD"
+                                },
+                                "discounts": [
+                                  {
+                                    "id": "coupon:EXAMPLE",
+                                    "amount": "12.00"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "id": "order-123",
+                        "state": "pending"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -2333,12 +2565,150 @@
         ],
         "responses": {
           "200": {
-            "description": "The estimate: subtotal, tax, shipping method, discounts, total, lineItems, and a signed estimateToken.",
+            "description": "The estimate and signed token. Line allocations are server-calculated; bundle component allocations sum to and replace the parent allocation for component-line consumers, so never subtract both levels. `price.final` remains the validated catalog price.",
             "headers": {
               "Content-Type": {
                 "description": "application/json",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Committed order estimate with server-calculated line allocations.",
+                  "type": "object",
+                  "properties": {
+                    "subtotal": {
+                      "description": "Merchandise subtotal before tax and shipping.",
+                      "type": "string"
+                    },
+                    "taxAmount": {
+                      "description": "Estimated tax amount.",
+                      "type": "string"
+                    },
+                    "shippingMethod": {
+                      "description": "Selected shipping method and rate.",
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "discounts": {
+                      "description": "Order-level discounts, including shipping-only discounts.",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "description": "Applied discount identifier.",
+                            "type": "string"
+                          },
+                          "amount": {
+                            "description": "Order-level discount amount.",
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "amount"
+                        ],
+                        "additionalProperties": true
+                      }
+                    },
+                    "total": {
+                      "description": "Estimated order total.",
+                      "type": "string"
+                    },
+                    "lineItems": {
+                      "description": "Server-resolved lines. Bundle parent and component allocations are non-additive alternate views; use only the parent or the component level when deriving effective prices.",
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoredOrderItem"
+                      }
+                    },
+                    "estimateToken": {
+                      "description": "Signed estimate token for order creation.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "subtotal",
+                    "taxAmount",
+                    "shippingMethod",
+                    "discounts",
+                    "total",
+                    "lineItems",
+                    "estimateToken"
+                  ]
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "subtotal": "100.00",
+                      "taxAmount": "8.00",
+                      "shippingMethod": {
+                        "id": "standard-us",
+                        "rate": "10.00"
+                      },
+                      "discounts": [
+                        {
+                          "id": "coupon:EXAMPLE",
+                          "amount": 20
+                        }
+                      ],
+                      "total": "98.00",
+                      "lineItems": [
+                        {
+                          "sku": "bundle-1",
+                          "path": "bundle-1",
+                          "quantity": 1,
+                          "price": {
+                            "final": "100.00",
+                            "currency": "USD"
+                          },
+                          "discounts": [
+                            {
+                              "id": "coupon:EXAMPLE",
+                              "amount": "20.00"
+                            }
+                          ],
+                          "bundleItems": [
+                            {
+                              "sku": "component-a",
+                              "path": "bundle-1",
+                              "quantity": 1,
+                              "price": {
+                                "final": "40.00",
+                                "currency": "USD"
+                              },
+                              "discounts": [
+                                {
+                                  "id": "coupon:EXAMPLE",
+                                  "amount": "8.00"
+                                }
+                              ]
+                            },
+                            {
+                              "sku": "component-b",
+                              "path": "bundle-1",
+                              "quantity": 1,
+                              "price": {
+                                "final": "60.00",
+                                "currency": "USD"
+                              },
+                              "discounts": [
+                                {
+                                  "id": "coupon:EXAMPLE",
+                                  "amount": "12.00"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "estimateToken": "signed-estimate-token"
+                    }
+                  }
                 }
               }
             }
@@ -2853,7 +3223,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The confirm result — `{ status: \"completed\", ... }` or `{ status: \"failed\", reason }`.",
+            "description": "The confirm result — `{ status: \"completed\", ... }`, `{ status: \"pending\", ... }`, or `{ status: \"failed\", reason, cancelled }`. On a failed confirm, `cancelled: true` means the order is now terminal (payment_cancelled) and the buyer must restart from the cart; `cancelled: false` is not currently returned (a transient failure yields a retryable 503 instead).",
             "headers": {
               "Content-Type": {
                 "description": "application/json",
@@ -7646,6 +8016,230 @@
         "required": [
           "items",
           "shipping"
+        ]
+      },
+      "OrderItemDiscount": {
+        "description": "Server-calculated merchandise discount allocated to an order line.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Applied discount or promotion identifier.",
+            "type": "string"
+          },
+          "amount": {
+            "description": "Positive fixed-scale order-currency amount discounted from the line.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "amount"
+        ]
+      },
+      "StoredNestedBundleItem": {
+        "description": "A server-resolved bundle component returned on a stored order.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Display name of the component.",
+            "type": "string"
+          },
+          "sku": {
+            "description": "SKU of the component.",
+            "type": "string"
+          },
+          "path": {
+            "description": "Product page path of the component.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity ordered. Must be a whole number from 1 to 1000.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "price": {
+            "description": "Price information for a product or variant.",
+            "type": "object",
+            "properties": {
+              "final": {
+                "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                "type": "string"
+              },
+              "currency": {
+                "description": "ISO 4217 currency code, e.g. \"USD\".",
+                "type": "string"
+              },
+              "regular": {
+                "description": "Original price before any discount, as a decimal string.",
+                "type": "string"
+              }
+            }
+          },
+          "discounts": {
+            "description": "Server-calculated allocations for this component. For a bundle, component allocations are a non-additive decomposition of the parent allocation: matching discount IDs sum to the parent value. Component-line consumers calculate `price.final * quantity - sum(discounts.amount)` here and must not also subtract the parent allocation.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDiscount"
+            }
+          }
+        },
+        "required": [
+          "path",
+          "quantity",
+          "price"
+        ]
+      },
+      "StoredOrderItem": {
+        "description": "A server-resolved order line returned from order preview or storage.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Display name for this line item.",
+            "type": "string"
+          },
+          "note": {
+            "description": "Optional customer note for this line item.",
+            "type": "string"
+          },
+          "sku": {
+            "description": "SKU of the product.",
+            "type": "string"
+          },
+          "path": {
+            "description": "Product page path.",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Product image URL for order confirmation display.",
+            "type": "string"
+          },
+          "productUrl": {
+            "description": "Canonical product URL.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity ordered. Must be a whole number from 1 to 1000.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "price": {
+            "description": "Price information for a product or variant.",
+            "type": "object",
+            "properties": {
+              "final": {
+                "description": "Final price the customer pays, as a decimal string (e.g. \"19.99\").",
+                "type": "string"
+              },
+              "currency": {
+                "description": "ISO 4217 currency code, e.g. \"USD\".",
+                "type": "string"
+              },
+              "regular": {
+                "description": "Original price before any discount, as a decimal string.",
+                "type": "string"
+              }
+            }
+          },
+          "shippingDimensions": {
+            "description": "Physical dimensions used for shipping rate calculation.",
+            "type": "object",
+            "properties": {
+              "weight": {
+                "description": "Product weight for display and JSON-LD structured data.",
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "description": "Numeric weight value.",
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "Unit of weight measurement.",
+                    "type": "string",
+                    "enum": [
+                      "kg",
+                      "g",
+                      "lb",
+                      "oz"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit"
+                ]
+              },
+              "height": {
+                "description": "Height in the declared dimensionsUnit.",
+                "type": "number"
+              },
+              "width": {
+                "description": "Width in the declared dimensionsUnit.",
+                "type": "number"
+              },
+              "depth": {
+                "description": "Depth in the declared dimensionsUnit.",
+                "type": "number"
+              },
+              "dimensionsUnit": {
+                "description": "Unit of dimension measurement.",
+                "type": "string",
+                "enum": [
+                  "cm",
+                  "mm",
+                  "in"
+                ]
+              }
+            }
+          },
+          "selectedOptions": {
+            "description": "Option values selected by the customer.",
+            "type": "array",
+            "items": {
+              "description": "A customer-selected option value for a line item (e.g. color=Red).",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Option identifier.",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "Selected value.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "value"
+              ]
+            }
+          },
+          "bundleItems": {
+            "description": "Server-resolved components with non-additive allocations that replace parent allocations for component-line consumers.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredNestedBundleItem"
+            }
+          },
+          "custom": {
+            "description": "Arbitrary custom data for this line item.",
+            "type": "object",
+            "additionalProperties": true
+          },
+          "discounts": {
+            "description": "Server-calculated allocations for this line. For a bundle parent, component allocations are a non-additive decomposition of these values: matching discount IDs sum to this parent allocation. Parent-line consumers calculate `price.final * quantity - sum(discounts.amount)` here; component-line consumers use component allocations instead. Never subtract both levels.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDiscount"
+            }
+          }
+        },
+        "required": [
+          "sku",
+          "path",
+          "quantity",
+          "price"
         ]
       },
       "Customer": {
