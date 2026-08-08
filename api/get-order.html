@@ -49,11 +49,17 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The order, wrapped as <code>{ order }</code>.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The stored order, wrapped as <code>{ order }</code>, including server-calculated item allocations. Bundle component allocations sum to and replace the parent allocation for component-line consumers; never subtract both levels.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+          </table>
+        </div>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>order</code></td><td><code>object</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">403</span> Caller lacks orders:read, org/site mismatch, or email mismatch.</h3>
@@ -80,6 +86,84 @@
         </div>
       </div>
       <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
+          <pre><code class="language-json">{
+  "order": {
+    "customer": {
+      "email": "jane@example.com",
+      "firstName": "Jane",
+      "lastName": "Doe"
+    },
+    "shipping": {
+      "name": "Jane Doe",
+      "email": "jane@example.com",
+      "address1": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "zip": "12345",
+      "country": "US"
+    },
+    "country": "us",
+    "locale": "en-US",
+    "customerTimezone": "America/Los_Angeles",
+    "items": [
+      {
+        "name": "Bundle 1",
+        "sku": "bundle-1",
+        "path": "bundle-1",
+        "quantity": 1,
+        "price": {
+          "final": "100.00",
+          "currency": "USD"
+        },
+        "discounts": [
+          {
+            "id": "coupon:EXAMPLE",
+            "amount": "20.00"
+          }
+        ],
+        "bundleItems": [
+          {
+            "name": "Component A",
+            "sku": "component-a",
+            "path": "bundle-1",
+            "quantity": 1,
+            "price": {
+              "final": "40.00",
+              "currency": "USD"
+            },
+            "discounts": [
+              {
+                "id": "coupon:EXAMPLE",
+                "amount": "8.00"
+              }
+            ]
+          },
+          {
+            "name": "Component B",
+            "sku": "component-b",
+            "path": "bundle-1",
+            "quantity": 1,
+            "price": {
+              "final": "60.00",
+              "currency": "USD"
+            },
+            "discounts": [
+              {
+                "id": "coupon:EXAMPLE",
+                "amount": "12.00"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "id": "order-123",
+    "state": "pending"
+  }
+}</code></pre>
+        </div>
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
           <pre><code class="language-json">{
