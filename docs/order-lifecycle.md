@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "2199e74"
-    lastContentCommit: "2199e74"
+    lastReviewedCommit: "b95c8fa"
+    lastContentCommit: "b95c8fa"
 ---
 
 # Order lifecycle
@@ -158,7 +158,7 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/preview" 
   }'
 ```
 
-The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens).
+The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable.
 
 ```json
 {
@@ -179,12 +179,17 @@ The response includes the calculated totals and a signed [`estimateToken`](#esti
       "sku": "BLENDER-RED",
       "path": "/us/en/products/blender-pro-500",
       "quantity": 1,
-      "price": { "final": "99.99", "currency": "USD" }
+      "price": { "final": "99.99", "currency": "USD" },
+      "discounts": [
+        { "id": "coupon:SAVE10", "amount": "10.00" }
+      ]
     }
   ],
   "estimateToken": "{estimate-token}"
 }
 ```
+
+For bundle lines, component discount allocations are a decomposition of the parent allocation. Use either the parent allocation or the component allocations when calculating effective prices; do not subtract both.
 
 ### 3. Create the order with the estimate token
 
@@ -295,7 +300,7 @@ The preview endpoint:
 - Validates item prices against product data unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, shipping, and tax.
-- Returns the computed totals and line items.
+- Returns the computed totals and line items, including server-calculated discount allocations when applicable.
 - Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts.
 
 For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enabled` is configured. See [reCAPTCHA verification](/checkout/recaptcha) and [Site configuration](/configuration/site#recaptcha-settings).
@@ -316,6 +321,7 @@ At creation time, the API:
 - Records `customerType` as `registered` when the authenticated human caller has an email, or `guest` for unauthenticated and service-token checkout.
 - Records `customerCreated` as `true` when the order creates a new customer profile for the email address, or `false` when the shopper already has a customer profile.
 - Persists the order with state `pending`.
+- Stores server-calculated line discount allocations from the verified estimate token.
 - Creates the first order history entry.
 
 The response wraps the stored order as `{ "order": { ... } }`. The `customerType` and `customerCreated` values are generated from server-side request and customer-profile context; clients cannot set them in the request.
@@ -374,7 +380,7 @@ Redirect-based providers move the order to `payment_processing` when initiation 
 
 PayPal can be configured with an order review step independently for standard checkout and express flows. When order review is enabled, PayPal approval does not capture payment immediately. Instead, the API returns a `review` action, sends the shopper to the configured review URL, and moves the order to `payment_requires_confirmation`. The storefront displays its final order review and calls `POST /orders/{orderId}/payments/confirm` to capture the payment. If the shopper abandons the review, call `POST /orders/{orderId}/payments/cancel` to move the order to `payment_cancelled`.
 
-The confirmation request requires an idempotency key. Concurrent confirmation requests are serialized, and retries with the same key replay the stored result or return a retryable response while another confirmation is in progress.
+The confirmation request requires an idempotency key. Concurrent confirmation requests are serialized, and retries with the same key replay the stored result or return a retryable response while another confirmation is in progress. An unexpected confirmation failure returns a retryable `503`; a non-retryable failed confirmation returns `cancelled: true` when the order has moved to `payment_cancelled`, so the storefront can send the buyer back to the cart.
 
 When configuring PayPal order review, provide a secure `reviewUrl`. The API appends the order ID as a query parameter. A review URL is required when order review is enabled for either checkout flow.
 

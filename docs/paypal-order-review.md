@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "unknown"
-    lastReviewedCommit: "2199e74"
-    lastContentCommit: "2199e74"
+    lastReviewedCommit: "b95c8fa"
+    lastContentCommit: "b95c8fa"
 ---
 
 # PayPal order review and deferred capture
@@ -120,6 +120,10 @@ The review page should display the order summary and provide actions to confirm 
 
 The Express review flow starts after the buyer has approved a PayPal order through the PayPal JavaScript integration.
 
+PayPal Express sessions always use `user_action=CONTINUE`, regardless of whether express order review is enabled. This allows the session to update the order when the buyer changes the shipping option. The server re-estimates tax for the selected shipping method, then updates both the PayPal order amount and the selected shipping option so the shipping amount and selection remain consistent.
+
+If PayPal rejects a shipping-option update, the API returns a retryable `502` error. The storefront should retry the update after addressing the transient failure rather than treating it as a payment cancellation.
+
 ### 1. Start payment initiation
 
 Call the payment initiation endpoint with the PayPal order ID:
@@ -202,6 +206,8 @@ The confirm operation:
 Capture does not occur during payment initiation, PayPal approval, or the redirect return. It occurs only as part of this explicit confirmation step.
 
 A successful confirmation completes the order. The storefront should display its normal payment-success state after receiving the successful response.
+
+If confirmation fails because of a transient service problem, the endpoint returns a retryable error and the storefront can retry. If capture fails for a non-retryable reason, the order moves to `payment_cancelled` and the response includes `cancelled: true`; the storefront should direct the buyer back to the cart to restart checkout rather than retrying confirmation.
 
 Use the same confirmation idempotency key when retrying a request whose outcome is unknown. This prevents a network retry from being treated as a separate confirmation attempt.
 
