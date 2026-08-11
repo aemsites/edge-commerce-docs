@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b95c8fa"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "fc749dd"
+    lastContentCommit: "fc749dd"
 ---
 
 # ID.me identity verification

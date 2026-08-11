@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "b95c8fa"
-    lastContentCommit: "b95c8fa"
+    lastReviewedCommit: "fc749dd"
+    lastContentCommit: "fc749dd"
 ---
 
 # Customers and account data
@@ -29,6 +29,8 @@ Customers can enter the system in two ways:
 
 Most storefront checkout flows do not need to call `POST /customers` before placing an order. [Order creation](/orders/lifecycle#create-the-order) handles the customer profile when needed.
 
+When checkout finds an existing profile, it preserves the profile's existing values and backfills only empty `firstName`, `lastName`, and `phone` fields from the order. It does not overwrite values the customer previously set. The order's `customerCreated` value remains `false` for an existing profile.
+
 ## API overview
 
 | Need | API | Authentication |
@@ -36,6 +38,7 @@ Most storefront checkout flows do not need to call `POST /customers` before plac
 | Create a customer profile directly | `POST /{org}/sites/{site}/customers` | `customers:write` |
 | List customers | `GET /{org}/sites/{site}/customers` | `customers:read` |
 | Retrieve the signed-in customer's profile | `GET /{org}/sites/{site}/customers/{email}` | Authenticated user matching `{email}` |
+| Create or update the signed-in customer's profile | `PATCH /{org}/sites/{site}/customers/{email}` | Authenticated user matching `{email}` |
 | Delete a customer profile | `DELETE /{org}/sites/{site}/customers/{email}` | Admin |
 | List saved addresses | `GET /{org}/sites/{site}/customers/{email}/addresses` | Authenticated user matching `{email}` |
 | Create a saved address | `POST /{org}/sites/{site}/customers/{email}/addresses` | Authenticated user matching `{email}` |
@@ -45,7 +48,7 @@ Most storefront checkout flows do not need to call `POST /customers` before plac
 
 ## Customer profile shape
 
-A customer profile contains checkout contact information. See [Schema reference](/schema-reference#customer) for the generated schema.
+A customer profile contains checkout contact information and optional site-specific custom attributes. Custom attributes are string-valued and can store site-specific data such as a marketing opt-in, preferred contact method, or consent timestamp. See [Schema reference](/schema-reference#customer) for the generated schema.
 
 | Field | Required | Description |
 |-------|----------|-------------|
@@ -53,6 +56,7 @@ A customer profile contains checkout contact information. See [Schema reference]
 | `lastName` | Yes | Customer last name |
 | `email` | Yes | Customer email address |
 | `phone` | No | Customer phone number |
+| `custom` | No | Site-specific customer attributes with string values |
 
 The API adds timestamps when the profile is stored.
 
@@ -90,6 +94,29 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@example.c
 ```
 
 The token must belong to the same organization, site, and email address. Admin and service use cases should use the collection or order APIs with the appropriate permissions instead of impersonating customer-scoped profile reads.
+
+## Update the signed-in customer
+
+Use `PATCH /customers/{email}` to create or partially update the signed-in customer's profile. The bearer token email must match the `{email}` path parameter, and the token must have membership in the requested organization and site. This self-service route does not require `customers:write`.
+
+The request body can include `firstName`, `lastName`, `phone`, and `custom`. Provided first-class fields replace their existing values, while fields not included in the request are preserved. The `custom` attributes are shallow-merged, so custom attributes not included in the request are preserved. The email is taken from the path and cannot be changed; including `email` in the request body is rejected.
+
+If no profile exists, the route creates one from the merged request. A create-via-patch must include both `firstName` and `lastName`. For an existing profile, those fields can be omitted because the API validates the resulting merged profile.
+
+```bash
+curl -X PATCH "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@example.com" \
+  -H "Authorization: Bearer {customer-session-token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Jane",
+    "custom": {
+      "newsletterOptIn": "true",
+      "preferredContactMethod": "email"
+    }
+  }'
+```
+
+A successful request returns `200` with the created or updated profile in a `customer` property. The API returns `400` when the body contains an unknown field, an invalid value type, an email field, or a create request without the required name fields. It returns `403` when the bearer token does not own the path email or lacks organization/site membership.
 
 ## Address book
 
@@ -176,6 +203,7 @@ Use this route for confirmation pages or “track your order” flows where the 
 | Create customer directly | Requires `customers:write` |
 | List customers | Requires `customers:read` |
 | Retrieve one customer profile | Requires authenticated email ownership |
+| Create or update the signed-in customer profile | Requires authenticated email ownership and organization/site membership |
 | Delete customer profile | Requires admin role |
 | Manage addresses | Requires authenticated email ownership |
 | List customer orders | Requires `orders:read` and authenticated email ownership |
@@ -192,7 +220,9 @@ Checkout and customer data are connected but separate. When `POST /orders` creat
 - Links the order to the customer email for later customer order lookup.
 - Saves the shipping address to the customer's address book.
 
-Customer APIs let account experiences read profiles, manage addresses, and show order history.
+For an existing customer, checkout preserves the profile's first-class values and fills only empty `firstName`, `lastName`, and `phone` fields from the order. It does not overwrite customer-edited values. Customer custom attributes are site-specific string values and are managed through the customer profile APIs.
+
+Customer APIs let account experiences read and update profiles, manage addresses, and show order history.
 
 See [Order lifecycle](/orders/lifecycle) for the full checkout flow.
 

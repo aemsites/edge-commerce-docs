@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "b95c8fa"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "fc749dd"
+    lastContentCommit: "fc749dd"
 ---
 
 # Transactional email
