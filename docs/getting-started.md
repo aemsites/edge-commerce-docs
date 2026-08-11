@@ -54,7 +54,7 @@ To use Edge Commerce, you'll need:
 
 ## Set up API access
 
-For initial setup, work with your Adobe representative to enable access for your org and site. After access is configured, use an authenticated admin session for one-time setup and create [service tokens](/authentication/service-tokens) for recurring automation such as catalog ingestion.
+For initial setup, work with your Adobe representative to provision access for your org and site. Then follow [Set up administrative access](/authentication/setup) to sign in with OTP, add administrators, and create a service token for recurring automation such as catalog ingestion.
 
 For token types, permissions, and role behavior, see [Authentication overview](/authentication/overview), [Roles and permissions](/authentication/roles-permissions), and [Service tokens](/authentication/service-tokens).
 

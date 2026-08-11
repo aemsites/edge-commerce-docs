@@ -60,7 +60,9 @@ The `JWT service token eligible` column means the permission may be delegated wh
 
 `PATCH /orders/{orderId}/custom` requires `orders:custom:write`. Holding `orders:write` without that dedicated permission does not authorize custom metadata updates.
 
-## Permission groups
+## Permissions by use case
+
+The groups below help you find individual permissions for a task. They do not grant access or create a separate API scope; the API evaluates the individual permission strings.
 
 | Group | Permissions | Typical use |
 |-------|-------------|-------------|
@@ -75,24 +77,6 @@ The `JWT service token eligible` column means the permission may be delegated wh
 | Email | `emails:send` and optional scoped variants | Sending transactional emails |
 | Journal | `journal:orders:read`, `journal:general:read` | Reading [journal entries](/orders/journal) |
 | Promotions | `coupons:read`, `coupons:write`, `price_rules:read`, `price_rules:write` | Managing coupons and price rules |
-
-## Service-token restrictions
-
-JWT service tokens are intentionally narrower than admin session tokens:
-
-- They can only receive permissions from the service-token allowlist.
-- They cannot create or revoke service tokens.
-- They cannot write secrets.
-- They cannot manage admins.
-- They cannot read or write site config.
-
-These restrictions are enforced even if a caller tries to include the blocked permission in the create-token request.
-
-## Secrets and service tokens
-
-Writing provider credentials requires `secrets:write`, but the secrets endpoint also explicitly rejects service-token callers. This means an admin session can write secrets, while a service token cannot, even if it somehow presents a token with that permission.
-
-Use a human admin session for credential setup and rotation. Use service tokens for day-to-day automation such as ingestion, order processing, email sending, and promotion management.
 
 ## Email scopes
 

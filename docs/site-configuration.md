@@ -20,7 +20,7 @@ Configuration is stored as one JSON document per site and is separate from the e
 
 ## Manage configuration
 
-Retrieving configuration requires `config:read`. Creating, replacing, or deleting configuration requires `config:write`. See [Roles and permissions](/authentication/roles-permissions#permission-groups) for how these permissions fit into the access model.
+Retrieving configuration requires `config:read`. Creating, replacing, or deleting configuration requires `config:write`. See [Permissions by use case](/authentication/roles-permissions#permissions-by-use-case) for related permissions.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/config" \

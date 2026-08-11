@@ -31,7 +31,7 @@ Use a service token for recurring machine-to-machine tasks:
 | Promotions management | `coupons:read`, `coupons:write`, `price_rules:read`, `price_rules:write` |
 | [Journal reads](/orders/journal) | `journal:orders:read`, `journal:general:read` |
 
-Do not use service tokens for credential setup, site configuration, site-admin management, or token administration. Those operations require an authenticated admin session or are handled outside service-token automation.
+For operations that require an authenticated admin session, see [Service-token restrictions](#service-token-restrictions).
 
 ## Create a service token
 
@@ -133,6 +133,24 @@ The API also supports a legacy per-site token managed at `/auth/token`. Site tok
 
 Legacy site tokens have a fixed legacy service role. They can read and write catalog data, read and write orders, read service-token state, and read/write index configuration. They cannot write secrets, create service tokens, revoke service tokens, or manage admins.
 
+## Service-token restrictions
+
+JWT service tokens are intentionally narrower than admin session tokens:
+
+- They can only receive permissions from the service-token allowlist.
+- They cannot create or revoke service tokens.
+- They cannot write secrets.
+- They cannot manage admins.
+- They cannot read or write site config.
+
+These restrictions are enforced even if a caller tries to include a blocked permission in the create-token request.
+
+## Secrets and service tokens
+
+Writing provider credentials requires `secrets:write`, but the secrets endpoint also explicitly rejects service-token callers. This means an admin session can write secrets, while a service token cannot, even if it somehow presents that permission.
+
+Use a human admin session for credential setup and rotation. Use service tokens for day-to-day automation such as ingestion, order processing, email sending, and promotion management.
+
 ## Best practices
 
 - Create one token per integration or automation job.
@@ -140,7 +158,6 @@ Legacy site tokens have a fixed legacy service role. They can read and write cat
 - Use the shortest practical `ttl` and rotate tokens regularly.
 - Store tokens in a secret management system, not source code.
 - Revoke tokens when an integration is retired or ownership changes.
-- Use an admin session, not a service token, for credential setup in the [secrets store](/checkout/secrets).
 
 ## Next steps
 
