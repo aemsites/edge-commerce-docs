@@ -56,7 +56,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The confirm result — <code>{ status: "completed", ... }</code> or <code>{ status: "failed", reason }</code>.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The confirm result — <code>{ status: "completed", ... }</code>, <code>{ status: "pending", ... }</code>, or <code>{ status: "failed", reason, cancelled }</code>. On a failed confirm, <code>cancelled: true</code> means the order is now terminal (payment_cancelled) and the buyer must restart from the cart; <code>cancelled: false</code> is not currently returned (a transient failure yields a retryable 503 instead).</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
