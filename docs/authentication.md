@@ -46,6 +46,10 @@ The user login flow has two steps:
 
 The callback returns the token in the response body and also sets an `auth_token` cookie with `HttpOnly`, `Secure`, and `SameSite=Strict`.
 
+## End a session
+
+Call `POST /auth/logout` with the session's bearer token or `auth_token` cookie. A valid session token is revoked and the response clears the cookie. The endpoint returns `204 No Content`.
+
 ## Site scoping
 
 Tokens are scoped to an organization and site. For most authenticated routes, the API checks that the token's org/site matches the `{org}` and `{site}` path parameters. A token for one site cannot manage another site.
@@ -74,6 +78,7 @@ Unauthenticated does not mean unprotected. These flows use validation, rate limi
 
 ## Next steps
 
+- [Set up administrative access](/authentication/setup): Provision a site, sign in with OTP, add administrators, and create a service token
 - [Site configuration](/configuration/site): Enable auth and configure allowed origins
 - [Roles and permissions](/authentication/roles-permissions): Understand what each role can do
 - [Service tokens](/authentication/service-tokens): Create scoped tokens for automation

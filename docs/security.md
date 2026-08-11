@@ -26,7 +26,7 @@ Validate all product data before ingestion to catch issues early. Sanitize HTML 
 
 - [Site configuration](/configuration/site): Configure allowed origins, auth and reCAPTCHA
 - [Authentication overview](/authentication/overview): Learn how tokens and site scoping work
-- [Roles and permissions](/authentication/roles-permissions): Review access levels and permission groups
+- [Roles and permissions](/authentication/roles-permissions): Review access levels and permissions by use case
 - [Secrets store](/checkout/secrets): Store provider credentials securely
 - [Data ingestion](/data-ingestion#etl-process-overview): Validate data during the ETL process
 - [API reference](/api-reference): Complete endpoint details
