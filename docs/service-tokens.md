@@ -38,7 +38,7 @@ For operations that require an authenticated admin session, see [Service-token r
 Creating a service token requires an authenticated admin session with `service_token:create`. Service tokens cannot create other service tokens.
 
 ```bash
-curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/auth/service-token" \
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/auth/service_token" \
   -H "Authorization: Bearer {your-admin-token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -117,7 +117,7 @@ If a scoped `emails:send:{scope}` permission is present, the base `emails:send` 
 Revoking a service token requires an authenticated admin session with `service_token:write`. A service token cannot revoke itself or another service token.
 
 ```bash
-curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/auth/service-token/revoke" \
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/auth/service_token/revoke" \
   -H "Authorization: Bearer {your-admin-token}" \
   -H "Content-Type: application/json" \
   -d '{
