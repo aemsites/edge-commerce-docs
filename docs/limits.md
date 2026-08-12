@@ -42,6 +42,16 @@ The default guidance is:
   - Number of markets
   - Indexing and ingestion requirements
 
+## Product index size
+
+Each product index supports up to **50,000 parent products**. Variants are not counted toward this limit. A parent product may have many variants beneath it, but only parent products count toward the 50,000-product maximum for a single index.
+
+Catalogs with more than 50,000 parent products must be split across multiple indexes. Split indexes using a stable site structure, such as category, locale, market, or path hierarchy, so products map to indexes predictably as the catalog grows.
+
+This limit aligns with Google sitemap guidance (50,000 URLs per sitemap file) and helps ensure reliable sitemap generation, Merchant Center feed generation, and product discovery workflows.
+
+This is a per-index limit, not a total catalog size limit. A catalog may contain more parent products in aggregate when distributed across multiple indexes.
+
 ## Next steps
 
 - [Data Ingestion Guide](/data-ingestion#etl-process-overview): Bulk operation strategies and ETL best practices
