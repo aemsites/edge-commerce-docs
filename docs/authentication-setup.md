@@ -142,7 +142,7 @@ Create a service token for each integration or automation job. Service tokens ar
 Creating a token requires an authenticated admin session with `service_token:create`. The following example creates a 30-day token for catalog ingestion:
 
 ```bash
-curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/auth/service-token" \
+curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/auth/service_token" \
   -H "Authorization: Bearer {admin-session-token}" \
   -H "Content-Type: application/json" \
   -d '{
