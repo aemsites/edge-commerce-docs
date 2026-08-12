@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "fc749dd"
-    lastContentCommit: "b95c8fa"
+    lastReviewedCommit: "6fb1e2b"
+    lastContentCommit: "6fb1e2b"
 ---
 
 # Estimates and cart totals
@@ -294,7 +294,9 @@ With `shippingMethod.id`, `order` returns a single matching method:
 
 If the requested method does not match any available rate, `shippingMethods` is an empty array.
 
-`/estimate/order` computes tax once against the default matching method and reuses that tax amount across methods. When the shopper selects a final method and submits checkout, `/orders/preview` recomputes the committed selected-method total and returns the `estimateToken` used by order creation.
+For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ.
+
+When the shopper selects a final method and submits checkout, `/orders/preview` recomputes the committed selected-method total and returns the `estimateToken` used by order creation.
 
 ## How discounts are applied
 
@@ -308,6 +310,8 @@ Estimate totals use this order of operations:
 6. Apply automatic cart rules, including method-scoped free shipping.
 7. Attribute order-level cash discounts back to eligible line items where applicable.
 8. Evaluate conditional promotions that grant free items.
+
+Approved coupon and automatic cash discounts are allocated per line after promotions are applied. Each allocation is limited by the line's remaining post-promotion balance, so a discount cannot make a line negative or overflow onto an ineligible line. Coupon-scoped discounts use their eligible lines first; cart-wide discounts use the remaining merchandise balances.
 
 See [Promotions](/promotions) and [Coupons](/coupons) for rule configuration and coupon behavior.
 

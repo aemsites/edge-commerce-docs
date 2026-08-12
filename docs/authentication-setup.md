@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.62.0"
-    lastReviewedCommit: "fe7311b"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "6fb1e2b"
+    lastContentCommit: "6fb1e2b"
 ---
 
 # Set up administrative access
@@ -94,7 +94,7 @@ If `roles` does not include `admin`, the email has authenticated as a user but i
 
 An administrator record grants the matching email address the `admin` role after that person completes the OTP flow. Adding an administrator does not send an invitation or an OTP email.
 
-Listing administrators requires `admins:read`; adding an administrator requires `admins:write`. Do not use a service token: service tokens cannot manage administrators. If your session does not have the required permission, contact Adobe or your site administrator to make the change.
+Listing, retrieving, and creating administrator records requires the corresponding `admins:read` or `admins:write` permission; removing an administrator requires `admins:write`. The caller must also be a current administrator for the organization and site. Superusers bypass the site-membership check, but callers must still have the relevant permission. Do not use a service token: service tokens cannot manage administrators. If your session does not have the required permission, contact Adobe or your site administrator to make the change.
 
 Optionally, list the current administrators before adding someone:
 
