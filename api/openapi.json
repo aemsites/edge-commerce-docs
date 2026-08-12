@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.61.3",
+    "version": "2.62.2",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -42,7 +42,7 @@
     },
     {
       "name": "Estimate",
-      "description": "Computes a cart estimate. `estimateType` selects the calculation: `tax` (tax rate for an address), `shipping` (available shipping rates), `price` (promotions + coupon + auto-rule discounts), or `order` (per-method totals including tax and shipping). No authentication required."
+      "description": "Computes a cart estimate. `estimateType` selects the calculation: `tax` (tax rate for an address), `shipping` (available shipping rates), `price` (promotions + coupon + auto-rule discounts), or `order` (per-method totals with tax calculated on discount-reduced merchandise). No authentication required."
     },
     {
       "name": "Places",
@@ -2585,7 +2585,7 @@
                       "type": "string"
                     },
                     "taxAmount": {
-                      "description": "Estimated tax amount.",
+                      "description": "Estimated tax amount on the discount-reduced merchandise total.",
                       "type": "string"
                     },
                     "shippingMethod": {
@@ -3630,6 +3630,152 @@
             "bearerAuth": []
           }
         ],
+        "tags": [
+          "Customers"
+        ]
+      },
+      "patch": {
+        "operationId": "updateCustomer",
+        "summary": "Create or update your profile",
+        "description": "Creates the caller's customer record if missing, or partially updates it if present. Provided first-class fields overwrite, the `custom` bag is shallow-merged, and unlisted fields are preserved. Email is taken from the path; a body `email` is rejected. Requires ownership of the email and membership of the org/site (no `customers:write` permission).",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Bearer token. `Bearer <jwt>`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "description": "Must be `application/json`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The created or updated customer."
+          },
+          "400": {
+            "description": "The patch failed schema validation (unknown field, wrong type, or a create missing the required name).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "validation_failed",
+                      "message": "invalid customer",
+                      "errors": [
+                        {
+                          "path": "$.firstName",
+                          "message": "is required"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller does not own this email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "forbidden",
+                      "message": "access denied"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No email supplied in the path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "not_found",
+                      "message": "customer not found",
+                      "resource": "customer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The profile fields to set. All optional; unknown fields are rejected.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "Partial customer update. All fields optional; unknown fields rejected. Email is the resource identity (path only) and is not updatable here.",
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "description": "Customer first name.",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "lastName": {
+                    "description": "Customer last name.",
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "phone": {
+                    "description": "Customer phone number.",
+                    "type": "string"
+                  },
+                  "custom": {
+                    "description": "Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp).",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "firstName": "Jane",
+                    "lastName": "Doe",
+                    "custom": {
+                      "newsletterOptIn": "true",
+                      "preferredContactMethod": "email"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "tags": [
           "Customers"
         ]
@@ -8243,7 +8389,7 @@
         ]
       },
       "Customer": {
-        "description": "Customer contact information provided at checkout.",
+        "description": "Customer contact information and site-specific custom attributes.",
         "type": "object",
         "properties": {
           "firstName": {
@@ -8264,6 +8410,13 @@
           "phone": {
             "description": "Customer phone number.",
             "type": "string"
+          },
+          "custom": {
+            "description": "Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp).",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         },
         "required": [

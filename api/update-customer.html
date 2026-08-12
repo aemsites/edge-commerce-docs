@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Create a customer — Helix Commerce API</title>
-    <meta name="description" content="Validates and stores a new customer. Often called unauthenticated during checkout.">
+    <title>Create or update your profile — Helix Commerce API</title>
+    <meta name="description" content="Creates the caller's customer record if missing, or partially updates it if present. Provided first-class fields overwrite, the custom bag is shallow-merged, and unlisted fields are preserved. Email is taken from the path; a body email is rejected. Requires ownership of the email and membership of the org/site (no customers:write permission).">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -26,18 +26,18 @@
     <main>
       <div>
         <p class="api-eyebrow">Customers</p>
-        <h1>Create a customer</h1>
-        <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/customers</code></p>
+        <h1>Create or update your profile</h1>
+        <p class="endpoint"><span class="http-method http-patch">PATCH</span> <code class="http-path">/{org}/sites/{site}/customers/{email}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Validates and stores a new customer. Often called unauthenticated during checkout.</p>
-        <p class="permissions">Required permissions: <code>customers:write</code></p>
+        <p>Creates the caller's customer record if missing, or partially updates it if present. Provided first-class fields overwrite, the <code>custom</code> bag is shallow-merged, and unlisted fields are preserved. Email is taken from the path; a body <code>email</code> is rejected. Requires ownership of the email and membership of the org/site (no <code>customers:write</code> permission).</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+            <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td>Customer email address.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
@@ -52,16 +52,15 @@
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>firstName</code></td><td><code>string</code></td><td>yes</td><td>Customer first name.</td></tr>
-            <tr><td><code>lastName</code></td><td><code>string</code></td><td>yes</td><td>Customer last name.</td></tr>
-            <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td></td></tr>
+            <tr><td><code>firstName</code></td><td><code>string</code></td><td>no</td><td>Customer first name.</td></tr>
+            <tr><td><code>lastName</code></td><td><code>string</code></td><td>no</td><td>Customer last name.</td></tr>
             <tr><td><code>phone</code></td><td><code>string</code></td><td>no</td><td>Customer phone number.</td></tr>
             <tr><td><code>custom</code></td><td><code>object</code></td><td>no</td><td>Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp).</td></tr>
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The created customer.</h3>
-        <h3><span class="status-badge status-4xx">400</span> The customer failed schema validation.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The created or updated customer.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The patch failed schema validation (unknown field, wrong type, or a create missing the required name).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -70,7 +69,18 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">409</span> A customer with this email already exists.</h3>
+        <h3><span class="status-badge status-4xx">403</span> The caller does not own this email.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">404</span> No email supplied in the path.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -84,11 +94,14 @@
       </div>
       <div class="code-rail">
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/customers</span></div>
+          <div class="code-sample-head"><span class="code-sample-title">PATCH /{org}/sites/{site}/customers/{email}</span></div>
           <pre><code class="language-json">{
   "firstName": "Jane",
   "lastName": "Doe",
-  "email": "jane@example.com"
+  "custom": {
+    "newsletterOptIn": "true",
+    "preferredContactMethod": "email"
+  }
 }</code></pre>
         </div>
         <div class="code-sample">
@@ -98,17 +111,24 @@
   "message": "invalid customer",
   "errors": [
     {
-      "path": "$.email",
-      "message": "condition 'pattern' failed"
+      "path": "$.firstName",
+      "message": "is required"
     }
   ]
 }</code></pre>
         </div>
         <div class="code-sample">
-          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">409</span></span></div>
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">403</span></span></div>
           <pre><code class="language-json">{
-  "code": "already_exists",
-  "message": "customer already exists",
+  "code": "forbidden",
+  "message": "access denied"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">404</span></span></div>
+          <pre><code class="language-json">{
+  "code": "not_found",
+  "message": "customer not found",
   "resource": "customer"
 }</code></pre>
         </div>

@@ -525,6 +525,7 @@ Customer contact details supplied with an order.
 | `lastName` | string | Yes | Customer last name. max length 255 |
 | `email` | string | Yes | max length 255; pattern constrained |
 | `phone` | string | No | Customer phone number. |
+| `custom` | Record<string, string> | No | Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp). |
 
 <!-- GENERATED: Customer:end -->
 
