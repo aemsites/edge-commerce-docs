@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6fb1e2b"
-    lastContentCommit: "1c5a561"
+    lastReviewedCommit: "8f53823"
+    lastContentCommit: "8f53823"
 ---
 
 # Places and address validation

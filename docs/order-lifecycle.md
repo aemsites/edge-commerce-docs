@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6fb1e2b"
-    lastContentCommit: "6fb1e2b"
+    lastReviewedCommit: "8f53823"
+    lastContentCommit: "8f53823"
 ---
 
 # Order lifecycle
@@ -310,7 +310,7 @@ For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enab
 
 Call `POST /orders` only after preview succeeds. This endpoint turns the committed cart into a persisted order. It does not start payment.
 
-Guest checkout is supported. Authenticated callers must have `orders:write`, and customer-scoped callers can only create orders for their own email address.
+Guest checkout is supported. Authenticated callers must have `orders:write`, and customer-scoped callers can only create orders for their own email address. If the checkout customer email differs from the signed-in account email, order creation is rejected with the `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH` error code.
 
 At creation time, the API:
 
@@ -439,6 +439,7 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 
 - Guest checkout can create orders and start payments, but unauthenticated preview and order creation can be reCAPTCHA-gated.
 - Order creation verifies product prices, country availability, and preview tokens.
+- Authenticated order creation rejects a checkout customer email that differs from the signed-in account email with `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH`.
 - Payment initiation uses stored order totals, not client-supplied totals.
 - Only `pending` orders accept a new payment initiation.
 - PayPal order-review confirmation requires an idempotency key and captures only an order still awaiting confirmation.
