@@ -97,6 +97,31 @@ https://main--{site}--{org}.aem.network/us/en/sitemap.xml
 https://main--{site}--{org}.aem.network/us/en/merchant-center-feed.xml
 ```
 
+## How products are matched to an index
+
+Indexes are created at specific paths (see [Step 2](#step-2-create-an-index)), and a single site can have indexes at more than one path. When a product is added or updated, the indexer decides which index it belongs to by matching the product's path against the indexes that exist.
+
+The indexer always selects the *closest* index at or above the product's path. Starting from the product's own location, it moves up the path toward the site root and uses the first index it finds. Each product is added to that one index only — never to more than one index at the same time.
+
+For example, given a product at `/us/en/products/shoes/running-shoe`:
+
+- If indexes exist at both `/us/en/` and `/us/en/products/`, the product is added to the `/us/en/products/` index, because it is the closer of the two.
+- If the only index is at `/us/en/`, the product is added there.
+- If no index exists at `/us/en/`, `/us/en/products/`, or any other path above the product, the product is **not indexed**. Its updates are ignored until a covering index is created.
+
+This is why an index must exist before products can be indexed. Creating an index at a path automatically queues every existing product beneath that path for indexing, so you don't need to re-save products after creating the index.
+
+### Choosing where to place indexes
+
+Place an index at the highest path that should share a single catalog view. Most sites use one index per locale (for example `/us/en/`), which keeps all products for that locale in one index. Add indexes at deeper paths when a subtree of products should be queried as a separate, self-contained index — for example, a distinct catalog or department — or when a single index would exceed the [50,000 parent products per index limit](/limits#product-index-size) and needs to be split across paths. Because a product is only ever added to its closest index, a deeper index takes over responsibility for the products beneath it, while products elsewhere continue to use the higher-level index.
+
+### Indexes and sitemaps
+
+Each index also drives the `sitemap.xml` at the same path: the sitemap is generated from the index data, so the products in an index determine what appears in that path's sitemap. This has two practical consequences:
+
+- Keeping an index within the [50,000 parent products per index limit](/limits#product-index-size) also keeps its sitemap within the 50,000-URL limit that search engines enforce per sitemap file. When a catalog is larger, split it across deeper indexes — each path serves its own sitemap — rather than growing a single index past that limit.
+- Products marked `noindex` (via a `metadata.robots` value containing `noindex`) are excluded from the sitemap, the same way they are excluded from the default index view.
+
 ## Product indexing configuration
 
 The Product Indexer automatically creates searchable indices from your Product Bus data. Understanding how to configure and optimize indexing is essential for frontend search and Google Shopping integration.
