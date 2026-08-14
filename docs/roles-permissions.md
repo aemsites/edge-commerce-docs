@@ -60,7 +60,7 @@ Unknown roles are ignored. A user session with an email always receives the `use
 
 The `JWT service token eligible` column means the permission may be delegated when creating a JWT service token. The token still receives only the permissions explicitly listed at creation time.
 
-Administrator-management operations require both the applicable `admins:read` or `admins:write` permission and verification that the caller remains a current admin for the target site. Superusers are exempt from the current-site-admin check.
+Administrator-management operations require both the applicable `admins:read` or `admins:write` permission and verification that the caller remains a current admin for the target site.
 
 `PATCH /orders/{orderId}/custom` requires `orders:custom:write`. Holding `orders:write` without that dedicated permission does not authorize custom metadata updates.
 
