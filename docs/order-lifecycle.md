@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "fc749dd"
-    lastContentCommit: "b95c8fa"
+    lastReviewedCommit: "6fb1e2b"
+    lastContentCommit: "6fb1e2b"
 ---
 
 # Order lifecycle
@@ -292,15 +292,16 @@ Use these endpoints for cart pages, shipping selection, wallet address callbacks
 
 Call `POST /orders/preview` after the shopper has selected a shipping method and is ready to submit the order. Preview is the commitment step between a changing cart and a persisted order.
 
-This endpoint exists because interactive estimates are not enough to place an order. Preview validates the final submitted cart, computes the selected-method totals, and returns the signed `estimateToken` that order creation uses to verify those totals.
+This endpoint exists because interactive estimates are not enough to place an order. Preview validates the final submitted cart, applies eligible merchandise discounts before calculating tax, computes the selected-method totals, and returns the signed `estimateToken` that order creation uses to verify those totals.
 
 The preview endpoint:
 
 - Validates the order shape and requires `shippingMethod.id`.
 - Validates item prices against product data unless price consistency is disabled in site configuration.
 - Validates item country availability.
-- Applies catalog promotions, coupons, automatic cart rules, shipping, and tax.
-- Returns the computed totals and line items, including server-calculated discount allocations when applicable.
+- Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
+- Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component.
+- Returns the computed totals and line items, including server-calculated discount allocations when applicable. The persisted tax lines and totals use those same allocations and the resulting reduced taxable base.
 - Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts.
 
 For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enabled` is configured. See [reCAPTCHA verification](/checkout/recaptcha) and [Site configuration](/configuration/site#recaptcha-settings).

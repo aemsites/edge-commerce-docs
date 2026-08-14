@@ -8,13 +8,13 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "fc749dd"
-    lastContentCommit: "59c24a6"
+    lastReviewedCommit: "6fb1e2b"
+    lastContentCommit: "6fb1e2b"
 ---
 
 # Avalara tax
 
-Avalara AvaTax calculates tax in real time during estimates and order preview. When configured, the Edge Commerce API sends the cart, ship-to address, and ship-from address to Avalara and uses the returned tax in the order estimate. When Avalara is not configured, tax falls back to the merchant's table-based rules. See [Estimates and cart totals](/estimates#relationship-to-tax-providers) for how tax fits into cart totals.
+Avalara AvaTax calculates tax in real time during estimates and order preview. When configured, the Edge Commerce API sends the cart, ship-to address, and ship-from address to Avalara and uses the returned tax in the order estimate. When Avalara is not configured or unavailable, tax falls back to the merchant's table-based rules. See [Estimates and cart totals](/estimates#relationship-to-tax-providers) for how tax fits into cart totals.
 
 Configuration is stored in the secrets store as `taxes-avalara.json`. See the [secrets store guide](/checkout/secrets) for how to write it and how country/locale resolution works.
 
@@ -69,8 +69,10 @@ The `originAddress` object requires `line1`, `city`, `region`, `postalCode`, and
 | `adjustmentReason` | string | Reason code for adjustment calls. Defaults to `Other` |
 | `adjustmentDescription` | string | Optional description for adjustment calls |
 | `timeoutMs` | number | Request timeout in milliseconds. Defaults to `5000` |
-| `paymentMethodFees` | object | Per-payment-method fee multipliers folded into the tax total, keyed by payment method (e.g. `{ "chase": 0.02 }`) |
+| `paymentMethodFees` | object | Per-payment-method tax adjustment multipliers applied to calculated tax, including configured fallback tax, keyed by payment method (e.g. `{ "chase": 0.02 }`) |
 | `taxRules` | array | Conditional rules that select provider-backed or fallback tax and can adjust provider results |
+
+A matching `paymentMethodFees` entry applies its multiplier to either the Avalara result or the configured rate-based fallback result. The adjustment updates the returned tax rate and total. When line-tax amounts are available or generated, they are adjusted as well and rounded so their sum matches the adjusted total.
 
 ## Conditional tax rules
 
@@ -109,7 +111,7 @@ The optional `match` object supports these fields:
 
 Omitted match fields act as wildcards. A rule without `match` is a default candidate. When multiple rules match, the rule with the most configured match fields wins; configuration order breaks ties.
 
-A `provider` rule uses Avalara. Its optional `adjustments.taxAdjustmentRate` must be between `0` and `1`; `0.1` adds 10% to the provider's total and line-level tax values. A matched rule adjustment takes precedence over `paymentMethodFees`. A `fallback` rule skips Avalara and uses the configured rate-based tax table. Fallback rules cannot include `adjustments`.
+A `provider` rule uses Avalara. Its optional `adjustments.taxAdjustmentRate` must be between `0` and `1`; `0.1` adds 10% to the calculated tax total and line-level tax values. A matched rule adjustment takes precedence over `paymentMethodFees`. A `fallback` rule skips Avalara and uses the configured rate-based tax table. Fallback rules cannot include `adjustments`.
 
 Storefronts must send the matching `paymentMethod`, `checkoutFlow`, and `entryPoint` values in order estimates and order previews. See [Estimates and cart totals](/estimates#common-request-fields).
 

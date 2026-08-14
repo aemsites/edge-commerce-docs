@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "fc749dd"
-    lastContentCommit: "5577796"
+    lastReviewedCommit: "6fb1e2b"
+    lastContentCommit: "6fb1e2b"
 ---
 
 # Roles and permissions
@@ -42,6 +42,8 @@ Unknown roles are ignored. A user session with an email always receives the `use
 | `index:write` | No | Yes | Yes | Yes |
 | `customers:read` | No | Yes | No | Yes |
 | `customers:write` | No | Yes | No | Yes |
+| `admins:read` | No | Yes | No | No |
+| `admins:write` | No | Yes | No | No |
 | `service_token:read` | No | Yes | Yes | No |
 | `service_token:write` | No | Yes | No | No |
 | `service_token:create` | No | Yes | No | No |
@@ -57,6 +59,8 @@ Unknown roles are ignored. A user session with an email always receives the `use
 | `price_rules:write` | No | Yes | No | Yes |
 
 The `JWT service token eligible` column means the permission may be delegated when creating a JWT service token. The token still receives only the permissions explicitly listed at creation time.
+
+Administrator-management operations require both the applicable `admins:read` or `admins:write` permission and verification that the caller remains a current admin for the target site.
 
 `PATCH /orders/{orderId}/custom` requires `orders:custom:write`. Holding `orders:write` without that dedicated permission does not authorize custom metadata updates.
 
