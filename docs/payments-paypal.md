@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "8f53823"
-    lastContentCommit: "b95c8fa"
+    lastReviewedCommit: "05b753f"
+    lastContentCommit: "05b753f"
 ---
 
 # PayPal payments

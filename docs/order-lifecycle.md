@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "8f53823"
-    lastContentCommit: "8f53823"
+    lastReviewedCommit: "05b753f"
+    lastContentCommit: "05b753f"
 ---
 
 # Order lifecycle
@@ -41,7 +41,7 @@ The short version: use estimates while the cart is still changing, use preview w
 ## Lifecycle summary
 
 | Step | API | Role in lifecycle | Authentication |
-|------|-----|-------------------|----------------|
+|------|-----|-----------------|----------------|
 | Cart estimate | `POST /{org}/sites/{site}/estimate/{estimateType}` | Calculates provisional totals for cart UX | Not required |
 | Order preview | `POST /{org}/sites/{site}/orders/preview` | Produces the final committed estimate and [`estimateToken`](#estimate-tokens) | Optional, reCAPTCHA-gated for guests |
 | Order creation | `POST /{org}/sites/{site}/orders` | Creates a persisted `pending` order from the committed cart | Optional, reCAPTCHA-gated for guests |
@@ -381,7 +381,11 @@ Redirect-based providers move the order to `payment_processing` when initiation 
 
 PayPal can be configured with an order review step independently for standard checkout and express flows. When order review is enabled, PayPal approval does not capture payment immediately. Instead, the API returns a `review` action, sends the shopper to the configured review URL, and moves the order to `payment_requires_confirmation`. The storefront displays its final order review and calls `POST /orders/{orderId}/payments/confirm` to capture the payment. If the shopper abandons the review, call `POST /orders/{orderId}/payments/cancel` to move the order to `payment_cancelled`.
 
-The confirmation request requires an idempotency key. Concurrent confirmation requests are serialized, and retries with the same key replay the stored result or return a retryable response while another confirmation is in progress. An unexpected confirmation failure returns a retryable `503`; a non-retryable failed confirmation returns `cancelled: true` when the order has moved to `payment_cancelled`, so the storefront can send the buyer back to the cart.
+The confirmation request requires an idempotency key. Concurrent confirmation requests are serialized, and retries with the same key replay the stored result or return a retryable response while another confirmation is in progress. An unexpected confirmation failure returns a retryable `503`; a non-retryable failed confirmation returns a customer-safe `checkoutFailure` outcome of `retry` or `contact_support`, plus `cancelled: true` when the order has moved to `payment_cancelled`, so the storefront can either allow another attempt or send the buyer to customer support.
+
+Failed orders expose the customer-safe outcome at `order.payment.checkoutFailure`. The value is `retry` when the buyer may try the payment again after an authorization-stage decline, or `contact_support` when the failure requires customer support. The field is absent for successful orders and buyer cancellations. Raw payment, fraud, and provider failure reasons are not exposed in customer-readable order data; technical reasons and diagnostics remain in the admin-only order journal.
+
+Payment failures recorded on an order use `retry` for authorization-stage declines and `contact_support` for other terminal failures. Buyer cancellations have no failure outcome. Technical provider reasons and diagnostics remain in the admin-only order journal.
 
 When configuring PayPal order review, provide a secure `reviewUrl`. The API appends the order ID as a query parameter. A review URL is required when order review is enabled for either checkout flow.
 

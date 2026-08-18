@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "8f53823"
-    lastContentCommit: "b95c8fa"
+    lastReviewedCommit: "05b753f"
+    lastContentCommit: "05b753f"
 ---
 
 # Chase payments
@@ -49,7 +49,7 @@ curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/secrets/payments-
 | `redirectUrl` | string (HTTPS) | Hosted Pay Page the customer is redirected to for card entry |
 | `serviceUrl` | string (HTTPS) | Hosted Pay Page Service URL that queries and verifies a completed transaction |
 | `successUrl` | string (HTTPS) | Storefront URL to return to after a successful payment. The order ID is appended as a query parameter |
-| `cancelUrl` | string (HTTPS) | Storefront URL to return to after a failed or cancelled payment. The order ID and a reason are appended |
+| `cancelUrl` | string (HTTPS) | Storefront URL to return to after a failed or cancelled payment. The order ID is appended as a query parameter; buyer cancellations may also include `reason=customer_cancelled` |
 
 ### Optional fields
 

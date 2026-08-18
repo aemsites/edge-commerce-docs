@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "8f53823"
-    lastContentCommit: "8f53823"
+    lastReviewedCommit: "05b753f"
+    lastContentCommit: "05b753f"
 ---
 
 # Order journal
@@ -74,6 +74,8 @@ Event-specific fields vary. Payment events can include provider, attempt, reason
 The `payment_requires_confirmation` event is emitted when a buyer has approved a PayPal payment but capture is deferred to an explicit confirmation step. Its `provider` identifies the PayPal flow, and `attemptId` correlates the entry with the payment attempt and related provider request entries. Redirect flows can also include `paypalOrderId`; express flows can include `method` and `idempotencyKey`.
 
 For `payment_cancelled` entries, `configuration_error` indicates that review mode could not resolve a valid review URL. `order_not_approved` indicates that express review validation found that the PayPal order was not approved or was not found. Other upstream validation failures remain retryable and do not cancel the order.
+
+Payment-cancellation journal entries contain the internal cancellation `reason` and provider diagnostics for administrative troubleshooting.
 
 For failed provider requests, diagnostic response bodies are limited to 512 characters and receive basic redaction for apparent bearer tokens and payment card number patterns. Treat all diagnostic response details as sensitive and do not expose them in storefronts or other customer-facing views.
 

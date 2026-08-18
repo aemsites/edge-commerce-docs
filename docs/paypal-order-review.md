@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "unknown"
-    lastReviewedCommit: "8f53823"
-    lastContentCommit: "8f53823"
+    lastReviewedCommit: "05b753f"
+    lastContentCommit: "05b753f"
 ---
 
 # PayPal order review and deferred capture
@@ -207,7 +207,7 @@ Capture does not occur during payment initiation, PayPal approval, or the redire
 
 A successful confirmation completes the order. The storefront should display its normal payment-success state after receiving the successful response.
 
-If confirmation fails because of a transient service problem, the endpoint returns a retryable error and the storefront can retry. If capture fails for a non-retryable reason, the order moves to `payment_cancelled` and the response includes `cancelled: true`; the storefront should direct the buyer back to the cart to restart checkout rather than retrying confirmation.
+If confirmation fails because of a transient service problem, the endpoint returns a retryable `503` error. The failure is not persisted as a terminal cancellation, so the storefront can retry confirmation. If capture fails for a terminal reason, the order moves to `payment_cancelled`, and the response includes `cancelled: true` and `checkoutFailure`. A `checkoutFailure` value of `retry` indicates an authorization-stage decline that allows the buyer to try again; `contact_support` indicates that the storefront should direct the buyer to customer support. The raw provider failure reason is not returned to the buyer and is retained only in the administrative payment journal.
 
 Use the same confirmation idempotency key when retrying a request whose outcome is unknown. This prevents a network retry from being treated as a separate confirmation attempt.
 
@@ -219,6 +219,7 @@ The review page can cancel the payment without capturing it:
 curl -X POST \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer {your-api-key}" \
+  -H "Idempotency-Key: {your-confirm-idempotency-key}" \
   "https://api.adobecommerce.live/{org}/sites/{site}/orders/{order-id}/payments/paypal/cancel"
 ```
 
