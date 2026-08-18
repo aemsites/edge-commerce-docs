@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6fb1e2b"
-    lastContentCommit: "fc749dd"
+    lastReviewedCommit: "8f53823"
+    lastContentCommit: "8f53823"
 ---
 
 # reCAPTCHA verification
