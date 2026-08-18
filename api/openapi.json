@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.62.2",
+    "version": "2.62.3",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -2031,6 +2031,29 @@
                           "items": {
                             "$ref": "#/components/schemas/StoredOrderItem"
                           }
+                        },
+                        "payment": {
+                          "description": "Payment summary, present once a payment attempt exists.",
+                          "type": "object",
+                          "properties": {
+                            "provider": {
+                              "description": "Payment provider (e.g. \"chase\", \"paypal\").",
+                              "type": "string"
+                            },
+                            "method": {
+                              "description": "Payment method (e.g. \"card\").",
+                              "type": "string"
+                            },
+                            "checkoutFailure": {
+                              "description": "Coarse outcome for a failed order; drives storefront copy. Absent on successful orders and buyer cancellations. \"contact_support\" directs the buyer to customer support; \"retry\" indicates the buyer may try again.",
+                              "type": "string",
+                              "enum": [
+                                "contact_support",
+                                "retry"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
                         }
                       },
                       "required": [
@@ -2314,6 +2337,29 @@
                           "items": {
                             "$ref": "#/components/schemas/StoredOrderItem"
                           }
+                        },
+                        "payment": {
+                          "description": "Payment summary, present once a payment attempt exists.",
+                          "type": "object",
+                          "properties": {
+                            "provider": {
+                              "description": "Payment provider (e.g. \"chase\", \"paypal\").",
+                              "type": "string"
+                            },
+                            "method": {
+                              "description": "Payment method (e.g. \"card\").",
+                              "type": "string"
+                            },
+                            "checkoutFailure": {
+                              "description": "Coarse outcome for a failed order; drives storefront copy. Absent on successful orders and buyer cancellations. \"contact_support\" directs the buyer to customer support; \"retry\" indicates the buyer may try again.",
+                              "type": "string",
+                              "enum": [
+                                "contact_support",
+                                "retry"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
                         }
                       },
                       "required": [
@@ -3223,7 +3269,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The confirm result — `{ status: \"completed\", ... }`, `{ status: \"pending\", ... }`, or `{ status: \"failed\", reason, cancelled }`. On a failed confirm, `cancelled: true` means the order is now terminal (payment_cancelled) and the buyer must restart from the cart; `cancelled: false` is not currently returned (a transient failure yields a retryable 503 instead).",
+            "description": "The confirm result — `{ status: \"completed\", ... }`, `{ status: \"pending\", ... }`, or `{ status: \"failed\", checkoutFailure, cancelled }`, where `checkoutFailure` is `\"contact_support\"` or `\"retry\"` — the customer-safe outcome the storefront renders (the raw decline reason is never returned). On a failed confirm, `cancelled: true` means the order is now terminal (payment_cancelled) and the buyer must restart from the cart; `cancelled: false` is not currently returned (a transient failure yields a retryable 503 instead).",
             "headers": {
               "Content-Type": {
                 "description": "application/json",
