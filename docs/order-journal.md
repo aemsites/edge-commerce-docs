@@ -75,7 +75,7 @@ The `payment_requires_confirmation` event is emitted when a buyer has approved a
 
 For `payment_cancelled` entries, `configuration_error` indicates that review mode could not resolve a valid review URL. `order_not_approved` indicates that express review validation found that the PayPal order was not approved or was not found. Other upstream validation failures remain retryable and do not cancel the order.
 
-Payment-cancellation journal entries retain the internal cancellation `reason` and provider diagnostics for administrative troubleshooting. The corresponding order state does not expose those details: `order.payment.checkoutFailure` contains only the customer-safe `contact_support` or `retry` bucket. The bucket is absent for buyer cancellations and successful orders, and raw provider or failure details remain in the journal.
+Payment-cancellation journal entries contain the internal cancellation `reason` and provider diagnostics for administrative troubleshooting.
 
 For failed provider requests, diagnostic response bodies are limited to 512 characters and receive basic redaction for apparent bearer tokens and payment card number patterns. Treat all diagnostic response details as sensitive and do not expose them in storefronts or other customer-facing views.
 
