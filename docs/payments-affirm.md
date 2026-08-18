@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "8f53823"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "05b753f"
+    lastContentCommit: "05b753f"
 ---
 
 # Affirm payments
@@ -51,7 +51,7 @@ For Canadian operation, write a full Affirm-Canada configuration to a country-sc
 | `countryCode` | string | Region the account operates in: `USA` (United States, USD) or `CAN` (Canada, CAD) |
 | `paymentAction` | string | When Affirm settles: `auth_capture` (authorize and capture during checkout) or `authorize` (authorize only, capture when goods ship) |
 | `successUrl` | string (HTTPS) | Storefront URL to return to after a successful payment. The order ID is appended as a query parameter |
-| `cancelUrl` | string (HTTPS) | Storefront URL to return to after a failed or cancelled payment. The order ID and a reason are appended |
+| `cancelUrl` | string (HTTPS) | Storefront URL to return to after a failed or cancelled payment. The order ID is appended; buyer cancellations may also include `reason=customer_cancelled` |
 
 ### Optional fields
 
