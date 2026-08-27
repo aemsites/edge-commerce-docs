@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "05b753f"
-    lastContentCommit: "5f10b2f"
+    lastReviewedCommit: "1c6fd97"
+    lastContentCommit: "1c6fd97"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -166,6 +166,8 @@ The request body should be a product object (see [Schema Reference](/schema-refe
 
 When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
+Add `?forceUpdate=true` to write and re-index the product even when its data is unchanged. Use this after changing index configuration. The parameter is also supported on the bulk write endpoints.
+
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json" \
   -X PUT \
@@ -261,12 +263,14 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 Use this endpoint to create or update up to 50 products in one request. The request body is an object with an `items` array. Each product must include a `path` field that specifies where it should be stored. By default, the request performs writes. Set the `delete` query parameter to `true` to delete products instead; a body `delete` flag is supported as an alias and must agree with the query parameter when both are provided.
 
+In write mode, unchanged products are skipped and reported with status `200`. Set `?forceUpdate=true` to rewrite and re-index every item, including unchanged products. The body field `forceUpdate: true` is an alias for the query parameter. If both values are provided, they must agree. Use this option after changing index configuration.
+
 The API validates the complete request before saving or deleting products. If the request envelope is invalid, an item is invalid, or two products have the same `path`, the API returns `400 Bad Request` and performs no operation. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
 Bulk writes return `200 OK` with a `results` array. The array contains one result for each submitted product. Products with no detected changes have a status of `200`; saved products include their individual result status, message, and `etag`.
 
 ```bash
-curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?forceUpdate=true" \
   -X POST \
   -H "Authorization: Bearer {your-api-key}" \
   -H "Content-Type: application/json" \
@@ -292,6 +296,21 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog" \
       }
     ]
   }'
+```
+
+Alternatively, provide the flag in the request body:
+
+```json
+{
+  "forceUpdate": true,
+  "items": [
+    {
+      "sku": "bulk-001",
+      "name": "Bulk Product 1",
+      "path": "/us/en/products/bulk-product-1"
+    }
+  ]
+}
 ```
 
 Example response:
@@ -347,7 +366,7 @@ The response is `200 OK` with a `results` array. Each result reports `200` for a
 
 This endpoint is deprecated. Use `POST /{org}/sites/{site}/catalog` with the `{ "items": [...] }` request envelope instead.
 
-The deprecated endpoint accepts an array of up to 50 product objects. Each product must include a `path` field. Its response format differs from the current bulk endpoint.
+The deprecated endpoint accepts an array of up to 50 product objects. Each product must include a `path` field. Its response format differs from the current bulk endpoint. Add `?forceUpdate=true` to rewrite and re-index unchanged products.
 
 ### Get a product by path
 
@@ -456,7 +475,7 @@ curl -X POST \
 
 `DELETE /{org}/sites/{site}/index{path}`
 
-Deletes the index at the specified path. This endpoint requires authentication. On success, returns `204 No Content`. If no index exists at the specified path, returns `404 Not Found`.
+Deletes the index and its merchant feed at the specified path, and removes the index from the registry. This endpoint requires authentication. On success, returns `204 No Content`. If no index exists at the specified path, returns `404 Not Found`. If the registry cannot be updated, the API returns `502 Bad Gateway` and does not delete the index.
 
 ```bash
 curl -X DELETE \
