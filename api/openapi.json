@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.62.3",
+    "version": "2.64.2",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -366,7 +366,7 @@
       "post": {
         "operationId": "bulkCatalogOperation",
         "summary": "Bulk write or delete products",
-        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
+        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). In write mode, unchanged products are skipped (status `200`); pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to write and re-index every item regardless, e.g. after an index-configuration change. Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -394,6 +394,15 @@
               "type": "boolean"
             },
             "description": "When `true`, the request is a bulk delete; `false` (or absent) is a write. Canonical selector; the body `delete` flag is an alias that must agree when both are present."
+          },
+          {
+            "name": "forceUpdate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index."
           }
         ],
         "responses": {
@@ -539,6 +548,10 @@
                       },
                       "delete": {
                         "description": "Optional write-mode selector; must be `false` or omitted (see the delete envelope).",
+                        "type": "boolean"
+                      },
+                      "forceUpdate": {
+                        "description": "When `true`, write and re-index every item even if its data is unchanged. Alias for the `?forceUpdate` query parameter; when both are present they must agree. Use after an index-configuration change so that unchanged products are re-indexed (they are otherwise skipped).",
                         "type": "boolean"
                       }
                     },
@@ -838,7 +851,7 @@
       "post": {
         "operationId": "bulkUpsertCatalogProducts",
         "summary": "Bulk create/replace products (deprecated)",
-        "description": "Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200).",
+        "description": "Deprecated: use `POST /{org}/sites/{site}/catalog` (the collection root) instead, which shares one request/response envelope. Only valid at the literal `/*` path. Accepts an array of products (max 50); each is validated against the ProductBus schema and written. Unchanged products are skipped (reported with status 200); pass `?forceUpdate=true` to write and re-index them regardless.",
         "parameters": [
           {
             "name": "Authorization",
@@ -857,6 +870,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "forceUpdate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index."
           }
         ],
         "responses": {
@@ -1042,7 +1064,7 @@
       "put": {
         "operationId": "upsertCatalogProduct",
         "summary": "Create or replace a product",
-        "description": "Validates the product against the ProductBus schema and writes it. The `path` in the body, if present, must match the URL path. Supports `If-Match` / `If-None-Match` for optimistic-concurrency control; a successful write returns the new `ETag`.",
+        "description": "Validates the product against the ProductBus schema and writes it. The `path` in the body, if present, must match the URL path. Supports `If-Match` / `If-None-Match` for optimistic-concurrency control; a successful write returns the new `ETag`. An unchanged product is skipped (status `200`, no re-index) unless `?forceUpdate=true` is set.",
         "parameters": [
           {
             "name": "Authorization",
@@ -1079,6 +1101,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "forceUpdate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index."
           }
         ],
         "responses": {
@@ -1794,7 +1825,7 @@
       "delete": {
         "operationId": "deleteIndex",
         "summary": "Delete a query index",
-        "description": "Deletes the query index for the given path and removes it from the registry.",
+        "description": "Deletes the query index and its merchant feed for the given path, and removes it from the registry.",
         "parameters": [
           {
             "name": "Authorization",
@@ -1847,6 +1878,25 @@
                       "code": "not_found",
                       "message": "index not found",
                       "resource": "index"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage update failed; the index was not deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "upstream_error",
+                      "message": "upstream error",
+                      "retryable": true
                     }
                   }
                 }
@@ -6947,19 +6997,23 @@
             "type": "object",
             "properties": {
               "ratingValue": {
-                "description": "Average rating value. Numeric string; converted to a number in JSON-LD.",
+                "description": "Average rating value, e.g. \"4.6\". Numeric string; converted to a number in JSON-LD. Should match the rating shown to users on the page.",
+                "type": "string"
+              },
+              "ratingCount": {
+                "description": "Total number of ratings for the product. Numeric string; converted to an integer in JSON-LD. At least one of ratingCount or reviewCount is required.",
                 "type": "string"
               },
               "reviewCount": {
-                "description": "Total number of ratings. Numeric string; converted to an integer in JSON-LD.",
+                "description": "Total number of written reviews for the product (people who left a review, with or without a rating). Numeric string; converted to an integer in JSON-LD. At least one of ratingCount or reviewCount is required.",
                 "type": "string"
               },
               "bestRating": {
-                "description": "Best possible rating. Numeric string.",
+                "description": "Highest value allowed in the rating scale. Numeric string; defaults to 5 in JSON-LD when omitted.",
                 "type": "string"
               },
               "worstRating": {
-                "description": "Worst possible rating. Numeric string.",
+                "description": "Lowest value allowed in the rating scale. Numeric string; defaults to 1 in JSON-LD when omitted.",
                 "type": "string"
               }
             }

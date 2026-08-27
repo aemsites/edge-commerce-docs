@@ -333,10 +333,11 @@ Product review/rating information.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `ratingValue` | string | No | Average rating value. Numeric string; converted to a number in JSON-LD. |
-| `reviewCount` | string | No | Total number of ratings. Numeric string; converted to an integer in JSON-LD. |
-| `bestRating` | string | No | Best possible rating. Numeric string. |
-| `worstRating` | string | No | Worst possible rating. Numeric string. |
+| `ratingValue` | string | No | Average rating value, e.g. "4.6". Numeric string; converted to a number in JSON-LD. Should match the rating shown to users on the page. |
+| `ratingCount` | string | No | Total number of ratings for the product. Numeric string; converted to an integer in JSON-LD. At least one of ratingCount or reviewCount is required. |
+| `reviewCount` | string | No | Total number of written reviews for the product (people who left a review, with or without a rating). Numeric string; converted to an integer in JSON-LD. At least one of ratingCount or reviewCount is required. |
+| `bestRating` | string | No | Highest value allowed in the rating scale. Numeric string; defaults to 5 in JSON-LD when omitted. |
+| `worstRating` | string | No | Lowest value allowed in the rating scale. Numeric string; defaults to 1 in JSON-LD when omitted. |
 
 <!-- GENERATED: AggregateRating:end -->
 
@@ -569,7 +570,7 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `name` | string | No | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
 | `address1` | string | No | Primary street address line. max length 255 |
-| `address2` | string | No | Secondary address line. max length 255 |
+| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
 | `city` | string | No | City name. max length 255 |
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |

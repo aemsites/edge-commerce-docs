@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Create or replace a product — Helix Commerce API</title>
-    <meta name="description" content="Validates the product against the ProductBus schema and writes it. The path in the body, if present, must match the URL path. Supports If-Match / If-None-Match for optimistic-concurrency control; a successful write returns the new ETag.">
+    <meta name="description" content="Validates the product against the ProductBus schema and writes it. The path in the body, if present, must match the URL path. Supports If-Match / If-None-Match for optimistic-concurrency control; a successful write returns the new ETag. An unchanged product is skipped (status 200, no re-index) unless ?forceUpdate=true is set.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-put">PUT</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Validates the product against the ProductBus schema and writes it. The <code>path</code> in the body, if present, must match the URL path. Supports <code>If-Match</code> / <code>If-None-Match</code> for optimistic-concurrency control; a successful write returns the new <code>ETag</code>.</p>
+        <p>Validates the product against the ProductBus schema and writes it. The <code>path</code> in the body, if present, must match the URL path. Supports <code>If-Match</code> / <code>If-None-Match</code> for optimistic-concurrency control; a successful write returns the new <code>ETag</code>. An unchanged product is skipped (status <code>200</code>, no re-index) unless <code>?forceUpdate=true</code> is set.</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -39,6 +39,13 @@
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
             <tr><td><code>path</code></td><td><code>string</code></td><td>yes</td><td>Product path (e.g. <code>/us/en/products/blender-pro-500.json</code>), or the literal <code>*</code> for bulk writes.</td></tr>
+          </table>
+        </div>
+        <h2>Query parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>forceUpdate</code></td><td><code>boolean</code></td><td>no</td><td>When <code>true</code>, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status <code>200</code>); use this after an index-configuration change to force a re-index.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
