@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Delete a query index — Helix Commerce API</title>
-    <meta name="description" content="Deletes the query index for the given path and removes it from the registry.">
+    <meta name="description" content="Deletes the query index and its merchant feed for the given path, and removes it from the registry.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-delete">DELETE</span> <code class="http-path">/{org}/sites/{site}/index/{path}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Deletes the query index for the given path and removes it from the registry.</p>
+        <p>Deletes the query index and its merchant feed for the given path, and removes it from the registry.</p>
         <p class="permissions">Required permissions: <code>index:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -70,6 +70,17 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
+        <h3><span class="status-badge status-5xx">502</span> Storage update failed; the index was not deleted.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
       </div>
       <div class="code-rail">
         <div class="code-sample">
@@ -91,6 +102,14 @@
   "code": "not_found",
   "message": "index not found",
   "resource": "index"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">502</span></span></div>
+          <pre><code class="language-json">{
+  "code": "upstream_error",
+  "message": "upstream error",
+  "retryable": true
 }</code></pre>
         </div>
       </div>
