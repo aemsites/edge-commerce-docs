@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "05b753f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "1c6fd97"
+    lastContentCommit: "1c6fd97"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -96,6 +96,12 @@ https://main--{site}--{org}.aem.network/us/en/index.json
 https://main--{site}--{org}.aem.network/us/en/sitemap.xml
 https://main--{site}--{org}.aem.network/us/en/merchant-center-feed.xml
 ```
+
+## Deleting an index
+
+Deleting an index first removes it from the index registry, then removes its stored index data and associated merchant feed. Unregistering the index first prevents pending indexing jobs from recreating it.
+
+If the registry cannot be updated, the deletion returns a `502` response and the index is not deleted. After successful unregistration, cleanup of the stored index data and merchant feed is best-effort. If cleanup fails, you can safely retry the delete operation.
 
 ## How products are matched to an index
 

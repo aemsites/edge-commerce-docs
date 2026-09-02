@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "05b753f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "1c6fd97"
+    lastContentCommit: "1c6fd97"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -126,7 +126,7 @@ After deploying your ETL, continuously monitor for data quality issues.
 
 **Data quality checks:** Randomly sample products via the API and verify field accuracy. Check that product updates flow through within expected timeframes, verify that deleted products are removed from the Product Bus, and monitor for duplicate SKUs across different paths.
 
-**Index verification:** Confirm products appear in the product index within 10 minutes of creation. Verify indexed fields match your `productIndexerConfig` mapping, check that products with `"robots": "noindex"` are excluded from the index, and monitor sitemap generation for completeness.
+**Index verification:** Confirm products appear in the product index within 10 minutes of creation. Verify indexed fields match your `productIndexerConfig` mapping, check that products with `"robots": "noindex"` are excluded from the index, and monitor sitemap generation for completeness. After changing index configuration, reprocess unchanged products with the API's force-update option so they are re-indexed.
 
 **End-to-end testing:** Periodically test the full flow from source system through ETL to Product Bus to rendered page. Verify rendered HTML includes correct metadata and JSON-LD structured data, check that product pages render correctly on staging and production domains, and test that cache invalidation works when products are updated.
 

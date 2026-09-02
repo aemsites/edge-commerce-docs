@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "05b753f"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "1c6fd97"
+    lastContentCommit: "1c6fd97"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -339,6 +339,22 @@ Product review/rating information.
 | `worstRating` | string | No | Worst possible rating. Numeric string. |
 
 <!-- GENERATED: AggregateRating:end -->
+
+`ratingCount` is the total number of ratings for the product. `reviewCount` is the total number of written reviews, including reviews that do not have a rating. At least one of `ratingCount` or `reviewCount` must be provided. When omitted, `bestRating` defaults to `5` and `worstRating` defaults to `1` in JSON-LD.
+
+**Example:**
+
+```json
+{
+  "sku": "product-123",
+  "name": "Example Product",
+  "aggregateRating": {
+    "ratingValue": "4.6",
+    "ratingCount": "125",
+    "reviewCount": "98"
+  }
+}
+```
 
 ### SchemaOrgAvailability
 
