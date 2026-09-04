@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "8f53823"
+    lastReviewedCommit: "1c9224b"
+    lastContentCommit: "1c9224b"
 ---
 
 # Estimates and cart totals
@@ -302,14 +302,14 @@ When the shopper selects a final method and submits checkout, `/orders/preview` 
 
 Estimate totals use this order of operations:
 
-1. Load catalog promotions and automatic cart rules for the country.
-2. Apply catalog promotion price overrides to line items.
+1. Load catalog promotions and enabled automatic cart rules for the country.
+2. Apply enabled catalog promotion price overrides to line items.
 3. Validate coupon code, source, country, eligibility, usage limits, and minimum order amount when applicable.
 4. Calculate the coupon from regular or post-promotion prices according to its `applyToSalePrice` setting, or apply absolute prices from `discountedProducts`.
 5. Apply coupon stacking rules. Non-stackable coupons suppress automatic cart rules.
-6. Apply automatic cart rules, including method-scoped free shipping.
+6. Apply enabled automatic cart rules, including method-scoped free shipping.
 7. Attribute order-level cash discounts back to eligible line items where applicable.
-8. Evaluate conditional promotions that grant free items.
+8. Evaluate conditional promotions using their enabled rules to grant free items.
 
 Approved coupon and automatic cash discounts are allocated per line after promotions are applied. Each allocation is limited by the line's remaining post-promotion balance, so a discount cannot make a line negative or overflow onto an ineligible line. Coupon-scoped discounts use their eligible lines first; cart-wide discounts use the remaining merchandise balances.
 

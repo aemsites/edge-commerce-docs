@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "844b959"
+    lastReviewedCommit: "1c9224b"
+    lastContentCommit: "1c9224b"
 migration:
   from: "helix-commerce-documentation/documentation/coupons.md"
   migratedAt: "2026-06-15"
@@ -174,7 +174,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/coupons?active=true" \
   -H "Authorization: Bearer {your-api-key}"
 ```
 
-The response includes a `cursor` field for pagination. Pass `cursor` as a query parameter in the next request to retrieve the following page.
+The optional `limit` parameter controls the page size. It defaults to `100` and is clamped to the range `1`–`1000`. The response includes a `cursor` field for pagination. Pass `cursor` as a query parameter in the next request to retrieve the following page, preserving any filters and the requested limit.
 
 ### Code format and tracking suffixes
 

@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "d180131"
+    lastReviewedCommit: "1c9224b"
+    lastContentCommit: "1c9224b"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -75,6 +75,7 @@ Each `CatalogPriceRule` within `rules`:
 |-------|------|----------|-------------|
 | `path` | string | Yes | Product URL path this rule applies to (e.g., `"/us/en/products/blender-pro-500"`) |
 | `price` | string | Yes | Discounted price to use when this rule is active |
+| `enabled` | boolean | No | Whether the rule can apply. Defaults to enabled; set to `false` to disable the rule |
 | `start` | string | No | ISO 8601 timestamp. Rule is inactive before this time |
 | `end` | string | No | ISO 8601 timestamp. Rule is inactive after this time |
 | `variants` | object | No | Per-SKU price overrides. Keys are variant SKUs, values are `VariantPriceRule` objects (see below) |
@@ -85,20 +86,23 @@ Each `CatalogPriceRule` within `rules`:
 |-------|------|----------|-------------|
 | `sku` | string | Yes | Variant SKU |
 | `price` | string | Yes | Discounted price for this variant |
+| `enabled` | boolean | No | Whether the variant rule can apply. Defaults to enabled; set to `false` to disable the variant rule |
 | `start` | string | No | ISO 8601 timestamp. Variant rule is inactive before this time |
 | `end` | string | No | ISO 8601 timestamp. Variant rule is inactive after this time |
 
+Rules and variant rules are enabled unless `enabled` is explicitly set to `false`. Disabled rules and variants are excluded from active promotion responses and promotion evaluation. Disabled catalog rules also do not schedule future cache-marker updates.
+
 ### How rules are selected and applied
 
-When the pipeline evaluates catalog promotions for a product, it finds the best active promotion rule for that product path across all promotions. A rule qualifies if its price is lower than the product's current `price.final` or if any of its active variant-specific prices are lower than the corresponding variants' current prices. Among qualifying rules, the one with the lowest product-level price wins.
+When the pipeline evaluates catalog promotions for a product, it finds the best active promotion rule for that product path across all promotions. A rule qualifies if it is enabled and its price is lower than the product's current `price.final`, or if any of its active variant-specific prices are lower than the corresponding variants' current prices. Among qualifying rules, the one with the lowest product-level price wins.
 
-A rule is considered active when the current time falls within its optional `start`/`end` window. Rules without a `start` or `end` are always active.
+A rule is considered active when it is enabled and the current time falls within its optional `start`/`end` window. Rules without a `start` or `end` are always active unless explicitly disabled.
 
 Variants not explicitly listed in `rule.variants` inherit the parent product's rule price if it is lower than their current price.
 
 ### Date-limited promotions
 
-Promotions that have `start` and `end` timestamps on their rules automatically become active and expire without any manual intervention. The pipeline evaluates the rule's active window at request time, so a rule that has not yet started or has already ended is never applied.
+Promotions that have `start` and `end` timestamps on their rules automatically become active and expire without any manual intervention. The pipeline evaluates the rule's active window at request time, so a rule that has not yet started, has been disabled, or has already ended is never applied.
 
 Timestamps must include an explicit timezone offset — bare datetimes are not accepted. UTC (`Z`) is recommended for consistency since rule windows are evaluated against the server's UTC clock. If you need a rule to activate at a specific local business time, use the corresponding UTC offset (for example, `2026-06-01T08:00:00-05:00` for 8 AM US Central Standard Time).
 
@@ -142,6 +146,10 @@ A promotion with a `country` field is only applied when the request's resolved c
 ### Previewing promotions
 
 To preview how catalog promotions will look before activating them in production, send the `x-env: stage` request header to the pipeline. The pipeline loads promotions from a separate staging store and returns the adjusted prices without caching the response. This does not affect production traffic.
+
+### Cache updates after rule changes
+
+When catalog price rules are updated, cached product responses are purged for products whose effective current pricing changes. This includes enabling or disabling rules, adding or removing active rules, editing active rule prices, and changing active variant prices.
 
 ## Conditional promotions
 
@@ -196,10 +204,10 @@ curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart"
   ]'
 ```
 
-To read the current cart rules, use `GET` on the same endpoint. Authenticated reads return all rules. Unauthenticated reads with the `?active=true` query parameter return only currently active rules, which allows the storefront to display promotion banners without requiring API credentials.
+To read the current cart rules, use `GET` on the same endpoint. Authenticated reads return all rules. Unauthenticated reads with the `?active=true` query parameter return only currently enabled and active rules, which allows the storefront to display promotion banners without requiring API credentials.
 
 ```bash
-# Public read — returns active rules only
+# Public read — returns enabled, active rules only
 curl "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart?active=true"
 ```
 
@@ -212,6 +220,7 @@ Each object in the array is a `CartPriceRule`:
 | `id` | string | Yes | Unique rule identifier |
 | `name` | string | Yes | Display name shown in the discount breakdown |
 | `priority` | integer | Yes | Evaluation order. Lower numbers are evaluated first |
+| `enabled` | boolean | No | Whether the rule can apply. Defaults to enabled; set to `false` to disable the rule |
 | `conditions` | object | Yes | Conditions that must be met for the rule to apply (see below) |
 | `actions` | object | Yes | Discount to apply when conditions are met (see below) |
 | `stackable` | boolean | No | Whether this rule can apply alongside other discounts (default `true`) |
@@ -244,15 +253,17 @@ At least one condition must be specified.
 
 At least one action must be specified.
 
+A cart rule is enabled unless `enabled` is explicitly set to `false`. Disabled rules are excluded from active responses and from cart-rule evaluation.
+
 ### Stacking and priority
 
-When multiple cart rules qualify for a cart, their priority values control evaluation order. Rules with lower priority numbers are evaluated first. All stackable rules that qualify are applied; a non-stackable rule is applied alone (other rules are suppressed).
+When multiple enabled cart rules qualify for a cart, their priority values control evaluation order. Rules with lower priority numbers are evaluated first. All stackable rules that qualify are applied; a non-stackable rule is applied alone (other rules are suppressed).
 
 Cart rules that list a coupon type ID in their `incompatibleTypes` array are automatically suppressed when a coupon of that type is active. When a non-stackable coupon is applied, all cart rules are suppressed regardless of their `incompatibleTypes` setting.
 
 ## How promotions apply during the purchase flow
 
-The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, any coupon code is validated, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the coupon type: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. Third, cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
+The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, any coupon code is validated, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the coupon type: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. Third, enabled cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
 
 ## Next steps
 

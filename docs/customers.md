@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "1c9224b"
+    lastContentCommit: "1c9224b"
 ---
 
 # Customers and account data
@@ -46,6 +46,12 @@ When checkout finds an existing profile, it preserves the profile's existing val
 | List a customer's orders | `GET /{org}/sites/{site}/customers/{email}/orders` | `orders:read` and authenticated user matching `{email}` |
 | Retrieve one customer order | `GET /{org}/sites/{site}/customers/{email}/orders/{orderId}` | Optional bearer token. Email plus order ID is used for guest order-status lookup |
 
+### Customer list pagination
+
+`GET /{org}/sites/{site}/customers` supports cursor-based pagination. Use the optional `limit` query parameter to control the maximum number of customers returned per page. The default is `100`; values are clamped to the range `1`–`1000`.
+
+When a page is truncated, the response includes an opaque `cursor`. Pass that cursor with the next request to retrieve the following page.
+
 ## Customer profile shape
 
 A customer profile contains checkout contact information and optional site-specific custom attributes. Custom attributes are string-valued and can store site-specific data such as a marketing opt-in, preferred contact method, or consent timestamp. See [Schema reference](/schema-reference#customer) for the generated schema.
@@ -59,6 +65,8 @@ A customer profile contains checkout contact information and optional site-speci
 | `custom` | No | Site-specific customer attributes with string values |
 
 The API adds timestamps when the profile is stored.
+
+Phone values accept common formatting characters, including spaces, hyphens, periods, slashes, parentheses, and a leading `+`. The API normalizes stored customer and address phone values to digits only. For customer records, `firstName`, `lastName`, and the normalized `phone` are also mirrored into returned and stored custom metadata.
 
 ## Customer passwords
 
