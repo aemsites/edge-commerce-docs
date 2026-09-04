@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "1c6fd97"
+    lastReviewedCommit: "1c9224b"
+    lastContentCommit: "1c9224b"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -345,6 +345,8 @@ Learn more about [image handling](/schema-reference#productbusmedia) in the sche
 
 To delete products, send the bulk request with `?delete=true`. Each item must be an object containing an extensionless product `path`. Deletes are unconditional and duplicate paths are processed once. The API validates all items before deleting anything.
 
+Add `?forceUpdate=true` to also emit an index-removal event for products that are already missing from the catalog and return `404`. The body field `forceUpdate: true` is an alias for the query parameter; if both are provided, they must agree. This can clear an orphaned index entry left after an earlier deletion.
+
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?delete=true" \
   -X POST \
@@ -383,6 +385,8 @@ curl -i "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/product
 `DELETE /{org}/sites/{site}/catalog{path}`
 
 This endpoint requires authentication. A successful deletion returns `204 No Content`. If the product doesn't exist at the specified path, you'll receive a `404 Not Found` response. You can send `If-Match` or `If-None-Match` to conditionally delete the product. A failed precondition returns `412 Precondition Failed`, and the product remains in place.
+
+A single `DELETE` emits an index-removal event even when the product is already missing. Repeating a single delete can therefore clear an orphaned index entry. Conditional deletes emit an event only when the precondition succeeds.
 
 ```bash
 curl -X DELETE \
