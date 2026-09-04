@@ -522,7 +522,7 @@ A shipping or billing address. `country` and `state` are always required because
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | Yes | Postal or ZIP code. max length 255 |
 | `country` | string | Yes | ISO 3166-1 alpha-2 country code. max length 255 |
-| `phone` | string | No | Phone number. max length 255 |
+| `phone` | string | No | Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only. max length 32; pattern constrained |
 | `email` | string | Yes | max length 255; pattern constrained |
 | `isDefault` | boolean | No | Whether this is the default address for the customer. |
 | `isValidated` | boolean | No | Whether this address has been validated by an address verification service. |
@@ -541,7 +541,7 @@ Customer contact details supplied with an order.
 | `firstName` | string | Yes | Customer first name. max length 255 |
 | `lastName` | string | Yes | Customer last name. max length 255 |
 | `email` | string | Yes | max length 255; pattern constrained |
-| `phone` | string | No | Customer phone number. |
+| `phone` | string | No | Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only. max length 32; pattern constrained |
 | `custom` | Record<string, string> | No | Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp). |
 
 <!-- GENERATED: Customer:end -->
@@ -591,7 +591,7 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |
 | `country` | string | Yes | ISO 3166-1 alpha-2 country code. max length 255 |
-| `phone` | string | No | Phone number. max length 255 |
+| `phone` | string | No | Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only. max length 32; pattern constrained |
 | `email` | string | No | max length 255; pattern constrained |
 | `isDefault` | boolean | No | Whether this is the default address for the customer. |
 | `isValidated` | boolean | No | Whether this address has been validated by an address verification service. |

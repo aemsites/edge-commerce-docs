@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.64.2",
+    "version": "2.67.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -366,7 +366,7 @@
       "post": {
         "operationId": "bulkCatalogOperation",
         "summary": "Bulk write or delete products",
-        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). In write mode, unchanged products are skipped (status `200`); pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to write and re-index every item regardless, e.g. after an index-configuration change. Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
+        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). In write mode, unchanged products are skipped (status `200`); pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to write and re-index every item regardless, e.g. after an index-configuration change. Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. In delete mode, pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to emit an index-removal event even for items that are already gone from the catalog (`404`), clearing orphaned index entries. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -402,7 +402,7 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index."
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index. In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned index entries."
           }
         ],
         "responses": {
@@ -582,6 +582,10 @@
                       },
                       "delete": {
                         "description": "Selects delete mode; alias for the canonical `?delete` query parameter. When both are present they must agree, otherwise the request is 400.",
+                        "type": "boolean"
+                      },
+                      "forceUpdate": {
+                        "description": "When `true`, emit an index-removal event for every item even if the product is already gone from the catalog (`404`), clearing orphaned index entries. Alias for the `?forceUpdate` query parameter; when both are present they must agree.",
                         "type": "boolean"
                       }
                     },
@@ -878,7 +882,7 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index."
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index. In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned index entries."
           }
         ],
         "responses": {
@@ -1109,7 +1113,7 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index."
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index. In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned index entries."
           }
         ],
         "responses": {
@@ -1413,7 +1417,7 @@
       "delete": {
         "operationId": "deleteCatalogProduct",
         "summary": "Delete a product",
-        "description": "Deletes the product at the given path. Supports `If-Match` / `If-None-Match` for conditional deletes; a precondition miss returns `412` and the product is left in place.",
+        "description": "Deletes the product at the given path. Supports `If-Match` / `If-None-Match` for conditional deletes; a precondition miss returns `412` and the product is left in place. A single DELETE always emits an index-removal event (unless a precondition failed), so repeating a DELETE for a product that is already gone still clears any orphaned index entry.",
         "parameters": [
           {
             "name": "Authorization",
@@ -3510,7 +3514,7 @@
       "get": {
         "operationId": "listCustomers",
         "summary": "List customers",
-        "description": "Returns customers for the org/site. Paginated via an opaque `cursor` when the R2 page is truncated.",
+        "description": "Returns customers for the org/site. Page size is controlled by the optional `limit` query parameter (default 100, clamped to 1..1000). Paginated via an opaque `cursor` when the R2 page is truncated.",
         "parameters": [
           {
             "name": "Authorization",
@@ -3520,6 +3524,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "description": "Maximum number of customers to return per page (default 100, clamped to 1..1000)."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque pagination cursor from a previous truncated page."
           }
         ],
         "responses": {
@@ -3845,8 +3870,10 @@
                     "maxLength": 255
                   },
                   "phone": {
-                    "description": "Customer phone number.",
-                    "type": "string"
+                    "description": "Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only.",
+                    "type": "string",
+                    "pattern": "^[0-9()+\\-./ ]*$",
+                    "maxLength": 32
                   },
                   "custom": {
                     "description": "Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp).",
@@ -5340,7 +5367,7 @@
       "get": {
         "operationId": "listCoupons",
         "summary": "List coupon codes",
-        "description": "Returns coupon code names, optionally filtered by `type` and/or `active`, with cursor-based pagination.",
+        "description": "Returns coupon code names, optionally filtered by `type` and/or `active`, with cursor-based pagination. Page size is controlled by the optional `limit` query parameter (default 100, clamped to 1..1000).",
         "parameters": [
           {
             "name": "Authorization",
@@ -5350,6 +5377,49 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter to codes of this coupon type id."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "description": "Filter to codes whose active flag matches this value."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "description": "Maximum number of codes to return per page (default 100, clamped to 1..1000)."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque pagination cursor from a previous truncated page."
           }
         ],
         "responses": {
@@ -7976,9 +8046,10 @@
                 "maxLength": 255
               },
               "phone": {
-                "description": "Phone number.",
+                "description": "Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only.",
                 "type": "string",
-                "maxLength": 255
+                "pattern": "^[0-9()+\\-./ ]*$",
+                "maxLength": 32
               },
               "email": {
                 "type": "string",
@@ -8508,8 +8579,10 @@
             "maxLength": 255
           },
           "phone": {
-            "description": "Customer phone number.",
-            "type": "string"
+            "description": "Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only.",
+            "type": "string",
+            "pattern": "^[0-9()+\\-./ ]*$",
+            "maxLength": 32
           },
           "custom": {
             "description": "Arbitrary site-specific, customer-supplied attributes (string values, e.g. a marketing opt-in, preferred contact method, or consent timestamp).",
@@ -8570,9 +8643,10 @@
             "maxLength": 255
           },
           "phone": {
-            "description": "Phone number.",
+            "description": "Phone number. Digits plus common formatting characters (space, hyphen, period, slash, parentheses, leading +) are accepted; stored as digits only.",
             "type": "string",
-            "maxLength": 255
+            "pattern": "^[0-9()+\\-./ ]*$",
+            "maxLength": 32
           },
           "email": {
             "type": "string",

@@ -45,7 +45,7 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>forceUpdate</code></td><td><code>boolean</code></td><td>no</td><td>When <code>true</code>, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status <code>200</code>); use this after an index-configuration change to force a re-index.</td></tr>
+            <tr><td><code>forceUpdate</code></td><td><code>boolean</code></td><td>no</td><td>When <code>true</code>, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status <code>200</code>); use this after an index-configuration change to force a re-index. In bulk delete mode, <code>forceUpdate</code> also emits an index-removal event for products that are already gone from the catalog (<code>404</code>), clearing orphaned index entries.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>

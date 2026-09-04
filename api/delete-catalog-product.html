@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Delete a product — Helix Commerce API</title>
-    <meta name="description" content="Deletes the product at the given path. Supports If-Match / If-None-Match for conditional deletes; a precondition miss returns 412 and the product is left in place.">
+    <meta name="description" content="Deletes the product at the given path. Supports If-Match / If-None-Match for conditional deletes; a precondition miss returns 412 and the product is left in place. A single DELETE always emits an index-removal event (unless a precondition failed), so repeating a DELETE for a product that is already gone still clears any orphaned index entry.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-delete">DELETE</span> <code class="http-path">/{org}/sites/{site}/catalog/{path}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Deletes the product at the given path. Supports <code>If-Match</code> / <code>If-None-Match</code> for conditional deletes; a precondition miss returns <code>412</code> and the product is left in place.</p>
+        <p>Deletes the product at the given path. Supports <code>If-Match</code> / <code>If-None-Match</code> for conditional deletes; a precondition miss returns <code>412</code> and the product is left in place. A single DELETE always emits an index-removal event (unless a precondition failed), so repeating a DELETE for a product that is already gone still clears any orphaned index entry.</p>
         <p class="permissions">Required permissions: <code>catalog:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
