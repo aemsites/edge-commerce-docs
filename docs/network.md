@@ -1,5 +1,5 @@
 ---
-title: "AEM Edge Network"
+title: "AEM Network"
 description: "Configure AEM Network routing for Edge Delivery Commerce sites."
 daPath: "/network"
 status: migrated
@@ -40,11 +40,11 @@ migration:
   notes: "Migrated as-is from the legacy documentation repo; source commits retain the original frontmatter baseline."
 ---
 
-# AEM Edge Network
+# AEM Network
 
 ## Overview
 
-The AEM Edge Network is a reverse proxy service running at the edge that acts as a traffic router for AEM's Edge Delivery Services and other backends, allowing you to combine multiple backends into a single entry point. It is the `aem.network` to Edge Delivery's `aem.live`. AEM Network is based on a declarative configuration, so that routes and URL patterns can be updated without deployment.
+The AEM Network is a reverse proxy service running at the edge that acts as a traffic router for AEM's Edge Delivery Services and other backends, allowing you to combine multiple backends into a single entry point. It is the `aem.network` to Edge Delivery's `aem.live`. AEM Network is based on a declarative configuration, so that routes and URL patterns can be updated without deployment.
 
 There are two configurable concepts in AEM Network:
 
