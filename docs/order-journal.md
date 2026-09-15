@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "c8a516f"
+    lastContentCommit: "c8a516f"
 ---
 
 # Order journal
@@ -75,7 +75,7 @@ The `payment_requires_confirmation` event is emitted when a buyer has approved a
 
 For `payment_cancelled` entries, `configuration_error` indicates that review mode could not resolve a valid review URL. `order_not_approved` indicates that express review validation found that the PayPal order was not approved or was not found. Other upstream validation failures remain retryable and do not cancel the order.
 
-Payment-cancellation journal entries contain the internal cancellation `reason` and provider diagnostics for administrative troubleshooting.
+Payment-cancellation journal entries contain the internal cancellation `reason` and provider diagnostics for administrative troubleshooting. For Chase payment declines, diagnostics can also include the provider transaction reference and, when available, the gateway processing status and status message. These values help correlate a failed attempt with the provider and identify gateway-level declines.
 
 For failed provider requests, diagnostic response bodies are limited to 512 characters and receive basic redaction for apparent bearer tokens and payment card number patterns. Treat all diagnostic response details as sensitive and do not expose them in storefronts or other customer-facing views.
 

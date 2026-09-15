@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "1c6fd97"
+    lastReviewedCommit: "c8a516f"
+    lastContentCommit: "c8a516f"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -345,8 +345,10 @@ Learn more about [image handling](/schema-reference#productbusmedia) in the sche
 
 To delete products, send the bulk request with `?delete=true`. Each item must be an object containing an extensionless product `path`. Deletes are unconditional and duplicate paths are processed once. The API validates all items before deleting anything.
 
+Use `?forceUpdate=true` with bulk deletion to emit an index-removal event for each item that returns `404` because the product is already absent from the catalog. This can clear an orphaned index entry. The request body may include `forceUpdate: true` as an alias; if both the query parameter and body field are provided, they must have the same value.
+
 ```bash
-curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?delete=true" \
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?delete=true&forceUpdate=true" \
   -X POST \
   -H "Authorization: Bearer {your-api-key}" \
   -H "Content-Type: application/json" \
@@ -383,6 +385,8 @@ curl -i "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/product
 `DELETE /{org}/sites/{site}/catalog{path}`
 
 This endpoint requires authentication. A successful deletion returns `204 No Content`. If the product doesn't exist at the specified path, you'll receive a `404 Not Found` response. You can send `If-Match` or `If-None-Match` to conditionally delete the product. A failed precondition returns `412 Precondition Failed`, and the product remains in place.
+
+A single `DELETE` always emits an index-removal event, including when the product already returns `404`, so repeating a delete can clear an orphaned index entry. This behavior does not occur when a conditional request fails with `412 Precondition Failed`.
 
 ```bash
 curl -X DELETE \
