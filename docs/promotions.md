@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "d180131"
+    lastReviewedCommit: "c8a516f"
+    lastContentCommit: "c8a516f"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -30,7 +30,7 @@ Catalog promotions define product-level price overrides grouped into named campa
 
 ### Creating and updating catalog promotions
 
-Catalog promotions are stored as a single document per site and replaced in full with each write.
+Catalog promotions are stored as a single document per site and replaced in full with each write. Updating the catalog promotions triggers an immediate cache purge, so changes become effective without waiting for normal cache expiration.
 
 ```bash
 curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/catalog" \
@@ -75,6 +75,7 @@ Each `CatalogPriceRule` within `rules`:
 |-------|------|----------|-------------|
 | `path` | string | Yes | Product URL path this rule applies to (e.g., `"/us/en/products/blender-pro-500"`) |
 | `price` | string | Yes | Discounted price to use when this rule is active |
+| `enabled` | boolean | No | Whether the rule can apply. Defaults to enabled; set to `false` to disable the rule |
 | `start` | string | No | ISO 8601 timestamp. Rule is inactive before this time |
 | `end` | string | No | ISO 8601 timestamp. Rule is inactive after this time |
 | `variants` | object | No | Per-SKU price overrides. Keys are variant SKUs, values are `VariantPriceRule` objects (see below) |
@@ -85,6 +86,7 @@ Each `CatalogPriceRule` within `rules`:
 |-------|------|----------|-------------|
 | `sku` | string | Yes | Variant SKU |
 | `price` | string | Yes | Discounted price for this variant |
+| `enabled` | boolean | No | Whether the variant rule can apply. Defaults to enabled; set to `false` to disable the variant rule |
 | `start` | string | No | ISO 8601 timestamp. Variant rule is inactive before this time |
 | `end` | string | No | ISO 8601 timestamp. Variant rule is inactive after this time |
 
@@ -92,7 +94,7 @@ Each `CatalogPriceRule` within `rules`:
 
 When the pipeline evaluates catalog promotions for a product, it finds the best active promotion rule for that product path across all promotions. A rule qualifies if its price is lower than the product's current `price.final` or if any of its active variant-specific prices are lower than the corresponding variants' current prices. Among qualifying rules, the one with the lowest product-level price wins.
 
-A rule is considered active when the current time falls within its optional `start`/`end` window. Rules without a `start` or `end` are always active.
+A rule is considered active when it is enabled and the current time falls within its optional `start`/`end` window. Rules without a `start` or `end` are always active. A rule is enabled unless `enabled` is explicitly `false`. The same rules apply to variant-specific price overrides.
 
 Variants not explicitly listed in `rule.variants` inherit the parent product's rule price if it is lower than their current price.
 
@@ -165,7 +167,7 @@ When a catalog promotion has a `conditions` object, it behaves differently. Rath
 
 The `conditions` object supports `minimumSubtotal` for a spending threshold, `requiredProducts` and `excludedProducts` for cart content requirements, and `requiredCategories` and `excludedCategories` for category-level requirements.
 
-Conditional promotions are never applied by the pipeline when rendering product pages or indexes. They are only evaluated at cart and checkout time, when the storefront calls the estimate endpoint and returns the qualifying free-item grants as part of the discount breakdown.
+Conditional promotions are never applied by the pipeline when rendering product pages or indexes. They are only evaluated at cart and checkout time, when the storefront calls the estimate endpoint and returns the qualifying free-item grants as part of the discount breakdown. Disabled conditional rules are not applied.
 
 ## Cart rules
 
@@ -196,10 +198,10 @@ curl -X PUT "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart"
   ]'
 ```
 
-To read the current cart rules, use `GET` on the same endpoint. Authenticated reads return all rules. Unauthenticated reads with the `?active=true` query parameter return only currently active rules, which allows the storefront to display promotion banners without requiring API credentials.
+To read the current cart rules, use `GET` on the same endpoint. Authenticated reads return all rules. Unauthenticated reads with the `?active=true` query parameter return only currently active and enabled rules, which allows the storefront to display promotion banners without requiring API credentials.
 
 ```bash
-# Public read — returns active rules only
+# Public read — returns active and enabled rules only
 curl "https://api.adobecommerce.live/{org}/sites/{site}/price-rules/cart?active=true"
 ```
 
@@ -212,6 +214,7 @@ Each object in the array is a `CartPriceRule`:
 | `id` | string | Yes | Unique rule identifier |
 | `name` | string | Yes | Display name shown in the discount breakdown |
 | `priority` | integer | Yes | Evaluation order. Lower numbers are evaluated first |
+| `enabled` | boolean | No | Whether the rule can apply. Defaults to enabled; set to `false` to disable the rule |
 | `conditions` | object | Yes | Conditions that must be met for the rule to apply (see below) |
 | `actions` | object | Yes | Discount to apply when conditions are met (see below) |
 | `stackable` | boolean | No | Whether this rule can apply alongside other discounts (default `true`) |
@@ -246,7 +249,7 @@ At least one action must be specified.
 
 ### Stacking and priority
 
-When multiple cart rules qualify for a cart, their priority values control evaluation order. Rules with lower priority numbers are evaluated first. All stackable rules that qualify are applied; a non-stackable rule is applied alone (other rules are suppressed).
+When multiple enabled cart rules qualify for a cart, their priority values control evaluation order. Rules with lower priority numbers are evaluated first. All stackable rules that qualify are applied; a non-stackable rule is applied alone (other rules are suppressed).
 
 Cart rules that list a coupon type ID in their `incompatibleTypes` array are automatically suppressed when a coupon of that type is active. When a non-stackable coupon is applied, all cart rules are suppressed regardless of their `incompatibleTypes` setting.
 

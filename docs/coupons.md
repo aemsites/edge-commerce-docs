@@ -8,8 +8,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "1c6fd97"
-    lastContentCommit: "844b959"
+    lastReviewedCommit: "c8a516f"
+    lastContentCommit: "c8a516f"
 migration:
   from: "helix-commerce-documentation/documentation/coupons.md"
   migratedAt: "2026-06-15"
@@ -71,6 +71,12 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 | `defaultUsageLimit` | number | No | Default `usageLimit` applied to codes created under this type when no explicit limit is given |
 | `defaultUsesPerCode` | number | No | Default `usesPerCustomer` applied to codes created under this type |
 | `notes` | string | No | Internal notes. Not surfaced to customers |
+
+### Category eligibility
+
+Category scope is resolved from the authoritative product entry associated with each cart line's product path. The API does not rely only on category data supplied in the cart request. When a coupon uses `includedCategories` or `excludedCategories`, the estimate flow retrieves the product data needed to evaluate the product's categories.
+
+Product-level scope takes precedence over category-level scope. If product include or exclude conditions are present, they determine eligibility for the line; category conditions do not override that product-level decision. Within either scope level, exclusions take precedence over inclusions.
 
 ### Discount calculation
 
@@ -174,7 +180,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/coupons?active=true" \
   -H "Authorization: Bearer {your-api-key}"
 ```
 
-The response includes a `cursor` field for pagination. Pass `cursor` as a query parameter in the next request to retrieve the following page.
+The optional `limit` query parameter controls the number of codes returned per page. It defaults to `100` and is clamped to the range `1`–`1000`. The response includes a `cursor` field when more results are available; pass that cursor as a query parameter in the next request to retrieve the following page.
 
 ### Code format and tracking suffixes
 
