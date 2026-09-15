@@ -82,33 +82,116 @@
 }
 
 .hero-search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  position: relative;
   margin-top: 20px;
   max-width: 380px;
   width: 100%;
+}
+
+.hero-search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 14px;
   border: 1px solid var(--doc-border);
   border-radius: 10px;
   background: var(--doc-surface);
-  color: var(--doc-mute);
-  cursor: text;
-  font: inherit;
-  text-align: left;
 }
 
-.hero-search-label {
+.hero-search-form:has(.hero-search-input:focus) {
+  border-color: var(--doc-accent);
+}
+
+.hero-search-input {
   flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--doc-text);
+  font: inherit;
   font-size: 14px;
 }
 
+.hero-search-input::placeholder {
+  color: var(--doc-mute);
+}
+
+.hero-search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
 .hero-search kbd {
+  flex: none;
   font-family: var(--body-font-family-mono, ui-monospace, monospace);
   font-size: 11px;
+  color: var(--doc-mute);
   border: 1px solid var(--doc-border);
   border-radius: 5px;
   padding: 2px 6px;
+}
+
+.hero-search-results {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--doc-border);
+  border-radius: 10px;
+  background: var(--doc-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 5;
+}
+
+.hero-search-results[hidden] {
+  display: none;
+}
+
+.hero-search-results li + li {
+  margin-top: 2px;
+}
+
+.hero-search-results a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--doc-text);
+}
+
+.hero-search-results a:hover,
+.hero-search-results a:focus {
+  background: var(--doc-surface-2);
+}
+
+.hero-search-result-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hero-search-result-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--doc-dim);
+}
+
+.hero-search-results mark {
+  background: var(--doc-accent-soft);
+  color: inherit;
+  border-radius: 3px;
+}
+
+.hero-search-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--doc-mute);
 }
 
 .hero-art {
