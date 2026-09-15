@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>List customers — Helix Commerce API</title>
-    <meta name="description" content="Returns customers for the org/site. Paginated via an opaque cursor when the R2 page is truncated.">
+    <meta name="description" content="Returns customers for the org/site. Page size is controlled by the optional limit query parameter (default 100, clamped to 1..1000). Paginated via an opaque cursor when the R2 page is truncated.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/customers</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Returns customers for the org/site. Paginated via an opaque <code>cursor</code> when the R2 page is truncated.</p>
+        <p>Returns customers for the org/site. Page size is controlled by the optional <code>limit</code> query parameter (default 100, clamped to 1..1000). Paginated via an opaque <code>cursor</code> when the R2 page is truncated.</p>
         <p class="permissions">Required permissions: <code>customers:read</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -38,6 +38,14 @@
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Query parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>limit</code></td><td><code>integer</code></td><td>no</td><td>Maximum number of customers to return per page (default 100, clamped to 1..1000).</td></tr>
+            <tr><td><code>cursor</code></td><td><code>string</code></td><td>no</td><td>Opaque pagination cursor from a previous truncated page.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
