@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { toTerms, highlight, matchDocs } from '../../blocks/hero/search-match.js';
+import { toTerms, toTagList, highlight, matchDocs } from '../../blocks/hero/search-match.js';
 
 describe('toTerms', () => {
   it('lowercases, splits and drops 1-char/empty tokens', () => {
@@ -9,6 +9,22 @@ describe('toTerms', () => {
   it('returns an empty array for an empty query', () => {
     expect(toTerms('')).to.deep.equal([]);
     expect(toTerms(undefined)).to.deep.equal([]);
+  });
+});
+
+describe('toTagList', () => {
+  it('lowercases and trims an array of tags', () => {
+    expect(toTagList([' Webhooks ', 'JWT'])).to.deep.equal(['webhooks', 'jwt']);
+  });
+
+  it('splits a comma-separated string into a lowercase array', () => {
+    expect(toTagList('Idempotency, Webhooks , jwt')).to.deep.equal(['idempotency', 'webhooks', 'jwt']);
+  });
+
+  it('returns an empty array for missing/empty tags', () => {
+    expect(toTagList(undefined)).to.deep.equal([]);
+    expect(toTagList('')).to.deep.equal([]);
+    expect(toTagList([])).to.deep.equal([]);
   });
 });
 
@@ -85,6 +101,48 @@ describe('matchDocs', () => {
     }));
     const { results } = matchDocs(many, 'payments', 3);
     expect(results).to.have.lengthOf(3);
+  });
+
+  it('ranks a full tag match above a partial title match', () => {
+    const withTags = [
+      { title: 'Order lifecycle', description: '', path: '/orders/lifecycle', tags: 'idempotency, safeguards' },
+      { title: 'Order journal', description: '', path: '/orders/journal', tags: '' },
+    ];
+    // "idempotency" isn't in either title, but only appears (fully) as a tag on the first doc.
+    // "order" partially matches both titles, so without tag-awareness they'd tie on title alone.
+    const { results } = matchDocs(withTags, 'idempotency order');
+    expect(results[0].path).to.equal('/orders/lifecycle');
+  });
+
+  it('ranks a partial tag match above a description-only match', () => {
+    const withTags = [
+      { title: 'Payments overview', description: 'no relevant words here', path: '/payments', tags: 'webhooks, idempotency' },
+      { title: 'Getting started', description: 'covers webhooks briefly', path: '/getting-started', tags: '' },
+    ];
+    const { results } = matchDocs(withTags, 'webhooks');
+    expect(results[0].path).to.equal('/payments');
+    expect(results[1].path).to.equal('/getting-started');
+  });
+
+  it('accepts tags as an array (the indexer\'s documented shape), not just a string', () => {
+    const withTags = [
+      { title: 'Payments overview', description: '', path: '/payments', tags: ['webhooks', 'idempotency'] },
+    ];
+    const { results } = matchDocs(withTags, 'webhooks');
+    expect(results).to.have.lengthOf(1);
+  });
+
+  it('does not throw and ranks normally for docs with no tags field', () => {
+    const { results } = matchDocs(docs, 'payment');
+    expect(results[0].path).to.equal('/checkout/payments');
+  });
+
+  it('does not include a matchedTags field on results — tags only affect ranking', () => {
+    const withTags = [
+      { title: 'Payments overview', description: '', path: '/payments', tags: 'webhooks' },
+    ];
+    const { results } = matchDocs(withTags, 'webhooks');
+    expect(results[0]).to.not.have.property('matchedTags');
   });
 
   it('attaches highlighted title/description to each result', () => {
