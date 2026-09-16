@@ -256,7 +256,6 @@ function renderHeaderFragment() {
     </div>
     <div>
       <ul>
-        <li><a href="/">Docs</a></li>
         <li><a href="/api/get-config.html">API reference</a></li>
       </ul>
     </div>

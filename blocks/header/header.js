@@ -1,5 +1,6 @@
-import { getConfig, getMetadata, loadStyle } from '../../scripts/nx.js';
+import { getConfig, getMetadata } from '../../scripts/nx.js';
 import getSvg from '../../scripts/utils/svg.js';
+import { buildDocSearch } from '../../scripts/utils/doc-search.js';
 import { loadFragment } from '../fragment/fragment.js';
 
 const { locale, codeBase } = getConfig();
@@ -12,6 +13,26 @@ function decorateBrand(el) {
 
 function decorateMainNav(el) {
   el.classList.add('main-nav-section');
+}
+
+/**
+ * Inserts the compact site-wide search widget before the nav links, so it
+ * lands to the left of the leading nav item (e.g. "API reference"). This
+ * instance owns the global Cmd/Ctrl+K shortcut, since the header is present
+ * on every page — the hero block's own search (homepage only) doesn't bind it.
+ */
+function decorateSearch(mainNav, ul) {
+  if (mainNav.querySelector('.nav-search')) return;
+  const search = buildDocSearch({
+    classPrefix: 'nav-search',
+    placeholder: 'Search docs',
+    resultLimit: 6,
+    globalShortcut: true,
+  });
+  // `ul` isn't necessarily a direct child of `mainNav` (it's typically wrapped
+  // in `.section-content > .default-content`) — insert relative to its actual
+  // parent so this doesn't throw regardless of nesting depth.
+  ul.before(search);
 }
 
 function decorateMobileNavToggle(section) {
@@ -81,39 +102,6 @@ async function decorateActions(section) {
   await Promise.all([color, discord, github]);
 }
 
-async function decorateSearch(actions) {
-  try {
-    // fetch site config
-    const configReq = await fetch('/config.json');
-    if (!configReq.ok) {
-      return;
-    }
-    const configData = await configReq.json();
-    if (!configData.public || !configData.public.search) {
-      return;
-    }
-
-    const searchConfig = { ...configData.public.search };
-
-    // init search
-    const search = document.createElement('div');
-    search.id = 'search';
-    actions.before(search);
-
-    loadStyle('https://cdn.jsdelivr.net/npm/@docsearch/css@4.0.1');
-    const docsearch = await import('https://cdn.jsdelivr.net/npm/@docsearch/js@4.0.1/+esm');
-    docsearch.default({
-      container: search,
-      appId: searchConfig.agolia_appId,
-      apiKey: searchConfig.agolia_appKey,
-      indices: searchConfig.agolia_indices,
-    });
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(err);
-  }
-}
-
 async function decorateHeader(fragment) {
   const brand = fragment.querySelector('.section:first-child');
   if (brand) {
@@ -124,13 +112,12 @@ async function decorateHeader(fragment) {
   const ul = fragment.querySelector('ul');
   const mainNav = ul.closest('.section');
   decorateMainNav(mainNav);
+  decorateSearch(mainNav, ul);
 
   const actions = fragment.querySelector('.section:last-child');
 
   // Only decorate the action area if it has not been decorated
   if (actions?.classList.length < 2) await decorateActions(actions);
-
-  decorateSearch(actions);
 }
 
 /**

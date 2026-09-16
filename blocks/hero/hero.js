@@ -1,6 +1,8 @@
+import { buildDocSearch } from '../../scripts/utils/doc-search.js';
+
 /**
- * Hero block — eyebrow, title, intro, CTAs (+ optional search) on the left,
- * an illustration on the right.
+ * Hero block — eyebrow, title, intro, CTAs (+ inline docs search) on the
+ * left, an illustration on the right.
  *
  * Content model (block table, 2 columns):
  *   | Hero | |
@@ -11,6 +13,21 @@
  * first node), a heading, an intro paragraph, and one or more links. The art
  * cell holds an image (optional).
  */
+
+/**
+ * Builds the inline typeahead search box and appends it to `copy`. The
+ * header block renders its own compact instance of the same widget and owns
+ * the global Cmd/Ctrl+K shortcut, so this one doesn't bind it too.
+ */
+function buildSearch(copy) {
+  copy.append(buildDocSearch({
+    classPrefix: 'hero-search',
+    placeholder: 'Search the documentation',
+    resultLimit: 6,
+    globalShortcut: false,
+  }));
+}
+
 export default function init(block) {
   const cells = [...block.querySelectorAll(':scope > div > div')];
   const [copy, art] = cells;
@@ -47,16 +64,7 @@ export default function init(block) {
     copy.append(actions);
   }
 
-  // Optional search affordance — triggers the existing DocSearch button.
-  const search = document.createElement('button');
-  search.type = 'button';
-  search.className = 'hero-search';
-  search.innerHTML = '<span class="hero-search-label">Search the documentation</span><kbd>⌘K</kbd>';
-  search.addEventListener('click', () => {
-    document.querySelector('.DocSearch-Button')?.click();
-  });
-  if (!document.querySelector('.DocSearch-Button')) search.hidden = true;
-  copy.append(search);
+  buildSearch(copy);
 
   // Art cell.
   if (art) {
