@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { toTerms, toTagList, highlight, matchDocs } from '../../blocks/hero/search-match.js';
+import { toTerms, toTagList, highlight, matchDocs } from '../../../scripts/utils/search-match.js';
 
 describe('toTerms', () => {
   it('lowercases, splits and drops 1-char/empty tokens', () => {

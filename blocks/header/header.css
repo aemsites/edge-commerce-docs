@@ -59,6 +59,10 @@ header {
     display: none;
   }
 
+  .nav-search {
+    display: none;
+  }
+
   /* Reset the global list/paragraph margins so the nav links don't inflate the
      header row. */
   .main-nav-section li,
@@ -91,6 +95,113 @@ header .actions-section {
   }
 }
 
+header .nav-search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--doc-border);
+  border-radius: 8px;
+  background: var(--doc-surface);
+}
+
+header .nav-search-form:has(.nav-search-input:focus) {
+  border-color: var(--doc-accent);
+}
+
+header .nav-search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--doc-text);
+  font: inherit;
+  font-size: 13px;
+}
+
+header .nav-search-input::placeholder {
+  color: var(--doc-mute);
+}
+
+header .nav-search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+header .nav-search kbd {
+  flex: none;
+  font-family: var(--body-font-family-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--doc-mute);
+  border: 1px solid var(--doc-border);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+
+header .nav-search .nav-search-results {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  width: max(320px, 100%);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  display: block;
+  border: 1px solid var(--doc-border);
+  border-radius: 10px;
+  background: var(--doc-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 5;
+}
+
+header .nav-search .nav-search-results[hidden] {
+  display: none;
+}
+
+header .nav-search .nav-search-results li + li {
+  margin-top: 2px;
+}
+
+header .nav-search .nav-search-results a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--doc-text);
+}
+
+header .nav-search .nav-search-results a:hover,
+header .nav-search .nav-search-results a:focus {
+  background: var(--doc-surface-2);
+}
+
+header .nav-search-result-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+header .nav-search-result-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--doc-dim);
+}
+
+header .nav-search .nav-search-results mark {
+  background: var(--doc-accent-soft);
+  color: inherit;
+  border-radius: 3px;
+}
+
+header .nav-search-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--doc-mute);
+}
+
 @media (width >= 900px) {
   .header {
     padding: 0 32px 0 72px;
@@ -107,5 +218,17 @@ header .actions-section {
     margin: 0;
     padding: 0;
     gap: var(--spacing-xl);
+  }
+
+  header .main-nav-section .default-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+  }
+
+  header .nav-search {
+    display: block;
+    position: relative;
+    width: 200px;
   }
 }

@@ -1,4 +1,4 @@
-import { matchDocs } from './search-match.js';
+import { buildDocSearch } from '../../scripts/utils/doc-search.js';
 
 /**
  * Hero block — eyebrow, title, intro, CTAs (+ inline docs search) on the
@@ -14,142 +14,18 @@ import { matchDocs } from './search-match.js';
  * cell holds an image (optional).
  */
 
-const INDEX_PATH = '/query-index-docs.json';
-const RESULT_LIMIT = 6;
-const DEBOUNCE_MS = 200;
-
-let docsPromise;
-
-/** Fetches the docs query-index once and caches the promise for reuse. */
-function loadDocs() {
-  docsPromise ??= fetch(INDEX_PATH)
-    .then((res) => (res.ok ? res.json() : { data: [] }))
-    .then((json) => json.data || [])
-    .catch(() => []);
-  return docsPromise;
-}
-
-function debounce(fn, delay) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
-}
-
-function renderResults(list, terms, results) {
-  list.innerHTML = '';
-
-  if (!terms.length) {
-    list.hidden = true;
-    return;
-  }
-
-  if (!results.length) {
-    const li = document.createElement('li');
-    li.className = 'hero-search-empty';
-    li.textContent = 'No matches. Try different terms.';
-    list.append(li);
-    list.hidden = false;
-    return;
-  }
-
-  results.forEach((result) => {
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href = result.path;
-    const title = document.createElement('span');
-    title.className = 'hero-search-result-title';
-    // titleHighlighted is HTML-escaped by matchDocs()/highlight(); safe to insert.
-    title.innerHTML = result.titleHighlighted || result.path;
-    a.append(title);
-    if (result.descriptionHighlighted) {
-      const desc = document.createElement('span');
-      desc.className = 'hero-search-result-desc';
-      desc.innerHTML = result.descriptionHighlighted;
-      a.append(desc);
-    }
-    li.append(a);
-    list.append(li);
-  });
-  list.hidden = false;
-}
-
-function closeResults(list) {
-  list.hidden = true;
-}
-
-/** Builds the inline typeahead search box and appends it to `copy`. */
+/**
+ * Builds the inline typeahead search box and appends it to `copy`. The
+ * header block renders its own compact instance of the same widget and owns
+ * the global Cmd/Ctrl+K shortcut, so this one doesn't bind it too.
+ */
 function buildSearch(copy) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'hero-search';
-
-  const form = document.createElement('form');
-  form.className = 'hero-search-form';
-  form.setAttribute('role', 'search');
-
-  const input = document.createElement('input');
-  input.type = 'search';
-  input.className = 'hero-search-input';
-  input.placeholder = 'Search the documentation';
-  input.setAttribute('aria-label', 'Search the documentation');
-  input.autocomplete = 'off';
-
-  const kbd = document.createElement('kbd');
-  kbd.textContent = '⌘K';
-
-  form.append(input, kbd);
-
-  const results = document.createElement('ul');
-  results.className = 'hero-search-results';
-  results.hidden = true;
-
-  wrapper.append(form, results);
-
-  const runSearch = debounce(async () => {
-    const query = input.value;
-    if (!query.trim()) {
-      closeResults(results);
-      return;
-    }
-    const docs = await loadDocs();
-    const { terms, results: matches } = matchDocs(docs, query, RESULT_LIMIT);
-    renderResults(results, terms, matches);
-  }, DEBOUNCE_MS);
-
-  input.addEventListener('focus', () => { loadDocs(); });
-  input.addEventListener('input', runSearch);
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' && !results.hidden) {
-      const first = results.querySelector('a');
-      if (first) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-    if (e.key === 'Escape') closeResults(results);
-  });
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const top = results.querySelector('a');
-    if (top) window.location.href = top.getAttribute('href');
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!wrapper.contains(e.target)) closeResults(results);
-  });
-
-  document.addEventListener('keydown', (e) => {
-    const isShortcut = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
-    if (isShortcut) {
-      e.preventDefault();
-      input.focus();
-    }
-  });
-
-  copy.append(wrapper);
+  copy.append(buildDocSearch({
+    classPrefix: 'hero-search',
+    placeholder: 'Search the documentation',
+    resultLimit: 6,
+    globalShortcut: false,
+  }));
 }
 
 export default function init(block) {
