@@ -1,6 +1,7 @@
 ---
 title: "Payments overview"
 description: "The payment flow, supported providers, and how payment initiation works."
+tags: "idempotency, webhooks, shared credentials, payment initiation safety, order review"
 daPath: "/checkout/payments/overview"
 status: new
 managed: true

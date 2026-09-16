@@ -1,6 +1,7 @@
 ---
 title: "PayPal payments"
 description: "Configuration schema for the PayPal Orders v2 provider."
+tags: "checkout, redirects, sandbox mode, order review"
 daPath: "/checkout/payments/paypal"
 status: new
 managed: true

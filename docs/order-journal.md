@@ -1,6 +1,7 @@
 ---
 title: "Order journal"
 description: "Read order lifecycle events, payment transitions, fraud outcomes, custom data updates, and email outcomes."
+tags: "availability delay, time range queries, retry backoff"
 daPath: "/orders/journal"
 status: new
 managed: true

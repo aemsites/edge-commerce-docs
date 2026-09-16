@@ -1,6 +1,7 @@
 ---
 title: "Authentication overview"
 description: "How users, roles, bearer tokens, and site scoping work in the Edge Commerce API."
+tags: "jwt, session cookies, login flow, unauthenticated endpoints, otp, rate limits, permission use cases"
 daPath: "/authentication/overview"
 status: new
 managed: true

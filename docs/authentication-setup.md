@@ -1,6 +1,7 @@
 ---
 title: "Set up administrative access"
 description: "Provision a site, sign in with a one-time password, manage site admins, and create service tokens."
+tags: "otp, environment selection, troubleshooting, admin management, session cookies"
 daPath: "/authentication/setup"
 status: new
 managed: true

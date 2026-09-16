@@ -1,6 +1,7 @@
 ---
 title: "Affirm payments"
 description: "Configuration schema for the Affirm buy-now-pay-later provider."
+tags: "checkout, redirects, ttl"
 daPath: "/checkout/payments/affirm"
 status: new
 managed: true

@@ -1,6 +1,7 @@
 ---
 title: "Promotions guide"
 description: "Promotion models for catalog, cart, and conditional discounts."
+tags: "stacking, rule priority, catalog price rules, free shipping, stage pricing, discount allocation"
 daPath: "/promotions"
 status: migrated
 managed: true

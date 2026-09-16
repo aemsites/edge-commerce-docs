@@ -1,6 +1,7 @@
 ---
 title: "AEM Network"
 description: "Configure AEM Network routing for Edge Delivery Commerce sites."
+tags: "pattern based routing, zero deployment config, multi region, cdn integration, glob pattern matching, resource inlining, microservices routing"
 daPath: "/network"
 status: migrated
 managed: true

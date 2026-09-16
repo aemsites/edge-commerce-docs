@@ -1,6 +1,7 @@
 ---
 title: "Caching strategy"
 description: "How rendered content is cached and invalidated in Edge Delivery Commerce."
+tags: "ttl, multi cdn, push invalidation, propagation delay, merchant feeds, sitemaps"
 status: migrated
 managed: true
 sourceFormat: markdown

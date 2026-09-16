@@ -1,6 +1,7 @@
 ---
 title: "Avalara tax"
 description: "Configuration schema for the Avalara AvaTax tax provider."
+tags: "conditional tax rules, sandbox mode, checkout, estimates"
 daPath: "/checkout/tax/avalara"
 status: new
 managed: true

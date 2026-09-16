@@ -1,6 +1,7 @@
 ---
 title: "Secrets store"
 description: "Encrypted, write-only store for provider credentials, with country and locale scoping."
+tags: "runtime resolution, response codes, recaptcha, oauth redirects"
 daPath: "/checkout/secrets"
 status: new
 managed: true

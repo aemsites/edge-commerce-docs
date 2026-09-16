@@ -1,6 +1,7 @@
 ---
 title: "Product rendering guide"
 description: "Render product data as HTML, JSON, indexes, feeds, and sitemaps."
+tags: "json-ld, dual content sources, stage pricing, edge content fallback, hreflang, open graph, edge content redirects, data attributes, catalog price rules, google merchant center"
 daPath: "/rendering-guide"
 status: migrated
 managed: true

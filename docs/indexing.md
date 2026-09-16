@@ -1,6 +1,7 @@
 ---
 title: "Product Indexing Guide"
 description: "Configure product indexes, merchant feeds, and sitemap outputs."
+tags: "gtin, index performance, reindexing, offset pagination, property path mapping, google merchant center"
 daPath: "/indexing"
 status: migrated
 managed: true

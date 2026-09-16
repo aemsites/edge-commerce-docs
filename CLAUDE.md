@@ -201,6 +201,45 @@ Good:
 - [API reference](/api-reference): Complete endpoint details
 ```
 
+## Tagging for search indexing
+
+Every page's frontmatter has a `tags` line. It becomes a `Tags` row in the page's metadata block, which the delivery pipeline promotes into one `<meta property="article:tag">` element per tag. AEM's built-in indexer reads those into a `tags` array in the query index — a separate signal from full-text title/description search, used for indexed search and filtering.
+
+### Pick tags that add information the title and description don't already give
+
+A tag only earns its place if it surfaces something a reader couldn't already find via the title or description text. Never tag a page with a word already prominent in its own title or description — that's not a tag, it's an echo, and full-text search already covers it.
+
+Bad (restates the title):
+
+```yaml
+title: "PayPal payments"
+tags: "payments, checkout"
+```
+
+Good (surfaces what's actually inside, not stated in the title):
+
+```yaml
+title: "PayPal payments"
+tags: "checkout, redirects, sandbox mode, order review"
+```
+
+### Prefer concrete terms over category labels
+
+Use specific terms a developer would actually type — `idempotency`, `webhooks`, `jwt`, `etag` — instead of broad category/umbrella labels like "reference" or "provider configuration" that describe the shape of a document rather than something a person searches for.
+
+### Use natural phrases, not hyphenated slugs
+
+Write tags as plain space-separated phrases (`bulk operations`, `session cookies`), not kebab-case (`bulk-operations`). The only exceptions are terms whose real-world spelling is always hyphenated or otherwise fixed, such as `json-ld` or `schema.org` — keep those as their actual name, don't force them apart.
+
+### Reuse tags already used on related pages
+
+Before coining a new tag, check whether an existing page already uses one that fits — e.g. `checkout` is shared across every payment-provider config page, `secrets` across every page that touches the secrets store. Reusing tags is what makes them useful as a grouping signal; a tag that appears on exactly one page is rarely worth adding.
+
+When updating a page:
+
+- If the change doesn't introduce or remove a genuinely new searchable concept (a wording tweak, a clarified sentence, a corrected example), leave `tags` alone.
+- If it does, prefer reusing a tag already used elsewhere over coining a new one, so related pages keep sharing tags instead of accumulating near-duplicates.
+
 ## Accuracy
 
 When documenting behavior:
@@ -221,3 +260,4 @@ Before considering a page complete:
 - Links use narrative-to-reference ordering.
 - Acronyms are expanded only when needed.
 - Language is factual, not promotional.
+- Tags reflect content not already stated in the title/description, reuse existing tags where they fit, and use plain space-separated phrases.

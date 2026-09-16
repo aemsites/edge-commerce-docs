@@ -1,6 +1,7 @@
 ---
 title: "Edge Commerce documentation"
 description: "Everything you need to build on Edge Commerce, from your first product ingestion to rendering, indexing, checkout, and promotions."
+tags: "getting started, overview"
 daPath: "/"
 status: migrated
 managed: true

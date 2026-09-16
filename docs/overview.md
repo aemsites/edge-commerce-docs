@@ -1,6 +1,7 @@
 ---
 title: "Edge Commerce overview"
 description: "Overview of Edge Commerce components and data flow."
+tags: "system architecture, cdn"
 daPath: "/overview"
 status: migrated
 managed: true

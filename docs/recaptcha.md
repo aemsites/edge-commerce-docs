@@ -1,6 +1,7 @@
 ---
 title: "reCAPTCHA verification"
 description: "Configuration schema for reCAPTCHA Enterprise abuse protection on unauthenticated endpoints."
+tags: "site configuration, secrets, protected endpoints, allowed origins"
 daPath: "/checkout/recaptcha"
 status: new
 managed: true

@@ -1,6 +1,7 @@
 ---
 title: "Roles and permissions"
 description: "Role-based permissions for users, admins, and service tokens."
+tags: "email scopes, jwt, permission use cases"
 daPath: "/authentication/roles-permissions"
 status: new
 managed: true

@@ -483,6 +483,7 @@ async function main() {
       'Change as few sentences as possible. Prefer editing an existing sentence over adding a new standalone sentence or paragraph. Do not add standalone sentences or paragraphs to pages whose purpose is broader than the change.',
       'Only modify sections that are directly affected by the diff.',
       'Preserve the existing writing style, structure, and tone.',
+      "If this change introduces or removes a genuinely new searchable concept that is not already stated in this page's title or description, update the frontmatter `tags` line to match. Follow the style guide's \"Tagging for search indexing\" rules: never add a tag that merely restates a word already in the title or description; check whether an existing tag used on another doc already fits before coining a new one; use plain space-separated phrases, not hyphenated slugs (except fixed names like json-ld or schema.org). Do not touch `tags` for changes that don't add or remove a searchable concept.",
       `In the frontmatter, set sources.${sourceRepo}.lastReviewedCommit to "${shortSha(sourceRef)}"`,
       sourceVersion ? ` and sources.${sourceRepo}.version to "${sourceVersion}".` : '.',
       `Also set sources.${sourceRepo}.lastContentCommit to "${shortSha(sourceRef)}".`,
@@ -630,6 +631,7 @@ async function main() {
             '\nContent between `<!-- GENERATED: ... -->` markers is auto-generated from the source schema and is authoritative. Never edit inside those markers, and do NOT add prose or examples that merely restate a generated table row — the table already covers it. Only add narrative for semantics a table cannot express, and keep it minimal.',
             '\nPlace the new content in the most logical location within the existing document structure, and add as little as needed to cover the feature at this page\'s level.',
             '\nPreserve the existing writing style, structure, and tone.',
+            '\nIf this addition introduces a genuinely new searchable concept that is not already stated in this page\'s title or description, update the frontmatter `tags` line to match, following the style guide\'s "Tagging for search indexing" rules (check whether an existing tag used elsewhere already fits before coining a new one; use plain space-separated phrases, not hyphenated slugs). Leave `tags` unchanged if this addition doesn\'t surface a new searchable concept.',
             '\nPreserve the exact YAML frontmatter formatting — do not add or remove quotes around values that already have or lack them.',
             `\nUpdate sources.${sourceRepo}.lastContentCommit to "${shortSha(sourceRef)}" in the frontmatter.`,
             '\nReturn the complete updated Markdown file including frontmatter.',
@@ -674,6 +676,7 @@ async function main() {
             `\ntitle: "${gap.title || slug}"`,
             `\ndescription: "${gap.description || gap.summary}"`,
             `\ndaPath: "/${slug}"`,
+            `\ntags: "tag one, tag two"`,
             `\nstatus: draft`,
             `\nmanaged: true`,
             `\nsourceFormat: markdown`,
@@ -685,6 +688,7 @@ async function main() {
             `\n---`,
             '\n\nWrite a complete, well-structured documentation page.',
             '\nFollow the style guide strictly.',
+            '\nFor the frontmatter `tags` line, follow the style guide\'s "Tagging for search indexing" rules: pick tags that surface concepts not already stated in the title/description, reuse a tag already used on another doc when it fits rather than coining a near-duplicate, and use plain space-separated phrases (not hyphenated slugs, except fixed names like json-ld or schema.org).',
             '\nFocus only on user-facing behavior and configuration — no internal implementation details.',
           ].join('');
 

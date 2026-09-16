@@ -1,6 +1,7 @@
 ---
 title: "Apple Pay"
 description: "Apple Pay merchant identity configuration."
+tags: "merchant certificate, private keys, card networks, checkout"
 daPath: "/checkout/payments/apple-pay"
 status: new
 managed: true
