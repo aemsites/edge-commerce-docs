@@ -1,6 +1,7 @@
 ---
 title: "PayPal order review and deferred capture"
 description: "Explain the PayPal order-review payment flows, confirmation APIs, redirects, and deferred-capture behavior."
+tags: "replay safety, rate limits, express checkout, timeouts, idempotency, payment attempt binding, retryable errors"
 daPath: "/paypal-order-review"
 status: draft
 managed: true

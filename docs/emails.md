@@ -1,6 +1,7 @@
 ---
 title: "Transactional email"
 description: "Configure OTP and order confirmation email, author Edge Delivery templates, and manage sender identity."
+tags: "friendly order ids, order journal, template variables, localization, mustache templates, email deduplication, custom sender domains"
 daPath: "/emails"
 status: new
 managed: true

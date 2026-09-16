@@ -1,6 +1,7 @@
 ---
 title: "Forter fraud detection"
 description: "Configuration schema for the Forter fraud detection provider."
+tags: "risk scoring, checkout, secrets"
 daPath: "/checkout/fraud/forter"
 status: new
 managed: true

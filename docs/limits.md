@@ -1,6 +1,7 @@
 ---
 title: "Limits and guidance"
 description: "API limits and operational guidance for Edge Delivery Commerce."
+tags: "rate limits, bulk operations, catalog size, index size"
 status: migrated
 managed: true
 sourceFormat: markdown

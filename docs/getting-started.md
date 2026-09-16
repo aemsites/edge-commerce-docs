@@ -1,6 +1,7 @@
 ---
 title: "Getting started with Edge Commerce"
 description: "Set up Edge Commerce and ingest the first product."
+tags: "aem network routing, bulk operations, rendered html output, structured data, json-ld"
 daPath: "/getting-started"
 status: migrated
 managed: true

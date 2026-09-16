@@ -1,6 +1,7 @@
 ---
 title: "Image processing"
 description: "How external product images are fetched, stored, and verified."
+tags: "error handling, retry backoff, processing status, image verification, image deduplication"
 status: migrated
 managed: true
 sourceFormat: markdown

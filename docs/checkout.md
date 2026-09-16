@@ -1,6 +1,7 @@
 ---
 title: "Checkout overview"
 description: "How payments, fraud, tax, and identity providers fit together at checkout, and where their credentials live."
+tags: "secrets, encryption, pluggable providers"
 daPath: "/checkout/overview"
 status: new
 managed: true

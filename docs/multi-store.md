@@ -1,6 +1,7 @@
 ---
 title: "Multi-store configuration"
 description: "Structure multiple stores and locales in Edge Delivery Commerce."
+tags: "store view codes, brand separation, url routing"
 status: migrated
 managed: true
 sourceFormat: markdown

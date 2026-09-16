@@ -1,6 +1,7 @@
 ---
 title: "Places and address validation"
 description: "How address autocomplete, place details, and address validation work in checkout."
+tags: "access rules, error handling, session cookies, allowed origins"
 daPath: "/places"
 status: new
 managed: true

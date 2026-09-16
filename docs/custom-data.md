@@ -1,6 +1,7 @@
 ---
 title: "Custom data and extensions"
 description: "Extend product data with custom fields in Edge Delivery Commerce."
+tags: "variants, client side validation"
 status: migrated
 managed: true
 sourceFormat: markdown

@@ -1,6 +1,7 @@
 ---
 title: "Service tokens"
 description: "Create and manage scoped tokens for automation and integrations."
+tags: "email scopes, legacy site tokens, secrets, jwt, revocation"
 daPath: "/authentication/service-tokens"
 status: new
 managed: true

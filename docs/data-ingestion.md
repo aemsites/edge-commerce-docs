@@ -1,6 +1,7 @@
 ---
 title: "Product data ingestion guide"
 description: "ETL patterns and data ingestion guidance for Product Bus."
+tags: "rate limits, retries, timeouts, gtin, production monitoring, validation tooling, structured data, json-ld"
 daPath: "/data-ingestion"
 status: migrated
 managed: true

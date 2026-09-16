@@ -1,6 +1,7 @@
 ---
 title: "Chase payments"
 description: "Configuration schema for the Chase Payment Solutions provider."
+tags: "google pay, apple pay, installments, avs checks, checkout"
 daPath: "/checkout/payments/chase"
 status: new
 managed: true

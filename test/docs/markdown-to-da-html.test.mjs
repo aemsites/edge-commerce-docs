@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 import {
-  transformBlockTables, blockClassName, isBlockTableHeader, decorateIconTokens,
+  transformBlockTables, blockClassName, isBlockTableHeader, decorateIconTokens, metadataBlock, parseFrontmatter,
 } from '../../scripts/docs/markdown-to-da-html.mjs';
 
 test('isBlockTableHeader: named single-cell header is a block', () => {
@@ -51,4 +51,35 @@ test('decorateIconTokens: only matches letter-led tokens', () => {
   assert.equal(decorateIconTokens(':rocket_launch:'), '<span class="icon icon-rocket_launch"></span>');
   assert.equal(decorateIconTokens('at 12:30:45 today'), 'at 12:30:45 today');
   assert.equal(decorateIconTokens('see https://x.test'), 'see https://x.test');
+});
+
+test('parseFrontmatter: reads a top-level tags line as a plain string', () => {
+  const source = [
+    '---',
+    'title: "Example"',
+    'description: "An example page."',
+    'tags: "catalog, orders"',
+    '---',
+    '',
+    '# Example',
+    '',
+  ].join('\n');
+  const [frontmatter] = parseFrontmatter(source);
+  assert.equal(frontmatter.tags, 'catalog, orders');
+});
+
+test('metadataBlock: emits a Tags row when frontmatter.tags is present', () => {
+  const html = metadataBlock({ title: 'Example', description: 'An example page.', tags: 'catalog, orders' });
+  assert.match(html, /<div class="metadata">/);
+  assert.match(html, /<div>Tags<\/div>\s*<div>catalog, orders<\/div>/);
+});
+
+test('metadataBlock: omits the Tags row when frontmatter.tags is absent', () => {
+  const html = metadataBlock({ title: 'Example', description: 'An example page.' });
+  assert.doesNotMatch(html, /<div>Tags<\/div>/);
+});
+
+test('metadataBlock: escapes HTML in tag values', () => {
+  const html = metadataBlock({ title: 'Example', description: 'An example page.', tags: 'a & b, <script>' });
+  assert.match(html, /a &amp; b, &lt;script&gt;/);
 });

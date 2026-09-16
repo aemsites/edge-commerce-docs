@@ -1,6 +1,7 @@
 ---
 title: "Product catalog modeling"
 description: "Model standalone products, products with variants, and bundle compositions in the Product Bus."
+tags: "checkout behavior, structured data, json-ld"
 daPath: "/product-catalog-modeling"
 status: migrated
 managed: true

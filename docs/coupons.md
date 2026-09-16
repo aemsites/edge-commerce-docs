@@ -1,6 +1,7 @@
 ---
 title: "Coupons guide"
 description: "Coupon data model, validation, and redemption flows."
+tags: "batch generation, tracking codes, stacking, usage tracking, cursor pagination, category eligibility, coupon validation, product list pricing, auto apply coupons, free shipping"
 daPath: "/coupons"
 status: migrated
 managed: true

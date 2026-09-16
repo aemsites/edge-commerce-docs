@@ -1,6 +1,7 @@
 ---
 title: "Security best practices"
 description: "API key management and data validation best practices."
+tags: "allowed origins, access scoping, xss prevention"
 status: migrated
 managed: true
 sourceFormat: markdown

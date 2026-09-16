@@ -1,6 +1,7 @@
 ---
 title: "ID.me identity verification"
 description: "Configuration schema for the ID.me community verification provider."
+tags: "sandbox mode, checkout, oauth redirects, auto apply coupons"
 daPath: "/checkout/identity/idme"
 status: new
 managed: true

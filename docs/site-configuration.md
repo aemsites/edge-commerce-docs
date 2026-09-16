@@ -1,6 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs"
 daPath: "/configuration/site"
 status: new
 managed: true

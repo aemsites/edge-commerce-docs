@@ -1,6 +1,7 @@
 ---
 title: "Customers and account data"
 description: "How customer profiles, addresses, and customer-scoped orders work in the Edge Commerce API."
+tags: "passwords, access rules, cursor pagination, session cookies, guest order lookup, patch merge semantics"
 daPath: "/customers"
 status: new
 managed: true

@@ -212,6 +212,7 @@ function metadataBlock(frontmatter) {
   const rows = [
     ['Title', frontmatter.title],
     ['Description', frontmatter.description],
+    ['Tags', frontmatter.tags],
     ['Template', frontmatter.template || 'docs'],
     ['Labs', frontmatter.labs || 'Commerce'],
   ].filter(([, value]) => value);
@@ -319,4 +320,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   });
 }
 
-export { transformBlockTables, blockClassName, isBlockTableHeader, decorateIconTokens };
+export {
+  transformBlockTables, blockClassName, isBlockTableHeader, decorateIconTokens, metadataBlock, parseFrontmatter,
+};
