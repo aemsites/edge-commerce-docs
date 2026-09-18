@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Compute an estimate — Helix Commerce API</title>
-    <meta name="description" content="Request shape depends on estimateType. All variants accept a partial shipping address and (for price/shipping/order) a cart items array and optional couponCode. An optional BCP-47 locale (e.g. fr-CA) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.">
+    <meta name="description" content="Request shape depends on estimateType. All variants accept a partial shipping address and (for price/shipping/order) a cart items array and an optional couponCode, which may be a single code (string) or an array of up to 5 codes. When multiple codes are sent, the best applicable combination is applied (subject to the site coupons.maxApplicableCoupons limit and coupon stacking rules) and the price/order responses include a couponStatus array reporting each code as applied, rejected_invalid, or rejected_not_combinable. couponSource mirrors couponCode (a single value or an index-aligned array); auto marks a coupon applied by a storefront auto flow (affiliate / ID.me), which is pinned so it is retained over a competing manual coupon. An optional BCP-47 locale (e.g. fr-CA) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/estimate/{estimateType}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Request shape depends on <code>estimateType</code>. All variants accept a partial shipping address and (for price/shipping/order) a cart <code>items</code> array and optional <code>couponCode</code>. An optional BCP-47 <code>locale</code> (e.g. <code>fr-CA</code>) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.</p>
+        <p>Request shape depends on <code>estimateType</code>. All variants accept a partial shipping address and (for price/shipping/order) a cart <code>items</code> array and an optional <code>couponCode</code>, which may be a single code (string) or an array of up to 5 codes. When multiple codes are sent, the best applicable combination is applied (subject to the site <code>coupons.maxApplicableCoupons</code> limit and coupon stacking rules) and the price/order responses include a <code>couponStatus</code> array reporting each code as <code>applied</code>, <code>rejected_invalid</code>, or <code>rejected_not_combinable</code>. <code>couponSource</code> mirrors <code>couponCode</code> (a single value or an index-aligned array); <code>auto</code> marks a coupon applied by a storefront auto flow (affiliate / ID.me), which is pinned so it is retained over a competing manual coupon. An optional BCP-47 <code>locale</code> (e.g. <code>fr-CA</code>) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>

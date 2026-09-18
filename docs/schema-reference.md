@@ -444,7 +444,7 @@ The full order request body used when placing an order.
 | `paymentMethod` | string | No | Payment method identifier. |
 | `checkoutFlow` | `standard` \| `express` | No | Checkout flow type. `express` identifies wallet or shortcut checkout flows. |
 | `entryPoint` | `cart` \| `checkout` \| `pdp` | No | Page or experience where checkout started. |
-| `couponCode` | string | No | Coupon code applied to the order. |
+| `couponCode` | string \| string[] | No | Coupon code applied to the order. |
 | `giftMessage` | string | No | Optional gift message to include with the order. Max 250 characters. max length 250 |
 | `customerTimezone` | string | No | IANA timezone captured from the shopper's browser at checkout. max length 100; pattern constrained |
 | `custom` | Record<string, string> | No | Customer-defined key/value pairs for linking the order to external systems. |
@@ -567,11 +567,11 @@ The relaxed order request used for previews and estimates. `customer` is optiona
 | `paymentMethod` | string | No | Payment method identifier. |
 | `checkoutFlow` | `standard` \| `express` | No | Checkout flow type. `express` identifies wallet or shortcut checkout flows. |
 | `entryPoint` | `cart` \| `checkout` \| `pdp` | No | Page or experience where checkout started. |
-| `couponCode` | string | No | Coupon code applied to the order. |
+| `couponCode` | string \| string[] | No | Coupon code applied to the order. |
 | `giftMessage` | string | No | Optional gift message to include with the order. Max 250 characters. max length 250 |
 | `customerTimezone` | string | No | IANA timezone captured from the shopper's browser at checkout. max length 100; pattern constrained |
 | `custom` | Record<string, string> | No | Customer-defined key/value pairs for linking the order to external systems. |
-| `couponSource` | string | No | Origin of the coupon code, e.g. a campaign source (order preview only). |
+| `couponSource` | string \| string[] | No | Origin of the coupon code, e.g. a campaign source (order preview only). |
 
 <!-- GENERATED: PreviewOrder:end -->
 
