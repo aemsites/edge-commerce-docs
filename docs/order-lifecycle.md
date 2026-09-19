@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, multiple coupons"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "2d06dee"
+    lastContentCommit: "2d06dee"
 ---
 
 # Order lifecycle
@@ -159,6 +159,8 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/preview" 
   }'
 ```
 
+The preview endpoint accepts one coupon code or an array of up to five codes. When multiple codes are submitted, the API applies the best valid combination allowed by the site's coupon stacking configuration and reports each code's outcome in `couponStatus`.
+
 The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable.
 
 ```json
@@ -194,7 +196,7 @@ For bundle lines, component discount allocations are a decomposition of the pare
 
 ### 3. Create the order with the estimate token
 
-Submit the order with the same customer, shipping, item, coupon, selected shipping method, and checkout context, plus the [`estimateToken`](#estimate-tokens) from preview.
+Submit the order with the same customer, shipping, item, coupon or coupons, selected shipping method, and checkout context, plus the [`estimateToken`](#estimate-tokens) from preview.
 
 ```bash
 curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders" \

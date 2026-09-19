@@ -1,7 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
-tags: "geographic overrides, validation rules, sender identity, delivery site slugs"
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupon stacking, line discount caps"
 daPath: "/configuration/site"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "2d06dee"
+    lastContentCommit: "2d06dee"
 ---
 
 # Site configuration
@@ -69,6 +69,7 @@ All top-level fields are optional, and unknown fields are rejected.
 | `emails` | object | Branding and sender settings for OTP and transactional email |
 | `experimentalFlags` | object | Boolean feature flags |
 | `friendlyId` | object | Friendly order ID generation settings |
+| `coupons` | object | Coupon stacking and per-line coupon discount limits |
 | `geoOverrides` | array | Country-specific overrides for selected configuration fields |
 
 ## Allowed origins
@@ -231,6 +232,26 @@ Both `emails.otp` and `emails.transactional` support:
 | `characters` | string | Named preset or literal character set. Must contain at least two characters and cannot include `/`, URL separators, spaces, or HTML-sensitive characters |
 | `length` | integer | Number of generated characters, from 4 to 32 |
 | `prefix` | string | Optional prefix, from 1 to 8 characters. Uses the same character restrictions |
+
+## Coupon settings
+
+The `coupons` object controls coupon combination selection and limits coupon-sourced discounts on individual lines.
+
+```json
+{
+  "coupons": {
+    "maxApplicableCoupons": 3,
+    "maxLineDiscount": {
+      "discountType": "percentage",
+      "discountValue": 50
+    }
+  }
+}
+```
+
+`maxApplicableCoupons` sets the maximum number of coupons that can be applied to one request. When multiple coupon codes are submitted, the applicable combination is selected within this limit.
+
+`maxLineDiscount` limits the coupon-sourced discount on each line to the configured percentage of that line's pre-coupon subtotal. Set `discountType` to `percentage` and provide the percentage in `discountValue`. This limit applies only to discounts sourced from coupons. Automatic pricing rules and catalog-sale markdowns are not limited by `maxLineDiscount`.
 
 ## Geographic overrides
 
