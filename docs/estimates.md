@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "8f53823"
+    lastReviewedCommit: "2d06dee"
+    lastContentCommit: "2d06dee"
 ---
 
 # Estimates and cart totals
@@ -60,8 +60,10 @@ Estimate request shapes vary by type, but these fields are common across shippin
 | `shipping` | Partial shipping address. `country`, `state`, and sometimes `zip` are enough for estimates |
 | `items` | Cart line items with SKU, path, price, optional shipping dimensions, and a whole-number quantity from 1 to 1000 |
 | `customer.email` | Optional. Used when coupon rules depend on customer usage limits |
-| `couponCode` | Optional coupon code |
-| `couponSource` | Optional coupon source, such as `manual` or `auto` |
+| `couponCode` | Optional coupon code or array of up to five coupon codes |
+| `couponSource` | Optional coupon source, such as `manual` or `auto`; an array can provide a source for each code |
+
+When multiple coupon codes are submitted, the API selects the best applicable combination allowed by the site's coupon configuration and stacking rules. Price, order, and preview responses report the outcome for each submitted code.
 
 The `order` estimate also accepts checkout context used by tax configuration:
 
@@ -72,6 +74,20 @@ The `order` estimate also accepts checkout context used by tax configuration:
 | `entryPoint` | Optional place where checkout started: `cart`, `checkout`, or `pdp` |
 
 Pass the same checkout context to order preview and order creation. The values can affect configured [Avalara tax rules](/checkout/tax/avalara#conditional-tax-rules) and are bound into the estimate token returned by preview.
+
+## Multiple coupon codes
+
+`couponCode` can be a single code or an array of up to five codes. `couponSource` can be a single source applied to every code or an array aligned by index with `couponCode`. Use `auto` for coupons supplied by an automatic storefront flow, such as an affiliate or ID.me flow. Auto-sourced coupons are pinned during selection so a competing manual coupon cannot replace them.
+
+The site configuration's `coupons.maxApplicableCoupons` value limits how many coupons can be applied. The API selects a valid combination with the greatest combined discount, subject to that limit and the coupon stacking rules. A coupon combination must be pairwise compatible; a non-stackable applied coupon also suppresses automatic cart rules.
+
+Price and order estimates include `couponStatus` for submitted codes. Each entry has one of these statuses:
+
+- `applied`: The coupon is included in the selected combination.
+- `rejected_invalid`: The coupon failed validation.
+- `rejected_not_combinable`: The coupon was valid but could not be included with the selected combination or configured coupon limit.
+
+Shipping estimates use the same coupon selection and stacking behavior when calculating free-shipping effects. They remain tolerant of invalid coupons and return the applicable shipping rates; coupon status details are returned by price and order estimates.
 
 ## Tax estimate
 
@@ -295,7 +311,7 @@ With `shippingMethod.id`, `order` returns a single matching method:
 
 If the requested method does not match any available rate, `shippingMethods` is an empty array.
 
-For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ.
+For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. A configured per-line coupon discount limit can further restrict coupon allocations. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ.
 
 When the shopper selects a final method and submits checkout, `/orders/preview` recomputes the committed selected-method total and returns the `estimateToken` used by order creation.
 

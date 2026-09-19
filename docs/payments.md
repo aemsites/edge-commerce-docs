@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "2d06dee"
+    lastContentCommit: "2d06dee"
 ---
 
 # Payments overview
