@@ -63,11 +63,11 @@
             <tr><td><code>paymentMethod</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>checkoutFlow</code></td><td><code>"standard" | "express"</code></td><td>no</td><td>Checkout flow type. <code>express</code> identifies wallet or shortcut checkout flows.</td></tr>
             <tr><td><code>entryPoint</code></td><td><code>"cart" | "checkout" | "pdp"</code></td><td>no</td><td>Page or experience where checkout started.</td></tr>
-            <tr><td><code>couponCode</code></td><td><code>string</code></td><td>no</td><td></td></tr>
+            <tr><td><code>couponCode</code></td><td><code>string | string[]</code></td><td>no</td><td></td></tr>
+            <tr><td><code>couponSource</code></td><td><code>string | string[]</code></td><td>no</td><td></td></tr>
             <tr><td><code>giftMessage</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>customerTimezone</code></td><td><code>string</code></td><td>no</td><td></td></tr>
             <tr><td><code>custom</code></td><td><code>object</code></td><td>no</td><td></td></tr>
-            <tr><td><code>couponSource</code></td><td><code>string</code></td><td>no</td><td></td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -88,6 +88,7 @@
             <tr><td><code>total</code></td><td><code>string</code></td><td>yes</td><td>Estimated order total.</td></tr>
             <tr><td><code>lineItems</code></td><td><code>StoredOrderItem[]</code></td><td>yes</td><td>Server-resolved lines. Bundle parent and component allocations are non-additive alternate views; use only the parent or the component level when deriving effective prices.</td></tr>
             <tr><td><code>estimateToken</code></td><td><code>string</code></td><td>yes</td><td>Signed estimate token for order creation.</td></tr>
+            <tr><td><code>couponStatus</code></td><td><code>object[]</code></td><td>no</td><td>Per-code coupon outcome, present only when a coupon code was submitted. Reports each submitted code as applied, rejected_invalid (failed validation; reason withheld to prevent code enumeration), or rejected_not_combinable (valid but not part of the winning stacking combination).</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.</h3>
