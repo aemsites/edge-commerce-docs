@@ -60,7 +60,8 @@
             <tr><td><code>includedShippingTypes</code></td><td><code>string[]</code></td><td>no</td><td>When set, free shipping applies only to these shipping method types.</td></tr>
             <tr><td><code>includedCategories</code></td><td><code>string[]</code></td><td>no</td><td>When non-empty, only products in at least one of these categories count toward the coupon. Each entry is a category <code>url_key</code>, matched exactly against the product's categories. Product-level rules are more specific and take precedence: a line matched by <code>includedProducts</code>/<code>excludedProducts</code> is decided before category scope is consulted.</td></tr>
             <tr><td><code>excludedCategories</code></td><td><code>string[]</code></td><td>no</td><td>Products in any of these categories are excluded from the coupon. Each entry is a category <code>url_key</code>, matched exactly against the product's categories. Exclusion wins over inclusion within the same level, but a line listed in <code>includedProducts</code> overrides a category exclusion (product-level rules are more specific).</td></tr>
-            <tr><td><code>stackable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.</td></tr>
+            <tr><td><code>stackable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the coupon stacks with cart-level automatic pricing rules. Defaults to true. Orthogonal to <code>includeStackableCouponTypes</code>, which governs coupon-to-coupon stacking.</td></tr>
+            <tr><td><code>includeStackableCouponTypes</code></td><td><code>string[]</code></td><td>no</td><td>Coupon type ids this type may be stacked with (coupon-to-coupon). Stacking a pair is permitted when either participating type lists the other, so the relationship need not be declared on both sides. Defaults to empty — no coupon-to-coupon stacking. Distinct from <code>stackable</code>, which governs stacking with automatic cart pricing rules.</td></tr>
             <tr><td><code>autoApply</code></td><td><code>boolean</code></td><td>no</td><td>Apply automatically without manual code entry. Defaults to false.</td></tr>
             <tr><td><code>allowManualEntry</code></td><td><code>boolean</code></td><td>no</td><td>Allow the code to be entered manually at checkout. Defaults to true.</td></tr>
             <tr><td><code>defaultUsageLimit</code></td><td><code>number | null</code></td><td>no</td><td>Default total usage limit for codes of this type; null for unlimited.</td></tr>
@@ -119,6 +120,9 @@
   "maximumDiscountAmount": 100,
   "freeShipping": false,
   "stackable": true,
+  "includeStackableCouponTypes": [
+    "loyalty-reward"
+  ],
   "createdAt": "2026-01-01T00:00:00.000Z",
   "updatedAt": "2026-01-01T00:00:00.000Z"
 }</code></pre>

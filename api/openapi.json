@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.69.0",
+    "version": "2.70.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -280,6 +280,13 @@
                     },
                     "friendlyId": {
                       "prefix": "US-"
+                    },
+                    "coupons": {
+                      "maxApplicableCoupons": 3,
+                      "maxLineDiscount": {
+                        "discountType": "percentage",
+                        "discountValue": 50
+                      }
                     },
                     "geoOverrides": [
                       {
@@ -2729,6 +2736,32 @@
                     "estimateToken": {
                       "description": "Signed estimate token for order creation.",
                       "type": "string"
+                    },
+                    "couponStatus": {
+                      "description": "Per-code coupon outcome, present only when a coupon code was submitted. Reports each submitted code as applied, rejected_invalid (failed validation; reason withheld to prevent code enumeration), or rejected_not_combinable (valid but not part of the winning stacking combination).",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "description": "The submitted coupon code.",
+                            "type": "string"
+                          },
+                          "status": {
+                            "description": "Outcome for this code.",
+                            "type": "string",
+                            "enum": [
+                              "applied",
+                              "rejected_invalid",
+                              "rejected_not_combinable"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "status"
+                        ]
+                      }
                     }
                   },
                   "required": [
@@ -4427,7 +4460,7 @@
       "post": {
         "operationId": "createEstimate",
         "summary": "Compute an estimate",
-        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and optional `couponCode`. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.",
+        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and an optional `couponCode`, which may be a single code (string) or an array of up to 5 codes. When multiple codes are sent, the best applicable combination is applied (subject to the site `coupons.maxApplicableCoupons` limit and coupon stacking rules) and the price/order responses include a `couponStatus` array reporting each code as `applied`, `rejected_invalid`, or `rejected_not_combinable`. `couponSource` mirrors `couponCode` (a single value or an index-aligned array); `auto` marks a coupon applied by a storefront auto flow (affiliate / ID.me), which is pinned so it is retained over a competing manual coupon. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.",
         "responses": {
           "200": {
             "description": "The computed estimate. Body shape varies by `estimateType`.",
@@ -6120,6 +6153,9 @@
                           "maximumDiscountAmount": 100,
                           "freeShipping": false,
                           "stackable": true,
+                          "includeStackableCouponTypes": [
+                            "loyalty-reward"
+                          ],
                           "createdAt": "2026-01-01T00:00:00.000Z",
                           "updatedAt": "2026-01-01T00:00:00.000Z"
                         },
@@ -6211,6 +6247,9 @@
                       "maximumDiscountAmount": 100,
                       "freeShipping": false,
                       "stackable": true,
+                      "includeStackableCouponTypes": [
+                        "loyalty-reward"
+                      ],
                       "createdAt": "2026-01-01T00:00:00.000Z",
                       "updatedAt": "2026-01-01T00:00:00.000Z"
                     }
@@ -6299,7 +6338,10 @@
                     "minimumOrderAmount": 50,
                     "maximumDiscountAmount": 100,
                     "freeShipping": false,
-                    "stackable": true
+                    "stackable": true,
+                    "includeStackableCouponTypes": [
+                      "loyalty-reward"
+                    ]
                   }
                 }
               }
@@ -6477,6 +6519,9 @@
                       "maximumDiscountAmount": 100,
                       "freeShipping": false,
                       "stackable": true,
+                      "includeStackableCouponTypes": [
+                        "loyalty-reward"
+                      ],
                       "createdAt": "2026-01-01T00:00:00.000Z",
                       "updatedAt": "2026-01-01T00:00:00.000Z"
                     }
@@ -6791,6 +6836,36 @@
                 "pattern": "^[^/?#&%<> ]+$",
                 "minLength": 1,
                 "maxLength": 8
+              }
+            }
+          },
+          "coupons": {
+            "type": "object",
+            "properties": {
+              "maxApplicableCoupons": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "maxLineDiscount": {
+                "type": "object",
+                "properties": {
+                  "discountType": {
+                    "type": "string",
+                    "enum": [
+                      "percentage"
+                    ]
+                  },
+                  "discountValue": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "discountType",
+                  "discountValue"
+                ]
               }
             }
           },
@@ -7968,7 +8043,32 @@
             ]
           },
           "couponCode": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5
+              }
+            ]
+          },
+          "couponSource": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5
+              }
+            ]
           },
           "giftMessage": {
             "type": "string",
@@ -8308,7 +8408,32 @@
             ]
           },
           "couponCode": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5
+              }
+            ]
+          },
+          "couponSource": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5
+              }
+            ]
           },
           "giftMessage": {
             "type": "string",
@@ -8325,9 +8450,6 @@
               "type": "string",
               "maxLength": 2048
             }
-          },
-          "couponSource": {
-            "type": "string"
           }
         },
         "required": [
@@ -8724,8 +8846,15 @@
             }
           },
           "stackable": {
-            "description": "Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.",
+            "description": "Whether the coupon stacks with cart-level automatic pricing rules. Defaults to true. Orthogonal to `includeStackableCouponTypes`, which governs coupon-to-coupon stacking.",
             "type": "boolean"
+          },
+          "includeStackableCouponTypes": {
+            "description": "Coupon type ids this type may be stacked with (coupon-to-coupon). Stacking a pair is permitted when either participating type lists the other, so the relationship need not be declared on both sides. Defaults to empty — no coupon-to-coupon stacking. Distinct from `stackable`, which governs stacking with automatic cart pricing rules.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "autoApply": {
             "description": "Apply automatically without manual code entry. Defaults to false.",
@@ -8873,8 +9002,15 @@
             }
           },
           "stackable": {
-            "description": "Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.",
+            "description": "Whether the coupon stacks with cart-level automatic pricing rules. Defaults to true. Orthogonal to `includeStackableCouponTypes`, which governs coupon-to-coupon stacking.",
             "type": "boolean"
+          },
+          "includeStackableCouponTypes": {
+            "description": "Coupon type ids this type may be stacked with (coupon-to-coupon). Stacking a pair is permitted when either participating type lists the other, so the relationship need not be declared on both sides. Defaults to empty — no coupon-to-coupon stacking. Distinct from `stackable`, which governs stacking with automatic cart pricing rules.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "autoApply": {
             "description": "Apply automatically without manual code entry. Defaults to false.",
@@ -8990,8 +9126,15 @@
             }
           },
           "stackable": {
-            "description": "Whether the coupon stacks with cart-level auto pricing rules. Defaults to true.",
+            "description": "Whether the coupon stacks with cart-level automatic pricing rules. Defaults to true. Orthogonal to `includeStackableCouponTypes`, which governs coupon-to-coupon stacking.",
             "type": "boolean"
+          },
+          "includeStackableCouponTypes": {
+            "description": "Coupon type ids this type may be stacked with (coupon-to-coupon). Stacking a pair is permitted when either participating type lists the other, so the relationship need not be declared on both sides. Defaults to empty — no coupon-to-coupon stacking. Distinct from `stackable`, which governs stacking with automatic cart pricing rules.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "autoApply": {
             "description": "Apply automatically without manual code entry. Defaults to false.",
