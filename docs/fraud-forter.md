@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "e77382f"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
 ---
 
 # Forter fraud detection

@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
 ---
 
 # Order journal

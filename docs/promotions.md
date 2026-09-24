@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -89,7 +89,7 @@ Each `CatalogPriceRule` within `rules`:
 | `price` | string | Yes | Discounted price for this variant |
 | `enabled` | boolean | No | Whether the variant rule can apply. Defaults to enabled; set to `false` to disable the variant rule |
 | `start` | string | No | ISO 8601 timestamp. Variant rule is inactive before this time |
-| `end` | string | No | ISO 8601 timestamp. Variant rule is inactive after this time |
+| `end` | string | No | Variant rule is inactive after this time |
 
 ### How rules are selected and applied
 
@@ -252,11 +252,11 @@ At least one action must be specified.
 
 When multiple enabled cart rules qualify for a cart, their priority values control evaluation order. Rules with lower priority numbers are evaluated first. All stackable rules that qualify are applied; a non-stackable rule is applied alone (other rules are suppressed).
 
-Cart rules that list a coupon type ID in their `incompatibleTypes` array are automatically suppressed when a coupon of that type is active. When a non-stackable coupon is applied, all cart rules are suppressed regardless of their `incompatibleTypes` setting.
+Cart rules that list a coupon type ID in their `incompatibleTypes` array are automatically suppressed when a coupon of that type is active. When a non-stackable applied coupon is present, all cart rules are suppressed regardless of their `incompatibleTypes` setting.
 
 ## How promotions apply during the purchase flow
 
-The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, any coupon code is validated, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the coupon type: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. Third, cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
+The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, coupon codes are validated and the best applicable combination is selected, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the selected coupon types: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. Third, cart rules are evaluated — non-stackable applied coupons suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
 
 ## Next steps
 

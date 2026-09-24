@@ -1,7 +1,7 @@
 ---
 title: "Schema reference"
 description: "Reference for the Product Bus product schema and the order request schemas."
-tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication"
+tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking"
 daPath: "/schema-reference"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "1c6fd97"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -421,6 +421,8 @@ Product condition using schema.org vocabulary. These values are rendered in the 
 ## Orders
 
 Request body schemas for the order and checkout endpoints — what a client sends when previewing or placing an order. These are distinct from the stored order shape returned in responses.
+
+Coupon requests accept one code or an array of up to five codes. When multiple codes are submitted, the service selects a valid combination according to coupon stacking rules and reports each submitted code's outcome in the preview response.
 
 For how `estimateToken` fits into preview and order creation, see [Estimate tokens](/orders/lifecycle#estimate-tokens).
 
