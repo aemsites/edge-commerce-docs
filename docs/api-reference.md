@@ -10,7 +10,7 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
+    lastReviewedCommit: "bbe723f"
     lastContentCommit: "c8a516f"
   helix-mixer:
     version: "v1.6.1"

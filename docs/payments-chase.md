@@ -9,13 +9,15 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
 ---
 
 # Chase payments
 
 Chase Payment Solutions is integrated through the Orbital Hosted Pay Page (HPP): the customer is redirected to a Chase-hosted page to enter their card details, so card data never touches the storefront or the API. After payment, Chase returns the customer to the API, which verifies the transaction directly with Chase before confirming the order.
+
+Billing and delivery address verification service (AVS) fields are truncated to Chase Orbital's field limits before submission.
 
 Configuration is stored in the secrets store as `payments-chase.json`. See the [secrets store guide](/checkout/secrets) for how to write it and how country/locale resolution works.
 

@@ -1,7 +1,7 @@
 ---
 title: "Coupons guide"
 description: "Coupon data model, validation, and redemption flows."
-tags: "batch generation, tracking codes, stacking, usage tracking, cursor pagination, category eligibility, coupon validation, product list pricing, auto apply coupons, free shipping"
+tags: "batch generation, tracking codes, stacking, usage tracking, cursor pagination, category eligibility, coupon validation, product list pricing, auto apply coupons, free shipping, multiple coupons, multi-coupon redemption"
 daPath: "/coupons"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
 migration:
   from: "helix-commerce-documentation/documentation/coupons.md"
   migratedAt: "2026-06-15"
@@ -56,11 +56,12 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 | `maximumDiscountAmount` | number | No | Cap on the discount for percentage types. `null` means no cap |
 | `freeShipping` | boolean | No | When `true`, removes shipping charges in addition to any price discount |
 | `includedShippingTypes` | string[] | No | Restricts free shipping to specific shipping type identifiers. Only meaningful when `freeShipping` is `true` |
-| `stackable` | boolean | No | Whether the coupon can be combined with auto-applied cart rules. When `false`, all cart rules are suppressed while the coupon is active. Defaults to `true` |
+| `stackable` | boolean | No | Whether the coupon can be combined with automatic cart rules. When `false`, all cart rules are suppressed while the coupon is active. Defaults to `true` |
+| `includeStackableCouponTypes` | string[] | No | Coupon type IDs that this type can stack with. A pair can stack when either type lists the other. Defaults to no coupon-to-coupon stacking |
 | `excludeDiscountedProducts` | boolean | No | When `true`, already-discounted items (products where `price.final < price.regular`) are excluded from the coupon's scope. Defaults to `false` |
 | `applyToSalePrice` | boolean | No | When `true`, applies the coupon to the current sale price. When `false` (default), compares the sale price with the coupon-adjusted regular price and uses the lower price |
 | `discountedProducts` | array | Conditional | Product-list pricing that maps product paths, and optionally variant SKUs, to absolute final unit prices. Used instead of `discountType` and `discountValue` |
-| `autoApply` | boolean | No | Signals that the storefront should apply this coupon type automatically without customer input. The storefront is responsible for selecting eligible codes and passing them in the estimate request with `couponSource: "auto"`. Defaults to `false` |
+| `autoApply` | boolean | No | Legacy storefront signal. Coupon selection uses `couponSource: "auto"` to identify programmatically applied coupons |
 | `allowManualEntry` | boolean | No | When `false`, the coupon code is rejected if submitted with `couponSource: "manual"`, preventing customers from typing it. Defaults to `true` |
 | `includedProducts` | array | No | Restricts the discount to specific products. Each entry is a product path string or a `{ path, sku }` object |
 | `excludedProducts` | array | No | Excludes specific products from the discount scope. Mutually exclusive with `includedProducts` |
@@ -196,7 +197,16 @@ SAVE10+EMAIL_JUN26  → base code: SAVE10, source: EMAIL_JUN26
 
 ## Applying a coupon at checkout
 
-The storefront includes the coupon code in the body of an estimate request. The estimate endpoint validates the code and, if it passes all checks, applies the discount to the cart and returns the breakdown. See [Estimates and cart totals](/estimates) for how coupon validation fits into tax, shipping, price, and order estimates.
+The storefront includes one coupon code or an array of up to five coupon codes in the body of an estimate request. The estimate endpoint validates the codes and applies the best valid combination allowed by the site's coupon settings and stacking rules.
+
+When `couponCode` is an array, duplicate codes are removed case-insensitively before validation. `couponSource` can be one value applied to every code or an array aligned by position with `couponCode`; omitted entries default to `"manual"`. A single code can therefore be submitted with a per-code source, for example:
+
+```json
+{
+  "couponCode": ["SAVE10", "MEMBER20"],
+  "couponSource": ["manual", "auto"]
+}
+```
 
 ```bash
 curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/shipping" \
@@ -213,7 +223,11 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/shippin
   }'
 ```
 
-`couponSource` should be `"manual"` when the customer typed the code, and `"auto"` when the storefront applied it programmatically (for example, from an auto-apply type). Codes belonging to a type with `allowManualEntry: false` are rejected when `couponSource` is `"manual"`.
+`couponSource` can be `"manual"` when the customer typed the code or `"auto"` when the storefront applied it programmatically (for example, from an affiliate or verified-member flow). It can also be an array aligned with an array of coupon codes. Codes belonging to a type with `allowManualEntry: false` are rejected when `couponSource` is `"manual"`. Coupons submitted with `couponSource: "auto"` are pinned, so a valid automatic coupon remains selected over a competing manual-only combination when the stacking rules allow it.
+
+The site configuration controls the maximum number of coupons that can apply to one order, from one to five. The API evaluates valid combinations against the same post-promotion base and selects the combination with the greatest total discount, subject to the stacking rules and configured maximum. If multiple combinations have the same discount, the combination with more coupons is preferred.
+
+When multiple codes are submitted, price and order estimates include a `couponStatus` entry for each code. A status of `applied` means the code was selected, `rejected_invalid` means validation failed, and `rejected_not_combinable` means the code was valid but was not selected with the winning combination. Invalid codes in an array do not fail the entire request; a single submitted code retains the existing validation error behavior.
 
 ### Validation sequence
 
@@ -236,15 +250,17 @@ All failures return HTTP 422 with the human-readable message `"coupon not applic
 
 ## Stacking behavior
 
-When a coupon is active, its type's `stackable` field and `incompatibleTypes` setting control how it interacts with automatic cart rules.
+Coupon-to-coupon stacking is controlled by each type's `includeStackableCouponTypes` field. A pair of coupon types can stack when either type lists the other type's ID. The relationship does not need to be declared on both types. By default, coupon-to-coupon stacking is disabled.
 
-When `stackable` is `false`, all auto-applied cart rules are suppressed for the duration of the estimate. The customer receives the coupon discount but no additional automatic discounts. When `stackable` is `true`, cart rules that list the coupon type's ID in their `incompatibleTypes` array are removed, and all other qualifying rules are still applied.
+The site configuration controls the maximum number of coupons that can apply to one order, from one to five. When multiple valid combinations are possible, the API selects the combination with the greatest total discount calculated against the same post-promotion base. Coupons submitted with `couponSource: "auto"` are pinned so they remain selected over a competing manual-only combination when the stacking rules allow it.
 
-This gives you precise control: a large promotional coupon can be declared non-stackable so customers cannot combine it with a free-shipping threshold, while a small loyalty coupon can remain stackable.
+The `stackable` field controls a separate interaction with automatic cart rules. When `stackable` is `false`, all auto-applied cart rules are suppressed for the duration of the estimate. When it is `true`, the coupon can be applied alongside qualifying automatic rules.
+
+The site configuration can also cap the coupon-sourced discount on any individual line as a percentage of that line's pre-coupon subtotal. This cap affects coupon discounts only; automatic pricing rules and catalog-sale markdowns are not capped by it.
 
 ## Usage tracking
 
-After a successful order payment, the system asynchronously increments `usageCount` on the code. When `usesPerCustomer` is set on the code, a separate per-email usage record is also updated. The per-customer check is performed at estimate time using the customer's email — if no email is available (for example, a guest checkout before the email step), the per-customer limit is not enforced at estimate time and is checked again at order-preview time when the email is known.
+After a successful order payment, the system asynchronously increments `usageCount` independently for every applied coupon that contributed a positive discount or applied free shipping. A coupon that was selected but contributed no discount, or whose free-shipping restriction did not match the selected shipping method, does not consume a usage. If one usage update fails, the other applied coupons are still processed and the failure does not affect the payment response. When `usesPerCustomer` is set on a code, a separate per-email usage record is also updated. The per-customer check is performed at estimate time using the customer's email — if no email is available (for example, a guest checkout before the email step), the per-customer limit is not enforced at estimate time and is checked again at order-preview time when the email is known.
 
 ## Next steps
 

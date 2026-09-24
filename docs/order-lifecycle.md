@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
 ---
 
 # Order lifecycle
@@ -159,7 +159,7 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/preview" 
   }'
 ```
 
-The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable.
+The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable. When multiple coupon codes are submitted, the response also reports which codes were applied and which were invalid or not part of the selected stacking combination.
 
 ```json
 {
@@ -301,7 +301,7 @@ The preview endpoint:
 - Validates item prices against product data unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
-- Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component.
+- Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component. Site coupon settings can additionally limit how much coupon-sourced discount is allocated to an individual line.
 - Returns the computed totals and line items, including server-calculated discount allocations when applicable. The persisted tax lines and totals use those same allocations and the resulting reduced taxable base.
 - Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts.
 

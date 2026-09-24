@@ -1,7 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
-tags: "geographic overrides, validation rules, sender identity, delivery site slugs"
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupon stacking, discount caps"
 daPath: "/configuration/site"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "bbe723f"
+    lastContentCommit: "bbe723f"
 ---
 
 # Site configuration
@@ -69,6 +69,7 @@ All top-level fields are optional, and unknown fields are rejected.
 | `emails` | object | Branding and sender settings for OTP and transactional email |
 | `experimentalFlags` | object | Boolean feature flags |
 | `friendlyId` | object | Friendly order ID generation settings |
+| `coupons` | object | Coupon combination and per-line discount settings |
 | `geoOverrides` | array | Country-specific overrides for selected configuration fields |
 
 ## Allowed origins
@@ -231,6 +232,28 @@ Both `emails.otp` and `emails.transactional` support:
 | `characters` | string | Named preset or literal character set. Must contain at least two characters and cannot include `/`, URL separators, spaces, or HTML-sensitive characters |
 | `length` | integer | Number of generated characters, from 4 to 32 |
 | `prefix` | string | Optional prefix, from 1 to 8 characters. Uses the same character restrictions |
+
+## Coupon settings
+
+The `coupons` object controls how multiple coupons are selected and how coupon-sourced discounts are allocated:
+
+```json
+{
+  "coupons": {
+    "maxApplicableCoupons": 3,
+    "maxLineDiscount": {
+      "discountType": "percentage",
+      "discountValue": 50
+    }
+  }
+}
+```
+
+`maxApplicableCoupons` sets the maximum number of coupons that can be selected for one request. When multiple coupons are submitted, the system chooses the valid combination with the greatest combined standalone discount, subject to coupon stacking rules and this limit. Coupons marked as automatic are retained when selecting between competing combinations.
+
+`maxLineDiscount` applies a percentage-based cap to the coupon-sourced discount on each line. The percentage is calculated from the line's pre-coupon subtotal. For example, a `discountValue` of `50` limits coupon discounts on a line to 50% of that subtotal. The cap is shared across applied coupons on the line, so stacking coupons cannot exceed the configured allowance.
+
+The cap applies only to discounts whose source is a coupon. Automatic pricing rules and catalog-sale markdowns are not subject to this cap and may still reduce a line to zero. Because combination selection uses each coupon's standalone discount before per-line allocation, the selected combination may be affected by the cap during allocation and may produce less discount than its standalone total.
 
 ## Geographic overrides
 
