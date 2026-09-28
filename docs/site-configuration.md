@@ -1,7 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
-tags: "geographic overrides, validation rules, sender identity, delivery site slugs"
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap"
 daPath: "/configuration/site"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "59379a6"
+    lastReviewedCommit: "0fdf2af"
+    lastContentCommit: "0fdf2af"
 ---
 
 # Site configuration
@@ -69,6 +69,7 @@ All top-level fields are optional, and unknown fields are rejected.
 | `emails` | object | Branding and sender settings for OTP and transactional email |
 | `experimentalFlags` | object | Boolean feature flags |
 | `friendlyId` | object | Friendly order ID generation settings |
+| `coupons` | object | Coupon stacking and per-line discount settings |
 | `geoOverrides` | array | Country-specific overrides for selected configuration fields |
 
 ## Allowed origins
@@ -231,6 +232,31 @@ Both `emails.otp` and `emails.transactional` support:
 | `characters` | string | Named preset or literal character set. Must contain at least two characters and cannot include `/`, URL separators, spaces, or HTML-sensitive characters |
 | `length` | integer | Number of generated characters, from 4 to 32 |
 | `prefix` | string | Optional prefix, from 1 to 8 characters. Uses the same character restrictions |
+
+## Coupon settings
+
+The `coupons` object controls how multiple coupon codes are selected and how coupon discounts are allocated across order lines.
+
+```json
+{
+  "coupons": {
+    "maxApplicableCoupons": 3,
+    "maxLineDiscount": {
+      "discountType": "percentage",
+      "discountValue": 50
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `maxApplicableCoupons` | integer | Maximum number of submitted coupons that can be applied together. Defaults to `1` |
+| `maxLineDiscount` | object | Optional per-line cap for coupon-sourced discounts |
+| `maxLineDiscount.discountType` | string | Discount cap type. Use `percentage` |
+| `maxLineDiscount.discountValue` | number | Percentage of a line's pre-coupon subtotal that coupon discounts may reduce |
+
+The per-line cap applies only to discounts whose source is a coupon. If a coupon would exceed the allowance on one line, the excess is not allocated to that line and may be allocated to other eligible lines. Automatic pricing rules and catalog-sale markdowns are not subject to this cap; they can still reduce a line to zero.
 
 ## Geographic overrides
 

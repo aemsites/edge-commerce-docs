@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "8f53823"
+    lastReviewedCommit: "0fdf2af"
+    lastContentCommit: "0fdf2af"
 ---
 
 # Estimates and cart totals
@@ -60,8 +60,8 @@ Estimate request shapes vary by type, but these fields are common across shippin
 | `shipping` | Partial shipping address. `country`, `state`, and sometimes `zip` are enough for estimates |
 | `items` | Cart line items with SKU, path, price, optional shipping dimensions, and a whole-number quantity from 1 to 1000 |
 | `customer.email` | Optional. Used when coupon rules depend on customer usage limits |
-| `couponCode` | Optional coupon code |
-| `couponSource` | Optional coupon source, such as `manual` or `auto` |
+| `couponCode` | Optional coupon code or array of up to five coupon codes |
+| `couponSource` | Optional coupon source, or an array aligned with `couponCode`, such as `manual` or `auto` |
 
 The `order` estimate also accepts checkout context used by tax configuration:
 
@@ -72,6 +72,8 @@ The `order` estimate also accepts checkout context used by tax configuration:
 | `entryPoint` | Optional place where checkout started: `cart`, `checkout`, or `pdp` |
 
 Pass the same checkout context to order preview and order creation. The values can affect configured [Avalara tax rules](/checkout/tax/avalara#conditional-tax-rules) and are bound into the estimate token returned by preview.
+
+When multiple coupon codes are submitted, the API validates each code, selects the best applicable combination within the site's configured `coupons.maxApplicableCoupons` limit, and applies the combination only when the coupon stacking rules allow it. The request accepts no more than five codes. Price and order estimate responses include `couponStatus` for each submitted code, with `applied`, `rejected_invalid`, or `rejected_not_combinable` status. A coupon with source `auto` is pinned ahead of competing manual coupons when the stacking rules allow it. Coupon status is not returned by the shipping estimate.
 
 ## Tax estimate
 
@@ -295,7 +297,7 @@ With `shippingMethod.id`, `order` returns a single matching method:
 
 If the requested method does not match any available rate, `shippingMethods` is an empty array.
 
-For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ.
+For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. A configured coupon discount cap can further limit coupon-sourced discounts on each line without limiting catalog promotions or automatic pricing rules. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ.
 
 When the shopper selects a final method and submits checkout, `/orders/preview` recomputes the committed selected-method total and returns the `estimateToken` used by order creation.
 
@@ -312,7 +314,7 @@ Estimate totals use this order of operations:
 7. Attribute order-level cash discounts back to eligible line items where applicable.
 8. Evaluate conditional promotions that grant free items.
 
-Approved coupon and automatic cash discounts are allocated per line after promotions are applied. Each allocation is limited by the line's remaining post-promotion balance, so a discount cannot make a line negative or overflow onto an ineligible line. Coupon-scoped discounts use their eligible lines first; cart-wide discounts use the remaining merchandise balances.
+Approved coupon and automatic cash discounts are allocated per line after promotions are applied. Each allocation is limited by the line's remaining post-promotion balance, so a discount cannot make a line negative or overflow onto an ineligible line. A configured per-line coupon cap limits the combined coupon-sourced discount on each line to the configured percentage of its pre-coupon subtotal. Coupon-scoped discounts use their eligible lines first; cart-wide discounts use the remaining merchandise balances.
 
 See [Promotions](/promotions) and [Coupons](/coupons) for rule configuration and coupon behavior.
 
