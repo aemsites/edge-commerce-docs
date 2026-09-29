@@ -1,7 +1,7 @@
 ---
 title: "Edge Commerce API reference"
 description: "Human-readable API reference for Edge Commerce operations."
-tags: "etag, conditional requests, legacy site tokens, bulk operations, cache invalidation, index management, multi locale paths, payload size limits, full replacement updates, automatic index assignment, deletion cascade, cache purging"
+tags: "etag, conditional requests, legacy site tokens, bulk operations, cache invalidation, index management, tagged indices, multi locale paths, payload size limits, full replacement updates, automatic index assignment, deletion cascade, cache purging"
 llmScope: "Covers the core platform HTTP APIs: product catalog operations, authentication and access, product indexing, site configuration, and cache management. EXCLUDES checkout, payments, orders, estimates, and journals — those are documented on their own topic pages (payments, payments-*, order-lifecycle, order-journal, checkout, estimates), not here."
 daPath: "/api-reference"
 status: migrated
@@ -10,8 +10,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "0fdf2af"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "bee9c4b"
+    lastContentCommit: "bee9c4b"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -63,7 +63,7 @@ The available API routes include `/catalog{path}` for product operations where `
 
 All modifying operations (`PUT`, `POST`, `DELETE`) require authentication using a bearer token:
 
-```bash
+```text
 Authorization: Bearer {your-admin-or-service-token}
 ```
 
@@ -127,6 +127,8 @@ Region and locale information is embedded directly in the path. The same product
 
 ## Product operations
 
+Catalog writes and deletes read the site's index registry before changing products. If the registry cannot be read or is malformed, the request returns a retryable `503 Service Unavailable` with no catalog changes made. Retry the request after the registry becomes available.
+
 ### Create or update a product
 
 `PUT /{org}/sites/{site}/catalog{path}`
@@ -167,7 +169,7 @@ The request body should be a product object (see [Schema Reference](/schema-refe
 
 When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
-Add `?forceUpdate=true` to write and re-index the product even when its data is unchanged. Use this after changing index configuration. The parameter is also supported on the bulk write endpoints.
+Add `?forceUpdate=true` to write and re-index the product even when its data is unchanged. Use this after changing index configuration or to move an existing product into a newly created tagged index. Tagged indices are not backfilled when created. The parameter is also supported on the bulk write endpoints.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json" \
@@ -264,7 +266,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
 
 Use this endpoint to create or update up to 50 products in one request. The request body is an object with an `items` array. Each product must include a `path` field that specifies where it should be stored. By default, the request performs writes. Set the `delete` query parameter to `true` to delete products instead; a body `delete` flag is supported as an alias and must agree with the query parameter when both are provided.
 
-In write mode, unchanged products are skipped and reported with status `200`. Set `?forceUpdate=true` to rewrite and re-index every item, including unchanged products. The body field `forceUpdate: true` is an alias for the query parameter. If both values are provided, they must agree. Use this option after changing index configuration.
+In write mode, unchanged products are skipped and reported with status `200`. Set `?forceUpdate=true` to rewrite and re-index every item, including unchanged products. The body field `forceUpdate: true` is an alias for the query parameter. If both values are provided, they must agree. Use this option after changing index configuration or to move existing products into a newly created tagged index. Tagged indices are not backfilled when created.
 
 The API validates the complete request before saving or deleting products. If the request envelope is invalid, an item is invalid, or two products have the same `path`, the API returns `400 Bad Request` and performs no operation. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
@@ -346,7 +348,7 @@ Learn more about [image handling](/schema-reference#productbusmedia) in the sche
 
 To delete products, send the bulk request with `?delete=true`. Each item must be an object containing an extensionless product `path`. Deletes are unconditional and duplicate paths are processed once. The API validates all items before deleting anything.
 
-Use `?forceUpdate=true` with bulk deletion to emit an index-removal event for each item that returns `404` because the product is already absent from the catalog. This can clear an orphaned index entry. The request body may include `forceUpdate: true` as an alias; if both the query parameter and body field are provided, they must have the same value.
+Use `?forceUpdate=true` with bulk deletion to emit an index-removal event for each item that returns `404` because the product is already absent from the catalog. This can clear an orphaned path-based index entry. An already deleted product cannot be targeted in a tagged index because its tags are no longer available; rebuild that tagged index instead. The request body may include `forceUpdate: true` as an alias; if both the query parameter and body field are provided, they must have the same value.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog?delete=true&forceUpdate=true" \
@@ -387,7 +389,7 @@ curl -i "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/product
 
 This endpoint requires authentication. A successful deletion returns `204 No Content`. If the product doesn't exist at the specified path, you'll receive a `404 Not Found` response. You can send `If-Match` or `If-None-Match` to conditionally delete the product. A failed precondition returns `412 Precondition Failed`, and the product remains in place.
 
-A single `DELETE` always emits an index-removal event, including when the product already returns `404`, so repeating a delete can clear an orphaned index entry. This behavior does not occur when a conditional request fails with `412 Precondition Failed`.
+A single `DELETE` always emits an index-removal event, including when the product already returns `404`, so repeating a delete can clear an orphaned path-based index entry. An already deleted product cannot be removed from a tagged index because its tags are no longer available; rebuild that tagged index instead. This behavior does not occur when a conditional request fails with `412 Precondition Failed`.
 
 ```bash
 curl -X DELETE \
@@ -449,31 +451,43 @@ The Index API allows you to manage product indices, which are used by the Produc
 
 ### Automatic index assignment
 
-When you create or update a product, it is automatically added to an index based on its path. The system traverses up the directory tree from the product's location and adds the product to the first index it finds.
+When you create or update a product, it is automatically added to an index based on its path and, when applicable, its index tags. A product is added to every matching tagged index. If none of the product's tags matches a tagged index, the product is assigned to the first path-based index found by traversing up the directory tree from the product's location.
 
-For example, a product at `/us/en/products/electronics/phone.json` would be checked against indexes in this order:
+For example, a product at `/us/en/products/electronics/phone.json` would be checked against path-based indexes in this order:
 1. `/us/en/products/electronics/index.json`
 2. `/us/en/products/index.json`
 3. `/us/en/index.json`
 4. `/us/index.json`
 5. `/index.json`
 
-The product is added to the first existing index in this sequence. This allows you to organize products into logical groupings by creating indexes at different levels of your path hierarchy. Products in `/us/en/products/electronics/` and `/us/en/products/clothing/` can share a single index at `/us/en/products/index.json`, or you can create separate indexes at each category level for more granular control.
-
-If no index exists anywhere in the product's path hierarchy, the product is stored but not indexed until an appropriate index is created.
+A tagged index is not backfilled when created. Products join it on their next changed write or when written with `?forceUpdate=true`. If no matching tagged or path-based index exists, the product is stored but not indexed until an appropriate index is created and the product is written again.
 
 ### Create an index
 
 `POST /{org}/sites/{site}/index{path}`
 
-Creates an empty index at the specified path. The path must end with `/index.json`. This endpoint requires authentication. On success, returns `201 Created`. If an index already exists at this path, returns `409 Conflict`.
+Creates an index at the specified path. The path must end with `/index.json`. Omit the request body to create a path-based index. To create a tagged index, provide an optional body such as `{ "tag": "sale" }`. Tagged indices require the site's `tagIndexSplitting` experimental flag, cannot be created on the root index, and each tag can be used by only one index.
 
-When an index is created, any existing products under that path are automatically queued for indexing. This means you can create products first and set up indexing later - creating the index will backfill it with existing products.
+The `tag` value is trimmed and lowercased before validation. It must contain lowercase letters, digits, hyphens, underscores, or colons, start with a letter or digit, and be no more than 64 characters. A tag cannot be changed after the index is created.
+
+This endpoint requires authentication. On success, returns `201 Created`. If an index or tag already exists at this path or elsewhere on the site, returns `409 Conflict`.
+
+A path-based index queues existing products under its path for indexing. A tagged index starts empty; products join it when their next changed write or `forceUpdate` write includes the matching tag.
 
 ```bash
+# Create a path-based index
 curl -X POST \
   -H "Authorization: Bearer {your-api-key}" \
   "https://api.adobecommerce.live/{org}/sites/{site}/index/us/en/products/index.json"
+```
+
+```bash
+# Create a tagged index
+curl -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{ "tag": "sale" }' \
+  "https://api.adobecommerce.live/{org}/sites/{site}/index/sale/index.json"
 ```
 
 ### Delete an index
@@ -481,6 +495,8 @@ curl -X POST \
 `DELETE /{org}/sites/{site}/index{path}`
 
 Deletes the index and its merchant feed at the specified path, and removes the index from the registry. This endpoint requires authentication. On success, returns `204 No Content`. If no index exists at the specified path, returns `404 Not Found`. If the registry cannot be updated, the API returns `502 Bad Gateway` and does not delete the index.
+
+Products in a deleted tagged index are not moved elsewhere automatically. They rejoin a path-based or other tagged index on their next changed or `forceUpdate` write, or when a covering path-based index is recreated.
 
 ```bash
 curl -X DELETE \
@@ -492,12 +508,13 @@ curl -X DELETE \
 
 `GET /{org}/sites/{site}/index`
 
-Returns a list of all indices for a site. On success, returns `200 OK` with the following response body:
+Returns a list of all indices for a site. Tagged indices include their `tag`. On success, returns `200 OK` with the following response body:
 
 ```json
 {
   "indices": [
-    { "path": "/us/en/products/index.json", "lastModified": "2026-01-15T10:30:00Z" }
+    { "path": "/us/en/products/index.json", "lastModified": "2026-01-15T10:30:00Z" },
+    { "path": "/sale/index.json", "lastModified": "2026-01-16T10:30:00Z", "tag": "sale" }
   ]
 }
 ```
