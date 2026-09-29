@@ -93,6 +93,7 @@ The main product schema supports rich product data with HTML content, variants, 
 | `taxData` | Record<string, any> | No | Supplementary tax data passed to the tax provider. |
 | `country` | string | No | ISO 3166-1 alpha-2 store country code. pattern constrained |
 | `locale` | string | No | BCP-47 locale tag for this product entry. pattern constrained |
+| `indexTags` | string[] | No | Tags that place this product in tagged indices. The product is added to every index whose `tag` is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped. |
 
 <!-- GENERATED: ProductBusEntry:end -->
 
@@ -592,7 +593,7 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `name` | string | No | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
 | `address1` | string | No | Primary street address line. max length 255 |
-| `address2` | string | No | Secondary address line. max length 255 |
+| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
 | `city` | string | No | City name. max length 255 |
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |

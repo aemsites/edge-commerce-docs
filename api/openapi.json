@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.70.1",
+    "version": "2.71.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -26,7 +26,7 @@
     },
     {
       "name": "Indices",
-      "description": "Create or delete a query index identified by a path ending in `/index.json`. Creating an index queues existing products under that path for indexing."
+      "description": "Create or delete a query index identified by a path ending in `/index.json`. Creating a path-based index queues existing products under that path for indexing. A tagged index (created with a `tag`) holds the products whose `indexTags` include that tag, wherever they live in the catalog; it starts empty, and products join it on their next changed or `forceUpdate` write."
     },
     {
       "name": "Orders",
@@ -373,7 +373,7 @@
       "post": {
         "operationId": "bulkCatalogOperation",
         "summary": "Bulk write or delete products",
-        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). In write mode, unchanged products are skipped (status `200`); pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to write and re-index every item regardless, e.g. after an index-configuration change. Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. In delete mode, pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to emit an index-removal event even for items that are already gone from the catalog (`404`), clearing orphaned index entries. Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
+        "description": "Unified bulk catalog endpoint. Accepts an `{ items }` envelope and, by default, creates or updates (upserts) each product (max 50 per request). In write mode, unchanged products are skipped (status `200`); pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to write and re-index every item regardless, e.g. after an index-configuration change. Setting `?delete=true` (or a body `delete: true` alias) switches to bulk delete, whose items are `{ path }` objects carrying an extensionless product path. When both selectors are present they must agree. Every item is validated up front, so a single invalid item rejects the whole request and nothing is written or deleted. Deletes are unconditional and deduplicated. In delete mode, pass `?forceUpdate=true` (or a body `forceUpdate: true` alias) to emit an index-removal event even for items that are already gone from the catalog (`404`), clearing orphaned path-based index entries (tagged-index entries of an already-deleted product need a rebuild of that tagged index). Always responds with a `results` array, one entry per distinct item (extensionless paths), including for single-item requests. Each delete result is independent: `200` deleted, `404` not found, `500` failed. Delete request example: `{ \"items\": [{ \"path\": \"/us/en/products/blender-pro-500\" }, { \"path\": \"/us/en/products/blender-pro-750\" }] }` with `?delete=true`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -409,7 +409,7 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index. In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned index entries."
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index, or to move existing products into a newly created tagged index (tagged indices are not backfilled; a forced write also removes the product from its path-based index). In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned entries in their path-based index (tagged-index entries of an already-deleted product can't be targeted; rebuild that tagged index instead)."
           }
         ],
         "responses": {
@@ -525,6 +525,28 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The index registry could not be read, so the change was rejected before anything was written or deleted. Retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+                      "message": "service temporarily unavailable",
+                      "retryable": true,
+                      "details": {
+                        "reason": "index registry unavailable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "x-permissions": [
@@ -558,7 +580,7 @@
                         "type": "boolean"
                       },
                       "forceUpdate": {
-                        "description": "When `true`, write and re-index every item even if its data is unchanged. Alias for the `?forceUpdate` query parameter; when both are present they must agree. Use after an index-configuration change so that unchanged products are re-indexed (they are otherwise skipped).",
+                        "description": "When `true`, write and re-index every item even if its data is unchanged. Alias for the `?forceUpdate` query parameter; when both are present they must agree. Use after an index-configuration change so that unchanged products are re-indexed (they are otherwise skipped), or to move existing products into a newly created tagged index (tagged indices are not backfilled).",
                         "type": "boolean"
                       }
                     },
@@ -592,7 +614,7 @@
                         "type": "boolean"
                       },
                       "forceUpdate": {
-                        "description": "When `true`, emit an index-removal event for every item even if the product is already gone from the catalog (`404`), clearing orphaned index entries. Alias for the `?forceUpdate` query parameter; when both are present they must agree.",
+                        "description": "When `true`, emit an index-removal event for every item even if the product is already gone from the catalog (`404`), clearing orphaned entries in its path-based index. (A tagged-index entry for a product that is already gone can't be targeted, because its tags are gone with it; rebuild that tagged index instead.) Alias for the `?forceUpdate` query parameter; when both are present they must agree.",
                         "type": "boolean"
                       }
                     },
@@ -889,7 +911,7 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index. In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned index entries."
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index, or to move existing products into a newly created tagged index (tagged indices are not backfilled; a forced write also removes the product from its path-based index). In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned entries in their path-based index (tagged-index entries of an already-deleted product can't be targeted; rebuild that tagged index instead)."
           }
         ],
         "responses": {
@@ -1032,6 +1054,28 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The index registry could not be read, so the change was rejected before anything was written or deleted. Retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+                      "message": "service temporarily unavailable",
+                      "retryable": true,
+                      "details": {
+                        "reason": "index registry unavailable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "deprecated": true,
@@ -1120,7 +1164,7 @@
             "schema": {
               "type": "boolean"
             },
-            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index. In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned index entries."
+            "description": "When `true`, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status `200`); use this after an index-configuration change to force a re-index, or to move existing products into a newly created tagged index (tagged indices are not backfilled; a forced write also removes the product from its path-based index). In bulk delete mode, `forceUpdate` also emits an index-removal event for products that are already gone from the catalog (`404`), clearing orphaned entries in their path-based index (tagged-index entries of an already-deleted product can't be targeted; rebuild that tagged index instead)."
           }
         ],
         "responses": {
@@ -1387,6 +1431,28 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The index registry could not be read, so the change was rejected before anything was written or deleted. Retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+                      "message": "service temporarily unavailable",
+                      "retryable": true,
+                      "details": {
+                        "reason": "index registry unavailable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "x-permissions": [
@@ -1424,7 +1490,7 @@
       "delete": {
         "operationId": "deleteCatalogProduct",
         "summary": "Delete a product",
-        "description": "Deletes the product at the given path. Supports `If-Match` / `If-None-Match` for conditional deletes; a precondition miss returns `412` and the product is left in place. A single DELETE always emits an index-removal event (unless a precondition failed), so repeating a DELETE for a product that is already gone still clears any orphaned index entry.",
+        "description": "Deletes the product at the given path. Supports `If-Match` / `If-None-Match` for conditional deletes; a precondition miss returns `412` and the product is left in place. A single DELETE always emits an index-removal event (unless a precondition failed), so repeating a DELETE for a product that is already gone still clears an orphaned entry in its path-based index. A tagged-index entry for an already-deleted product can't be targeted (its tags are gone with it); rebuild that tagged index instead.",
         "parameters": [
           {
             "name": "Authorization",
@@ -1586,6 +1652,28 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The index registry could not be read, so the change was rejected before anything was written or deleted. Retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+                      "message": "service temporarily unavailable",
+                      "retryable": true,
+                      "details": {
+                        "reason": "index registry unavailable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "x-permissions": [
@@ -1667,6 +1755,10 @@
                           "lastModified": {
                             "description": "ISO-8601 timestamp of the last modification.",
                             "type": "string"
+                          },
+                          "tag": {
+                            "description": "Present on tagged indices: the tag whose products are placed in this index.",
+                            "type": "string"
                           }
                         },
                         "required": [
@@ -1687,6 +1779,11 @@
                         {
                           "path": "/index.json",
                           "lastModified": "2026-01-01T00:00:00.000Z"
+                        },
+                        {
+                          "path": "/sale/index.json",
+                          "lastModified": "2026-01-02T00:00:00.000Z",
+                          "tag": "sale"
                         }
                       ]
                     }
@@ -1742,7 +1839,7 @@
       "post": {
         "operationId": "createIndex",
         "summary": "Create a query index",
-        "description": "Creates a query index for the given path. The index path is the directory portion of the URL (the trailing `/index.json` is stripped). No request body.",
+        "description": "Creates a query index for the given path. The index path is the directory portion of the URL (the trailing `/index.json` is stripped). The body is optional: omit it for a path-based index, or pass `{ \"tag\": \"...\" }` to create a tagged index.",
         "parameters": [
           {
             "name": "Authorization",
@@ -1759,7 +1856,7 @@
             "description": "Index created (no content)."
           },
           "400": {
-            "description": "Path is missing, does not end with `/index.json`, or is otherwise invalid.",
+            "description": "Path is missing, does not end with `/index.json`, or is otherwise invalid; or the `tag` is invalid, set on the root index, or tagged indices are not enabled for the site.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1783,7 +1880,7 @@
             }
           },
           "409": {
-            "description": "Index already exists, or the registry was modified concurrently.",
+            "description": "Index already exists, its `tag` is already used by another index, or the registry was modified concurrently.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1829,6 +1926,33 @@
             "bearerAuth": []
           }
         ],
+        "requestBody": {
+          "description": "Optional index options.",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "Options for a new query index. The body is optional; omit it for a path-based index.",
+                "type": "object",
+                "properties": {
+                  "tag": {
+                    "description": "Makes this a tagged index: products whose `indexTags` include this tag are placed in it (instead of their path-based index), and it is not used for path-based placement. Trimmed and lowercased, then must be lowercase letters, digits, `-`, `_` or `:`, starting with a letter or digit, at most 64 characters. Unique across the site's indices, immutable after creation, and not allowed on the root index. Requires the `tagIndexSplitting` experimental flag.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9:_-]*$",
+                    "maxLength": 64
+                  }
+                }
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "tag": "sale"
+                  }
+                }
+              }
+            }
+          }
+        },
         "tags": [
           "Indices"
         ]
@@ -1836,7 +1960,7 @@
       "delete": {
         "operationId": "deleteIndex",
         "summary": "Delete a query index",
-        "description": "Deletes the query index and its merchant feed for the given path, and removes it from the registry.",
+        "description": "Deletes the query index and its merchant feed for the given path, and removes it from the registry. Products in a deleted tagged index are not moved elsewhere automatically: they rejoin a path-based (or other tagged) index on their next changed or `forceUpdate` write, or when a covering path-based index is recreated.",
         "parameters": [
           {
             "name": "Authorization",
@@ -7788,6 +7912,17 @@
             "description": "BCP-47 locale tag for this product entry.",
             "type": "string",
             "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2}|-[0-9]{3})?$"
+          },
+          "indexTags": {
+            "description": "Tags that place this product in tagged indices. The product is added to every index whose `tag` is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped.",
+            "type": "array",
+            "items": {
+              "description": "Index tag: lowercase letters, digits, `-`, `_` and `:`, starting with a letter or digit; at most 64 characters.",
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9:_-]*$",
+              "maxLength": 64
+            },
+            "maxItems": 6
           }
         },
         "required": [

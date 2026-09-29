@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Delete a query index — Helix Commerce API</title>
-    <meta name="description" content="Deletes the query index and its merchant feed for the given path, and removes it from the registry.">
+    <meta name="description" content="Deletes the query index and its merchant feed for the given path, and removes it from the registry. Products in a deleted tagged index are not moved elsewhere automatically: they rejoin a path-based (or other tagged) index on their next changed or forceUpdate write, or when a covering path-based index is recreated.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-delete">DELETE</span> <code class="http-path">/{org}/sites/{site}/index/{path}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Deletes the query index and its merchant feed for the given path, and removes it from the registry.</p>
+        <p>Deletes the query index and its merchant feed for the given path, and removes it from the registry. Products in a deleted tagged index are not moved elsewhere automatically: they rejoin a path-based (or other tagged) index on their next changed or <code>forceUpdate</code> write, or when a covering path-based index is recreated.</p>
         <p class="permissions">Required permissions: <code>index:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
