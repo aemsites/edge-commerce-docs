@@ -1,7 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
-tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap"
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap, tagged indices"
 daPath: "/configuration/site"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "0fdf2af"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "bee9c4b"
+    lastContentCommit: "bee9c4b"
 ---
 
 # Site configuration
@@ -307,6 +307,8 @@ If duplicate entries use the same country, the first match wins. Keep one entry 
   }
 }
 ```
+
+Set `tagIndexSplitting` to `true` before creating tagged indices. A tagged index selects products by their `indexTags` values instead of by catalog path. Product writes use `indexTags` to place a product in every matching tagged index; if no listed tag matches an index, the product uses its path-based index.
 
 Only boolean values are accepted. Experimental flags should be used only when directed by the Adobe team because they may change behavior without the same compatibility guarantees as stable configuration fields.
 

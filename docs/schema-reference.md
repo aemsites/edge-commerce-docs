@@ -1,7 +1,7 @@
 ---
 title: "Schema reference"
 description: "Reference for the Product Bus product schema and the order request schemas."
-tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status"
+tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status, tagged indices"
 daPath: "/schema-reference"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "0fdf2af"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "bee9c4b"
+    lastContentCommit: "bee9c4b"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -93,6 +93,7 @@ The main product schema supports rich product data with HTML content, variants, 
 | `taxData` | Record<string, any> | No | Supplementary tax data passed to the tax provider. |
 | `country` | string | No | ISO 3166-1 alpha-2 store country code. pattern constrained |
 | `locale` | string | No | BCP-47 locale tag for this product entry. pattern constrained |
+| `indexTags` | string[] | No | Tags that place this product in tagged indices. The product is added to every index whose `tag` is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped. |
 
 <!-- GENERATED: ProductBusEntry:end -->
 

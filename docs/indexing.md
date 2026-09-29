@@ -1,7 +1,7 @@
 ---
 title: "Product Indexing Guide"
 description: "Configure product indexes, merchant feeds, and sitemap outputs."
-tags: "gtin, index performance, reindexing, offset pagination, property path mapping, google merchant center"
+tags: "gtin, index performance, reindexing, offset pagination, property path mapping, google merchant center, tagged indexes, index tags"
 daPath: "/indexing"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "0fdf2af"
-    lastContentCommit: "1c6fd97"
+    lastReviewedCommit: "bee9c4b"
+    lastContentCommit: "bee9c4b"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -78,7 +78,7 @@ This configuration maps fields from your Product Bus data to fields in the searc
 
 ### Step 2: Create an index
 
-Before products can be indexed at a specific path, an index must exist at that path. Create an index using the Index API:
+Before products can be indexed at a specific path, an index must exist at that path. Create a path-based index using the Index API:
 
 ```bash
 curl -X POST \
@@ -86,9 +86,13 @@ curl -X POST \
   "https://api.adobecommerce.live/{org}/sites/{site}/index/us/en/index.json"
 ```
 
+You can also create a tagged index by sending an optional `tag` in the request body. Tagged indices require the `tagIndexSplitting` experimental flag for the site, start empty, and receive products when their `indexTags` include the index tag and the product is next changed or written with `forceUpdate`. Tagged indices are not backfilled when created.
+
+Index tags are normalized by trimming whitespace, converting to lowercase, and removing duplicates before validation. A tag must start with a letter or digit and can contain lowercase letters, digits, hyphens, underscores, and colons, up to 64 characters. Each tag can be used by only one index on a site, and the root index cannot be tagged. Products can have up to six index tags.
+
 ### Step 3: Verify indexing
 
-Product indices update asynchronously. The indexer runs every 10 minutes, so your products should appear in the index within 10 minutes of creation. When you create an index, any existing products under that path are automatically queued for indexing, so you don't need to re-save them.
+Product indices update asynchronously. The indexer runs every 10 minutes, so your products should appear in the index within 10 minutes of creation. When you create a path-based index, any existing products under that path are automatically queued for indexing, so you don't need to re-save them. Tagged indices are not backfilled; existing products join them on a subsequent changed or `forceUpdate` write.
 
 You can check if your products appear in the index by visiting:
 
@@ -102,25 +106,26 @@ https://main--{site}--{org}.aem.network/us/en/merchant-center-feed.xml
 
 Deleting an index first removes it from the index registry, then removes its stored index data and associated merchant feed. Unregistering the index first prevents pending indexing jobs from recreating it.
 
-If the registry cannot be updated, the deletion returns a `502` response and the index is not deleted. After successful unregistration, cleanup of the stored index data and merchant feed is best-effort. If cleanup fails, you can safely retry the delete operation.
+If the registry cannot be updated, the deletion returns a `502` response and the index is not deleted. After successful unregistration, cleanup of the stored index data and merchant feed is best-effort. If cleanup fails, you can safely retry the delete operation. Products in a deleted tagged index are not moved to another index automatically; they rejoin an applicable index on their next changed or `forceUpdate` write.
 
 ## How products are matched to an index
 
-Indexes are created at specific paths (see [Step 2](#step-2-create-an-index)), and a single site can have indexes at more than one path. When a product is added or updated, the indexer decides which index it belongs to by matching the product's path against the indexes that exist.
+Indexes can be created at specific paths or assigned a tag (see [Step 2](#step-2-create-an-index)), and a single site can have indexes at more than one path. When a product is added or updated, the indexer decides which indices it belongs to using its `indexTags` and path.
 
-The indexer always selects the *closest* index at or above the product's path. Starting from the product's own location, it moves up the path toward the site root and uses the first index it finds. Each product is added to that one index only — never to more than one index at the same time.
+A product is added to every tagged index whose tag is listed in the product's `indexTags`. When no listed tag matches a tagged index, the product uses the *closest* path-based index at or above its path. Starting from the product's own location, the indexer moves up the path toward the site root and uses the first path-based index it finds. A product can therefore be added to multiple matching tagged indices, or to one path-based index when no tagged index matches.
 
 For example, given a product at `/us/en/products/shoes/running-shoe`:
 
-- If indexes exist at both `/us/en/` and `/us/en/products/`, the product is added to the `/us/en/products/` index, because it is the closer of the two.
-- If the only index is at `/us/en/`, the product is added there.
-- If no index exists at `/us/en/`, `/us/en/products/`, or any other path above the product, the product is **not indexed**. Its updates are ignored until a covering index is created.
+- If the product has the tag `sale` and a tagged index with that tag exists, the product is added to that tagged index.
+- If no listed product tag matches a tagged index and path-based indexes exist at both `/us/en/` and `/us/en/products/`, the product is added to the `/us/en/products/` index, because it is the closer of the two.
+- If no listed product tag matches a tagged index and the only path-based index is at `/us/en/`, the product is added there.
+- If no matching tagged index or path-based index exists, the product is **not indexed**. Its updates are ignored until a matching index is created or the product is updated with a matching tag.
 
-This is why an index must exist before products can be indexed. Creating an index at a path automatically queues every existing product beneath that path for indexing, so you don't need to re-save products after creating the index.
+This is why an applicable index must exist before products can be indexed. Creating a path-based index at a path automatically queues every existing product beneath that path for indexing. Creating a tagged index does not backfill existing products; update those products or use `forceUpdate` after creating the tagged index.
 
 ### Choosing where to place indexes
 
-Place an index at the highest path that should share a single catalog view. Most sites use one index per locale (for example `/us/en/`), which keeps all products for that locale in one index. Add indexes at deeper paths when a subtree of products should be queried as a separate, self-contained index — for example, a distinct catalog or department — or when a single index would exceed the [50,000 parent products per index limit](/limits#product-index-size) and needs to be split across paths. Because a product is only ever added to its closest index, a deeper index takes over responsibility for the products beneath it, while products elsewhere continue to use the higher-level index.
+Place a path-based index at the highest path that should share a single catalog view. Most sites use one index per locale (for example `/us/en/`), which keeps all products for that locale in one index. Add indexes at deeper paths when a subtree of products should be queried as a separate, self-contained index — for example, a distinct catalog or department — or when a single index would exceed the [50,000 parent products per index limit](/limits#product-index-size) and needs to be split across paths. Because a product uses its matching tagged indices when applicable, and otherwise only its closest path-based index, a deeper path-based index takes over responsibility for the products beneath it, while products elsewhere continue to use the higher-level index.
 
 ### Indexes and sitemaps
 
