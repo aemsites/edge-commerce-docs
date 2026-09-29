@@ -1,7 +1,7 @@
 ---
 title: "Schema reference"
 description: "Reference for the Product Bus product schema and the order request schemas."
-tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication"
+tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status"
 daPath: "/schema-reference"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "1c6fd97"
+    lastReviewedCommit: "0fdf2af"
+    lastContentCommit: "0fdf2af"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -422,6 +422,10 @@ Product condition using schema.org vocabulary. These values are rendered in the 
 
 Request body schemas for the order and checkout endpoints — what a client sends when previewing or placing an order. These are distinct from the stored order shape returned in responses.
 
+Coupon inputs may contain one code or an array of up to five codes. When multiple codes are submitted, the service selects the best valid combination within the configured limit and reports each submitted code's outcome in `couponStatus` for price and order estimates. `couponSource` may be a single value or an array aligned with the submitted codes; the `auto` source pins that coupon during combination selection.
+
+Coupon configuration controls the number of coupons that can be applied and the maximum discount from coupons on an individual line. `maxApplicableCoupons` sets the combination limit. `maxLineDiscount` contains a `discountType` and `discountValue`; for percentage discounts, `discountValue` is the maximum percentage of a line's pre-coupon subtotal that coupon discounts may consume. Automatic pricing rules and catalog-sale markdowns are not subject to this coupon-specific line limit.
+
 For how `estimateToken` fits into preview and order creation, see [Estimate tokens](/orders/lifecycle#estimate-tokens).
 
 ### Order
@@ -587,7 +591,7 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `name` | string | No | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
 | `address1` | string | No | Primary street address line. max length 255 |
-| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
+| `address2` | string | No | Secondary address line. max length 255 |
 | `city` | string | No | City name. max length 255 |
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |
@@ -598,6 +602,15 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `isValidated` | boolean | No | Whether this address has been validated by an address verification service. |
 
 <!-- GENERATED: PreviewAddress:end -->
+
+### CouponStatus
+
+The estimate response includes one status for each submitted coupon code. Array entries preserve the input order.
+
+| Field | Type | Description |
+|---|---|---|
+| `code` | string | Submitted coupon code. |
+| `status` | `applied` \| `rejected_invalid` \| `rejected_not_combinable` | Whether the code was applied, invalid, or excluded by coupon combination rules. |
 
 ## Errors
 

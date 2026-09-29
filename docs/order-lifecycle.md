@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c8a516f"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "0fdf2af"
+    lastContentCommit: "0fdf2af"
 ---
 
 # Order lifecycle
@@ -159,7 +159,7 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/preview" 
   }'
 ```
 
-The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable.
+The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable. When multiple coupon codes are submitted, the API selects the best valid combination allowed by the site's coupon rules and reports each code's outcome in `couponStatus`.
 
 ```json
 {
@@ -301,7 +301,10 @@ The preview endpoint:
 - Validates item prices against product data unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
-- Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component.
+- Accepts a single coupon code or multiple coupon codes. For multiple codes, it selects the best valid combination within the site's applicable-coupon limit and stacking rules.
+- Reports each submitted code in `couponStatus` as `applied`, `rejected_invalid`, or `rejected_not_combinable`.
+- Treats coupons submitted with `couponSource: "auto"` as pinned. A pinned coupon is retained over a competing manual-only combination when selecting the applicable set.
+- Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component. A configured coupon discount cap can further limit the coupon-sourced discount on each line; automatic pricing rules and catalog-sale markdowns are not subject to that cap.
 - Returns the computed totals and line items, including server-calculated discount allocations when applicable. The persisted tax lines and totals use those same allocations and the resulting reduced taxable base.
 - Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts.
 
@@ -310,6 +313,8 @@ For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enab
 ## Create the order
 
 Call `POST /orders` only after preview succeeds. This endpoint turns the committed cart into a persisted order. It does not start payment.
+
+The order-create body accepts the same coupon selection as preview: `couponCode` can be a single code or an array, and `couponSource` can be a single value or an index-aligned array. Send the values used for preview unchanged with the estimate token. The server verifies the selected coupon combination and stores the resulting discounts; invalid or non-combinable codes are reported through `couponStatus` during preview rather than being applied to the order.
 
 Guest checkout is supported. Authenticated callers must have `orders:write`, and customer-scoped callers can only create orders for their own email address. If the checkout customer email differs from the signed-in account email, order creation is rejected with the `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH` error code.
 
@@ -393,6 +398,8 @@ When configuring PayPal order review, provide a secure `reviewUrl`. The API appe
 Wallet or direct-charge flows may complete during initiation. These flows can move directly from `pending` to `payment_completed` or `payment_cancelled` without a separate `payment_processing` step.
 
 Some PayPal payments can be accepted before settlement. These payments move the order to `payment_pending`; the order is completed after a settlement update.
+
+After a payment completes, the API records usage for every coupon that contributed to the order. A coupon contributes when it has a positive applied discount or when its free-shipping benefit applies to the selected shipping method. Coupons that were rejected, contributed no discount, or did not cover the selected shipping method do not consume usage. Usage updates run independently and do not change the payment result if an update fails.
 
 Provider callbacks guard against replay. Once an order is terminal, later callbacks do not move it backward.
 
