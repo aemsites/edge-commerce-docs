@@ -59,6 +59,7 @@
             <tr><td><code>emails</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>experimentalFlags</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>friendlyId</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>coupons</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>geoOverrides</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
           </table>
         </div>
@@ -74,6 +75,7 @@
             <tr><td><code>emails</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>experimentalFlags</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>friendlyId</code></td><td><code>object</code></td><td>no</td><td></td></tr>
+            <tr><td><code>coupons</code></td><td><code>object</code></td><td>no</td><td></td></tr>
             <tr><td><code>geoOverrides</code></td><td><code>object[]</code></td><td>no</td><td></td></tr>
           </table>
         </div>
@@ -110,6 +112,13 @@
   },
   "friendlyId": {
     "prefix": "US-"
+  },
+  "coupons": {
+    "maxApplicableCoupons": 3,
+    "maxLineDiscount": {
+      "discountType": "percentage",
+      "discountValue": 50
+    }
   },
   "geoOverrides": [
     {
