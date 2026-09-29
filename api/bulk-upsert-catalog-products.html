@@ -45,7 +45,7 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>forceUpdate</code></td><td><code>boolean</code></td><td>no</td><td>When <code>true</code>, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status <code>200</code>); use this after an index-configuration change to force a re-index. In bulk delete mode, <code>forceUpdate</code> also emits an index-removal event for products that are already gone from the catalog (<code>404</code>), clearing orphaned index entries.</td></tr>
+            <tr><td><code>forceUpdate</code></td><td><code>boolean</code></td><td>no</td><td>When <code>true</code>, write and re-index each product even if its data is unchanged. Unchanged products are otherwise skipped (reported with status <code>200</code>); use this after an index-configuration change to force a re-index, or to move existing products into a newly created tagged index (tagged indices are not backfilled; a forced write also removes the product from its path-based index). In bulk delete mode, <code>forceUpdate</code> also emits an index-removal event for products that are already gone from the catalog (<code>404</code>), clearing orphaned entries in their path-based index (tagged-index entries of an already-deleted product can't be targeted; rebuild that tagged index instead).</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
@@ -81,6 +81,17 @@
           </table>
         </div>
         <h3><span class="status-badge status-4xx">405</span> Method not allowed at this path.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-5xx">503</span> The index registry could not be read, so the change was rejected before anything was written or deleted. Retry the request.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -134,6 +145,17 @@
           <pre><code class="language-json">{
   "code": "method_not_allowed",
   "message": "method not allowed"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-5xx">503</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_SERVICE_UNAVAILABLE",
+  "message": "service temporarily unavailable",
+  "retryable": true,
+  "details": {
+    "reason": "index registry unavailable"
+  }
 }</code></pre>
         </div>
       </div>

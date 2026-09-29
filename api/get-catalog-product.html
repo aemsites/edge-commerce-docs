@@ -95,6 +95,7 @@
             <tr><td><code>taxData</code></td><td><code>object</code></td><td>no</td><td>Supplementary tax data passed to the tax provider.</td></tr>
             <tr><td><code>country</code></td><td><code>string</code></td><td>no</td><td>ISO 3166-1 alpha-2 store country code.</td></tr>
             <tr><td><code>locale</code></td><td><code>string</code></td><td>no</td><td>BCP-47 locale tag for this product entry.</td></tr>
+            <tr><td><code>indexTags</code></td><td><code>string[]</code></td><td>no</td><td>Tags that place this product in tagged indices. The product is added to every index whose <code>tag</code> is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped.</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> The path is malformed.</h3>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Create a query index — Helix Commerce API</title>
-    <meta name="description" content="Creates a query index for the given path. The index path is the directory portion of the URL (the trailing /index.json is stripped). No request body.">
+    <meta name="description" content="Creates a query index for the given path. The index path is the directory portion of the URL (the trailing /index.json is stripped). The body is optional: omit it for a path-based index, or pass { "tag": "..." } to create a tagged index.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/index/{path}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Creates a query index for the given path. The index path is the directory portion of the URL (the trailing <code>/index.json</code> is stripped). No request body.</p>
+        <p>Creates a query index for the given path. The index path is the directory portion of the URL (the trailing <code>/index.json</code> is stripped). The body is optional: omit it for a path-based index, or pass <code>{ "tag": "..." }</code> to create a tagged index.</p>
         <p class="permissions">Required permissions: <code>index:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -48,9 +48,16 @@
             <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>.</td></tr>
           </table>
         </div>
+        <h2>Request body</h2>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>tag</code></td><td><code>string</code></td><td>no</td><td>Makes this a tagged index: products whose <code>indexTags</code> include this tag are placed in it (instead of their path-based index), and it is not used for path-based placement. Trimmed and lowercased, then must be lowercase letters, digits, <code>-</code>, <code>_</code> or <code>:</code>, starting with a letter or digit, at most 64 characters. Unique across the site's indices, immutable after creation, and not allowed on the root index. Requires the <code>tagIndexSplitting</code> experimental flag.</td></tr>
+          </table>
+        </div>
         <h2>Response</h2>
         <h3><span class="status-badge status-2xx">201</span> Index created (no content).</h3>
-        <h3><span class="status-badge status-4xx">400</span> Path is missing, does not end with <code>/index.json</code>, or is otherwise invalid.</h3>
+        <h3><span class="status-badge status-4xx">400</span> Path is missing, does not end with <code>/index.json</code>, or is otherwise invalid; or the <code>tag</code> is invalid, set on the root index, or tagged indices are not enabled for the site.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -59,7 +66,7 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">409</span> Index already exists, or the registry was modified concurrently.</h3>
+        <h3><span class="status-badge status-4xx">409</span> Index already exists, its <code>tag</code> is already used by another index, or the registry was modified concurrently.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -83,6 +90,12 @@
         </div>
       </div>
       <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">POST /{org}/sites/{site}/index/{path}</span></div>
+          <pre><code class="language-json">{
+  "tag": "sale"
+}</code></pre>
+        </div>
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
