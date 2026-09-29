@@ -123,16 +123,48 @@ For example, given a product at `/us/en/products/shoes/running-shoe`:
 
 This is why an applicable index must exist before products can be indexed. Creating a path-based index at a path automatically queues every existing product beneath that path for indexing. Creating a tagged index does not backfill existing products; update those products or use `forceUpdate` after creating the tagged index.
 
-### Choosing where to place indexes
+### Choosing an index strategy
 
-Place a path-based index at the highest path that should share a single catalog view. Most sites use one index per locale (for example `/us/en/`), which keeps all products for that locale in one index. Add indexes at deeper paths when a subtree of products should be queried as a separate, self-contained index — for example, a distinct catalog or department — or when a single index would exceed the [50,000 parent products per index limit](/limits#product-index-size) and needs to be split across paths. Because a product uses its matching tagged indices when applicable, and otherwise only its closest path-based index, a deeper path-based index takes over responsibility for the products beneath it, while products elsewhere continue to use the higher-level index.
+Use a path-based index when stable URL subpaths provide useful catalog partitions, such as locale, market, or category, and each resulting index stays within the 15,000-product maximum, including variants. If a locale, market, or category still exceeds that size, split it further at deeper URL paths when practical. If the URL hierarchy does not provide suitable partitions, use tagged indexes to assign products to explicit catalog groups.
+
+Use tagged indexes when products need to be grouped independently of their URL paths. For example, tagged indexes can split a large catalog when there is no natural path hierarchy to use. Choose a tag for each group and include it in the `indexTags` of products assigned to that group. Tag values such as `catalog-a` are examples only; there are no reserved tag names. Products with multiple matching tags are added to each corresponding tagged index, so assign one matching tag per product when groups should be mutually exclusive. A storefront that needs a combined catalog view across groups must retrieve and combine the relevant indexes.
+
+Keep each index within the [15,000-product maximum, including variants](/limits#product-index-size). Tagged indexes require the site's `tagIndexSplitting` experimental flag and are not backfilled automatically; update existing products or write them with `forceUpdate` after creating the tagged indexes.
+
+### Create and populate a tagged index
+
+Tagged indexes require the `tagIndexSplitting` experimental flag. Use this flag only when directed by the Adobe team; see [Experimental flags](/site-configuration#experimental-flags) for configuration details.
+
+Create a tagged index at a non-root index path by sending its tag in the request body:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{ "tag": "catalog-a" }' \
+  "https://api.adobecommerce.live/{org}/sites/{site}/index/us/en/catalog-a/index.json"
+```
+
+Include the same tag in the product's `indexTags` when creating or updating the product:
+
+```bash
+curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/blender-pro-500.json" \
+  -X PUT \
+  -H "Authorization: Bearer {your-api-key}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sku": "sku-123",
+    "path": "/us/en/products/blender-pro-500",
+    "name": "Blender Pro 500",
+    "indexTags": ["catalog-a"]
+  }'
+```
+
+The `PUT` request replaces the product record, so include all existing fields you want to retain when updating a product. See [Create or update a product](/api-reference#create-or-update-a-product) for details. Tagged indexes are not backfilled; to add existing products, write them again with `?forceUpdate=true` and include the appropriate `indexTags`.
 
 ### Indexes and sitemaps
 
-Each index also drives the `sitemap.xml` at the same path: the sitemap is generated from the index data, so the products in an index determine what appears in that path's sitemap. This has two practical consequences:
-
-- Keeping an index within the [50,000 parent products per index limit](/limits#product-index-size) also keeps its sitemap within the 50,000-URL limit that search engines enforce per sitemap file. When a catalog is larger, split it across deeper indexes — each path serves its own sitemap — rather than growing a single index past that limit.
-- Products marked `noindex` (via a `metadata.robots` value containing `noindex`) are excluded from the sitemap, the same way they are excluded from the default index view.
+Each index also drives the `sitemap.xml` at the same path: the sitemap is generated from the index data, so the products in an index determine what appears in that path's sitemap. The [15,000-product index maximum, including variants](/limits#product-index-size), is separate from the search-engine limit of 50,000 URLs per sitemap file. Keep each sitemap file within its URL limit as well. Products marked `noindex` (via a `metadata.robots` value containing `noindex`) are excluded from the sitemap, the same way they are excluded from the default index view.
 
 ## Product indexing configuration
 

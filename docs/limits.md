@@ -45,13 +45,11 @@ The default guidance is:
 
 ## Product index size
 
-Each product index supports up to **50,000 parent products**. Variants are not counted toward this limit. A parent product may have many variants beneath it, but only parent products count toward the 50,000-product maximum for a single index.
+Each product index supports up to **15,000 products, including variants**. Count every parent product and each variant toward this per-index maximum.
 
-Catalogs with more than 50,000 parent products must be split across multiple indexes. Split indexes using a stable site structure, such as category, locale, market, or path hierarchy, so products map to indexes predictably as the catalog grows.
+This limit applies per index, not to the catalog as a whole. A catalog can contain more than 15,000 products across multiple indexes. For guidance on splitting a catalog with path-based or tagged indexes, see the [Product Indexing Guide](/indexing#choosing-an-index-strategy).
 
-This limit aligns with Google sitemap guidance (50,000 URLs per sitemap file) and helps ensure reliable sitemap generation, Merchant Center feed generation, and product discovery workflows.
-
-This is a per-index limit, not a total catalog size limit. A catalog may contain more parent products in aggregate when distributed across multiple indexes.
+The 15,000-product index maximum is separate from the search-engine limit of 50,000 URLs per sitemap file. Keep each sitemap file within its URL limit as well.
 
 ## Next steps
 
