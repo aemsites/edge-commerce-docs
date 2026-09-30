@@ -1,7 +1,7 @@
 ---
 title: "Product Indexing Guide"
 description: "Configure product indexes, merchant feeds, and sitemap outputs."
-tags: "gtin, index performance, reindexing, offset pagination, property path mapping, google merchant center, tagged indexes, index tags"
+tags: "gtin, index performance, reindexing, offset pagination, property path mapping, google merchant center, tagged indexes, index tags, reserved fields"
 daPath: "/indexing"
 status: migrated
 managed: true
@@ -64,8 +64,7 @@ curl --request POST \
     "productIndexerConfig": {
         "properties": {
             "name": "title",
-            "sku": "sku",
-            "path": "url",
+            "path": "path",
             "price.final": "price",
             "brand": "brand",
             "images[0].url": "image"
@@ -74,7 +73,7 @@ curl --request POST \
 }'
 ```
 
-This configuration maps fields from your Product Bus data to fields in the searchable index. On the left side of each mapping, you specify which field from the Product Bus you want to include (like `name`, `sku`, or `price.final`). On the right side, you define what that field should be called in the index. For example, `"price.final": "price"` tells the indexer to take the final price from your product data and store it in the index under the simpler name "price". Without this configuration in place, the product indexer won't know which fields to extract, and product indexing will not occur.
+This configuration maps fields from your Product Bus data to fields in the searchable index. On the left side of each mapping, you specify which field from the Product Bus you want to include (like `name`, `brand`, or `price.final`). On the right side, you define what that field should be called in the index. For example, `"price.final": "price"` tells the indexer to take the final price from your product data and store it in the index under the simpler name "price". Without this configuration in place, the product indexer won't know which fields to extract, and product indexing will not occur. The indexer always includes each product's `sku` and `url` in the index, so you don't need to map them. See [Automatic and reserved fields](#automatic-and-reserved-fields) for details.
 
 ### Step 2: Create an index
 
@@ -198,7 +197,7 @@ Simple properties:
 {
   "name": "productName",
   "brand": "brandName",
-  "sku": "productSku"
+  "mpn": "partNumber"
 }
 ```
 
@@ -237,6 +236,24 @@ Metadata properties:
 }
 ```
 
+### Automatic and reserved fields
+
+The indexer adds these fields to every index entry itself:
+
+| Field | Value |
+|---|---|
+| `sku` | The product's `sku`. |
+| `url` | The product's canonical `url`, when it has one. |
+| `lastModified` | The time the entry was last added or updated. |
+
+Keep the following in mind when you write your `properties` mapping:
+
+- `sku` is always included, so a `sku` mapping is ignored. You don't need to map it.
+- `url` is set from the product's `url` field. Mapping another property to `url` replaces it, so don't map `path` to `url`: that replaces the canonical URL with the relative product path. To include the product path, map `path` to `path`.
+- Sitemaps use the entry's `url` when it is present and otherwise build the URL from its `path`. Include `"path": "path"` in your mapping so products without a `url` still appear in the sitemap with a full URL. See [URL field and sitemap generation](/schema-reference#url-field-and-sitemap-generation).
+- `lastModified` is set after your mappings are applied, so mapping a property to `lastModified` has no effect.
+- `variants` is reserved and can't be mapped as a property. Variants are indexed automatically under `variants`, keyed by variant SKU. Each variant entry includes its own `sku` and `url`, and uses the same mappings as the product.
+
 ### Prices in index responses
 
 The stored index contains the prices written by the Product Indexer at indexing time. When the pipeline serves an index response, it fetches and applies any active catalog price rules before returning the data, so the `price` values a browser or application sees may be lower than what was originally indexed. See the [Rendering Guide](/rendering-guide#catalog-price-rules) for details on how catalog price rules work.
@@ -245,7 +262,7 @@ The stored index contains the prices written by the Product Indexer at indexing 
 
 Index only what you need by including only properties used by your frontend application. Smaller indices load faster and reduce bandwidth. Common properties include name, price, SKU, availability, and primary image.
 
-Use consistent naming by choosing clear, descriptive index field names. Use camelCase or snake_case consistently (e.g., `"name": "productTitle"`, `"sku": "productCode"`).
+Use consistent naming by choosing clear, descriptive index field names. Use camelCase or snake_case consistently (e.g., `"name": "productTitle"`, `"mpn": "partNumber"`).
 
 Plan for search and filtering by including properties used in search (name, brand, categories), properties used in filters (price, color, size, availability), and properties displayed in results (image, price, name).
 
@@ -256,9 +273,8 @@ Plan for search and filtering by including properties used in search (name, bran
   "public": {
     "productIndexerConfig": {
       "properties": {
-        "sku": "sku",
         "name": "title",
-        "path": "url",
+        "path": "path",
         "price.final": "price",
         "price.currency": "currency",
         "availability": "inStock",
