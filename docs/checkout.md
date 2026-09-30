@@ -9,7 +9,7 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.3"
-    lastReviewedCommit: "bee9c4b"
+    lastReviewedCommit: "6ce2247"
     lastContentCommit: "59379a6"
 ---
 
