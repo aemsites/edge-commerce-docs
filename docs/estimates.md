@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps"
+tags: "estimate tokens, bundles, bundle composition, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, catalog promotions"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "b25e993"
+    lastContentCommit: "b25e993"
 ---
 
 # Estimates and cart totals
@@ -335,6 +335,10 @@ Preview differs from estimates because it:
 - Validates item country availability.
 - Computes the committed tax, shipping, and discount result.
 - Returns an [`estimateToken`](/orders/lifecycle#estimate-tokens).
+
+Order preview accepts a submitted item price when it matches either the stored catalog price or an active catalog-promotion price for the request country. This allows storefronts to submit the promotional price they displayed, including when the promotion is scoped to a country. For a bundle at a promotional parent price, preview apportions that price across the resolved bundle components in proportion to their stored prices. The component allocations use deterministic cent-level rounding, so their prices sum exactly to the parent price and remain consistent between preview and order creation.
+
+New estimate tokens include `bundleCompositions` for bundle lines. This records the resolved component SKUs, unit prices, and effective tax classifications used during preview. When the order is created with the token, the API compares the current bundle composition with this snapshot; if the components, prices, or effective tax classifications changed, order creation is rejected and the shopper must run preview again.
 
 Preview responses also include server-calculated discount allocations on `lineItems`. The signed `estimateToken` carries these allocations as sparse `lineItemDiscounts` data so order creation can persist the verified values rather than relying on client-supplied line discounts. For bundle products, each parent discount is distributed proportionally across the bundle components using their effective extended prices.
 

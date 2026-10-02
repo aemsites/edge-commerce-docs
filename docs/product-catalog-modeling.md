@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.49.1"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "bee9c4b"
+    lastReviewedCommit: "b25e993"
+    lastContentCommit: "b25e993"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -206,9 +206,9 @@ See [BundleItem](/schema-reference#bundleitem), [BundleItemVariant](/schema-refe
 
 Storefronts submit the bundle parent as the order item. They must not calculate or submit the component lines: the service resolves them from the current Product Bus entry and replaces any client-supplied nested `bundleItems`.
 
-The resolved component prices must add up to the parent order item's `price.final`. Each resolved component inherits the parent quantity and currency.
+When accepted, the resolved component prices add up to the parent order item's `price.final`. If the parent price is an active catalog promotion, the service apportions that price across the components in proportion to their stored prices. The same apportionment occurs when price consistency is disabled or when a verified estimate token is used. Each resolved component inherits the parent quantity and currency.
 
-Order previews and created orders retain the resolved component lines nested under the bundle parent. Those nested lines are not additional chargeable order items; the parent line remains the chargeable value. See [OrderItem](/schema-reference#orderitem) and [Estimates and cart totals](/estimates) for the order and estimate response shapes.
+Order previews and created orders retain the resolved component lines nested under the bundle parent. Those nested lines are not additional chargeable order items; the parent line remains the chargeable value. When an estimate token is used, order creation rejects the order if the resolved bundle contents changed since preview; the storefront must run the preview again. See [OrderItem](/schema-reference#orderitem) and [Estimates and cart totals](/estimates) for the order and estimate response shapes.
 
 ## Rendering and structured data
 

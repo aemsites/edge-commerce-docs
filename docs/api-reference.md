@@ -1,7 +1,7 @@
 ---
 title: "Edge Commerce API reference"
 description: "Human-readable API reference for Edge Commerce operations."
-tags: "etag, conditional requests, legacy site tokens, bulk operations, cache invalidation, index management, tagged indices, multi locale paths, payload size limits, full replacement updates, automatic index assignment, deletion cascade, cache purging"
+tags: "etag, conditional requests, legacy site tokens, bulk operations, cache invalidation, index management, tagged indices, multi locale paths, payload size limits, full replacement updates, automatic index assignment, deletion cascade, cache purging, metaImage, social sharing images"
 llmScope: "Covers the core platform HTTP APIs: product catalog operations, authentication and access, product indexing, site configuration, and cache management. EXCLUDES checkout, payments, orders, estimates, and journals — those are documented on their own topic pages (payments, payments-*, order-lifecycle, order-journal, checkout, estimates), not here."
 daPath: "/api-reference"
 status: migrated
@@ -10,8 +10,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "bee9c4b"
+    lastReviewedCommit: "b25e993"
+    lastContentCommit: "b25e993"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -165,7 +165,7 @@ Product responses include an `ETag` header that identifies the stored version. S
 
 A failed precondition returns `412 Precondition Failed`, and the product is not modified. A successful conditional update returns `200 OK` with a new `ETag`; a create-only request returns `201 Created`. Successful single-product `PUT` requests return the new `ETag` even when no conditional header was provided.
 
-The request body should be a product object (see [Schema Reference](/schema-reference#productbusentry)).
+The request body should be a product object (see [Schema Reference](/schema-reference#productbusentry)). Product writes also accept `metaImage`, a URL override for the image used when sharing the product on social platforms.
 
 When the request succeeds and the product was created or updated, you'll receive a `201 Created` status along with the complete product object. A `200 OK` status is returned when all products were already up-to-date and no changes were detected. If the product data is invalid, the API returns a `400 Bad Request` with details about the validation errors. A `401 Unauthorized` response indicates that your API key is missing or invalid. Requests with a declared body larger than 10 MB return `413 Payload Too Large`.
 
@@ -184,6 +184,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/catalog/us/en/products/b
     "name": "Product Name",
     "metaTitle": "Product Name | Brand",
     "metaDescription": "Short SEO description...",
+    "metaImage": "https://www.example.com/images/blender-pro-500-social.jpg",
     "gtin": "0123456789012",
     "mpn": "BLENDER-PRO-500",
     "productType": "Home > Kitchen > Blenders",
@@ -340,7 +341,9 @@ Example response:
 
 #### Image processing behavior
 
-Image processing is synchronous when you submit 10 or fewer products with 10 or fewer total images. For larger requests, images are queued for asynchronous background processing. When processed asynchronously, products initially point to the external URLs you provided in the request. After processing completes, image URLs are transformed to relative paths (e.g., `./media_{image-hash}.png`). External images are fetched, deduplicated via SHA-1 hashing, and stored in the media bus.
+Image processing is synchronous when you submit 10 or fewer products with 10 or fewer total images. The `metaImage` field counts as one image for this limit, in addition to product images and variant images. For larger requests, images are queued for asynchronous background processing. When processed asynchronously, products initially point to the external URLs you provided in the request. After processing completes, image URLs are transformed to relative paths (e.g., `./media_{image-hash}.png`). External images are fetched, deduplicated via SHA-1 hashing, and stored in the media bus.
+
+The image-processing job limit is 500 images. A product's `metaImage`, each product image, and each variant image contributes one image to the count.
 
 Learn more about [image handling](/schema-reference#productbusmedia) in the schema reference.
 

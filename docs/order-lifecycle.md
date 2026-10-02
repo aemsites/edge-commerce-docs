@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, promotional prices, bundle composition, consistency mismatch, referenced products"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "b25e993"
+    lastContentCommit: "b25e993"
 ---
 
 # Order lifecycle
@@ -298,7 +298,7 @@ This endpoint exists because interactive estimates are not enough to place an or
 The preview endpoint:
 
 - Validates the order shape and requires `shippingMethod.id`.
-- Validates item prices against product data unless price consistency is disabled in site configuration.
+- Validates item prices against product data or an active catalog promotion price unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
 - Accepts a single coupon code or multiple coupon codes. For multiple codes, it selects the best valid combination within the site's applicable-coupon limit and stacking rules.
@@ -318,10 +318,29 @@ The order-create body accepts the same coupon selection as preview: `couponCode`
 
 Guest checkout is supported. Authenticated callers must have `orders:write`, and customer-scoped callers can only create orders for their own email address. If the checkout customer email differs from the signed-in account email, order creation is rejected with the `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH` error code.
 
+When an order is created without an `estimateToken`, item prices are still checked against stored product prices and any active catalog promotion price. This allows a storefront to submit the promotional price it displayed without first obtaining a token. For a bundle at a promotional parent price, the API apportions that price across the bundle components so their component prices sum to the parent price.
+
+The `disablePriceConsistency` site setting controls bundle mismatch enforcement. When it is enabled, bundle parent and component price mismatches are accepted and apportioned; item price validation still runs and inconsistencies are reported. A verified estimate token also permits the locked-in bundle pricing from preview, even if the promotion changes before order creation.
+
+When an estimate token is supplied, `POST /orders` re-resolves each bundle and verifies the composition captured during preview. If a bundle's component SKUs, prices, or effective tax classifications changed, order creation is rejected with `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` and `details.field` set to `bundleItems`. The client must run `POST /orders/preview` again and create the order with the new estimate token.
+
+### Handle order creation errors
+
+A rejected `POST /orders` request returns a standard error envelope with a machine-readable `code` and human-readable `message`. Validation failures include an `errors` array with field-level details. Other checkout consistency failures include structured `details`.
+
+Common consistency errors include:
+
+- `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` with `details.field` set to `estimateToken` when the token is invalid, expired, or does not match the submitted order.
+- `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` with `details.field` set to `bundleItems` when a bundle's components, component prices, or effective tax classifications changed since preview.
+- `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` with `details.field` set to `price`, `bundle_price`, or `bundle_variant` when submitted product or bundle data no longer matches the catalog.
+- `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` when an item's product path or SKU does not exist. The structured details identify the missing `path` or `sku`.
+
+If the error identifies `estimateToken` or `bundleItems`, do not retry the same request unchanged. Run `POST /orders/preview` again with the current cart, refresh the displayed totals, and retry `POST /orders` with the new `estimateToken`. Handle other consistency or referenced-product errors by refreshing the affected catalog or cart data before submitting again.
+
 At creation time, the API:
 
 - Validates the order schema.
-- Verifies item prices and countries.
+- Verifies item prices, including active catalog promotion prices, and countries.
 - Verifies the `estimateToken` when one is supplied.
 - Rejects unauthorized free items that are not covered by a promotion grant.
 - Creates or associates the customer record when needed.
@@ -360,7 +379,7 @@ Request a new preview, and therefore a new estimate token, whenever the shopper 
 - Customer email when discounts or limits depend on customer identity
 - Payment method, checkout flow, or checkout entry point when tax or provider rules depend on them
 
-If the token is invalid, expired, or does not match the submitted order, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
+If the token is invalid, expired, does not match the submitted order, or the bundle contents changed since preview, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
 
 ## Initiate payment
 
