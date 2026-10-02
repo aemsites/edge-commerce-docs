@@ -71,7 +71,7 @@
           </table>
         </div>
         <h2>Response</h2>
-        <h3><span class="status-badge status-2xx">200</span> The estimate and signed token. Line allocations are server-calculated; bundle component allocations sum to and replace the parent allocation for component-line consumers, so never subtract both levels. <code>price.final</code> remains the validated catalog price.</h3>
+        <h3><span class="status-badge status-2xx">200</span> The estimate and signed token. Line allocations are server-calculated; bundle component allocations sum to and replace the parent allocation for component-line consumers, so never subtract both levels. <code>price.final</code> is the submitted price, validated against the catalog: the item's stored price or, while a catalog promotion is active for it, its promotional price. A bundle parent at its promotional price has that price apportioned across its <code>bundleItems</code> in proportion to their stored prices, so component <code>price.final</code> values sum to the parent's.</h3>
         <div class="table">
           <table>
             <tr><td>Header</td><td>Description</td></tr>
@@ -91,13 +91,15 @@
             <tr><td><code>couponStatus</code></td><td><code>object[]</code></td><td>no</td><td>Per-code coupon outcome, present only when a coupon code was submitted. Reports each submitted code as applied, rejected_invalid (failed validation; reason withheld to prevent code enumeration), or rejected_not_combinable (valid but not part of the winning stacking combination).</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The preview was rejected, for example: it is invalid (<code>ADOBE_COMMERCE_VALIDATION_FAILED</code>, with per-field <code>errors</code>: the body failed validation, <code>shippingMethod.id</code> is missing, or the selected method is unavailable); it references a product path or SKU that does not exist (<code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code>); or it is not consistent with the catalog (<code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code>, with <code>details.field</code> such as <code>price</code>, <code>bundle_price</code>, or <code>bundle_variant</code>).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code.</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header). Common values include <code>ADOBE_COMMERCE_VALIDATION_FAILED</code>, <code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code>, and <code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code> (an item's product path or SKU does not exist); not an exhaustive list.</td></tr>
             <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message.</td></tr>
-            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures (present on <code>ADOBE_COMMERCE_VALIDATION_FAILED</code>).</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail; fields vary by error. For example, <code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code> carries <code>path</code> or <code>sku</code>; <code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code> carries <code>field</code>, e.g. <code>price</code> (an item's submitted price matches neither its stored price nor its active catalog promotion price; <code>actualPrice</code> is the stored price), <code>bundle_price</code> (a bundle's price does not match its components, and is not its promotional price), or <code>bundle_variant</code> (the selected options do not resolve to exactly one bundle variant).</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">422</span> An unauthorized free ($0) item was requested with no matching free-item grant.</h3>
@@ -209,14 +211,16 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-  "code": "validation_failed",
-  "message": "invalid order",
-  "errors": [
-    {
-      "path": "$.shippingMethod.id",
-      "message": "is required"
+  "code": "ADOBE_COMMERCE_CONSISTENCY_MISMATCH",
+  "message": "price mismatch for item: 'SKU-1'",
+  "details": {
+    "field": "price",
+    "sku": "SKU-1",
+    "actualPrice": {
+      "final": "100.00",
+      "currency": "USD"
     }
-  ]
+  }
 }</code></pre>
         </div>
         <div class="code-sample">

@@ -65,6 +65,7 @@ The main product schema supports rich product data with HTML content, variants, 
 | `name` | string | Yes | Display name for the product. |
 | `metaTitle` | string | No | HTML meta title override. |
 | `metaDescription` | string | No | HTML meta description override. |
+| `metaImage` | string | No | Social-sharing image URL override. |
 | `gtin` | string | No | Global Trade Item Number (barcode). |
 | `mpn` | string | No | Manufacturer Part Number. Used as a product identifier when no GTIN is available. |
 | `productType` | string | No | Merchant-defined product category, e.g. "Home > Kitchen > Blenders". |
