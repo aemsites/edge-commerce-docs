@@ -85,13 +85,15 @@
             <tr><td><code>order</code></td><td><code>object</code></td><td>yes</td><td></td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">400</span> The order failed schema validation, or the estimateToken was invalid/expired/mismatched.</h3>
+        <h3><span class="status-badge status-4xx">400</span> The order was rejected, for example: it is invalid (<code>ADOBE_COMMERCE_VALIDATION_FAILED</code>, with per-field <code>errors</code>: schema validation failed, or the <code>estimateToken</code> is invalid or expired); it references a product path or SKU that does not exist (<code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code>); or it is no longer consistent with server data (<code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code>, with <code>details</code>). On <code>details.field</code> <code>estimateToken</code> or <code>bundleItems</code> (a bundle's components, their prices, or their tax classification changed since preview), re-run <code>POST /orders/preview</code> and retry with the new <code>estimateToken</code>.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code.</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header). Common values include <code>ADOBE_COMMERCE_VALIDATION_FAILED</code>, <code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code>, and <code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code> (an item's product path or SKU does not exist); not an exhaustive list.</td></tr>
             <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message.</td></tr>
-            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures (present on <code>ADOBE_COMMERCE_VALIDATION_FAILED</code>).</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail; fields vary by error. For example, <code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code> carries <code>path</code> or <code>sku</code>; <code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code> carries <code>field</code>, e.g. <code>estimateToken</code> (the order changed since the token was issued) or <code>bundleItems</code> (a bundle's components, component prices, or tax classification changed since preview; <code>sku</code> is the bundle line) — re-run preview for both — or <code>price</code> / <code>bundle_price</code> / <code>bundle_variant</code> (an item price does not match the catalog or its active catalog promotion, a bundle's price does not match its components, or the selected options do not resolve to exactly one bundle variant).</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">403</span> Authenticated caller lacks orders:write, has an org/site mismatch, or email mismatch.</h3>
@@ -233,14 +235,12 @@
         <div class="code-sample">
           <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">400</span></span></div>
           <pre><code class="language-json">{
-  "code": "validation_failed",
-  "message": "invalid order",
-  "errors": [
-    {
-      "path": "$.items",
-      "message": "is required"
-    }
-  ]
+  "code": "ADOBE_COMMERCE_CONSISTENCY_MISMATCH",
+  "message": "bundle contents changed since preview for item: 'BUNDLE-SKU'",
+  "details": {
+    "field": "bundleItems",
+    "sku": "BUNDLE-SKU"
+  }
 }</code></pre>
         </div>
         <div class="code-sample">
