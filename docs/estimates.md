@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, postal code normalization"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "c5ef508"
+    lastContentCommit: "c5ef508"
 ---
 
 # Estimates and cart totals
@@ -328,6 +328,8 @@ Tax estimate and order estimate use the configured tax provider chain. When [Ava
 
 Use `/orders/preview` after estimates, when the shopper has selected the final shipping method and is ready to place the order.
 
+For Canada and the United States, the estimate token binds a normalized postal prefix rather than the full postal code. Canada uses the first three characters and the United States uses the first five digits. Spaces, dashes, and letter case are ignored during normalization, so equivalent formats can be used between preview and order creation.
+
 Preview differs from estimates because it:
 
 - Requires `shippingMethod.id`.
@@ -335,6 +337,16 @@ Preview differs from estimates because it:
 - Validates item country availability.
 - Computes the committed tax, shipping, and discount result.
 - Returns an [`estimateToken`](/orders/lifecycle#estimate-tokens).
+
+During price consistency validation, preview also accepts an item's active catalog promotion price. If a bundle parent uses that promotional price, preview apportions the parent price across its components so the component prices sum to the parent total.
+
+A rejected preview returns a structured `400` response. Common error codes include:
+
+- `ADOBE_COMMERCE_VALIDATION_FAILED` for request validation failures.
+- `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` when an item path or SKU does not exist.
+- `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` when submitted prices, bundle pricing, or bundle variant selection is inconsistent with catalog data.
+
+The consistency error details identify the failing field, such as `price`, `bundle_price`, or `bundle_variant`. For a price mismatch, the response can include the effective catalog price that the client should use.
 
 Preview responses also include server-calculated discount allocations on `lineItems`. The signed `estimateToken` carries these allocations as sparse `lineItemDiscounts` data so order creation can persist the verified values rather than relying on client-supplied line discounts. For bundle products, each parent discount is distributed proportionally across the bundle components using their effective extended prices.
 

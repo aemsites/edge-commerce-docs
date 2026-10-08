@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "c5ef508"
+    lastContentCommit: "c5ef508"
 ---
 
 # Order lifecycle
@@ -298,7 +298,7 @@ This endpoint exists because interactive estimates are not enough to place an or
 The preview endpoint:
 
 - Validates the order shape and requires `shippingMethod.id`.
-- Validates item prices against product data unless price consistency is disabled in site configuration.
+- Validates item prices against stored product data or active catalog promotion prices unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
 - Accepts a single coupon code or multiple coupon codes. For multiple codes, it selects the best valid combination within the site's applicable-coupon limit and stacking rules.
@@ -321,7 +321,7 @@ Guest checkout is supported. Authenticated callers must have `orders:write`, and
 At creation time, the API:
 
 - Validates the order schema.
-- Verifies item prices and countries.
+- Verifies item prices against stored product data or active catalog promotion prices, and countries.
 - Verifies the `estimateToken` when one is supplied.
 - Rejects unauthorized free items that are not covered by a promotion grant.
 - Creates or associates the customer record when needed.
@@ -330,6 +330,10 @@ At creation time, the API:
 - Persists the order with state `pending`.
 - Stores server-calculated line discount allocations from the verified estimate token.
 - Creates the first order history entry.
+
+When a submitted item uses an active catalog promotion price, order creation accepts that authoritative promotional price instead of requiring the stored regular price. Bundle lines are also validated against their resolved components. If the bundle parent price differs from the component total but is a valid whole-cent catalog promotion price, the API apportions the parent price across components using a deterministic largest-remainder calculation so the component prices sum exactly to the parent price. The same apportionment is used during preview and order creation.
+
+A verified estimate token also binds the resolved bundle contents, component prices, and effective tax classifications. If those values change between preview and order creation, the API rejects the order with a consistency error whose `details.field` is `bundleItems`. The storefront must run `POST /orders/preview` again and retry order creation with the new estimate token; it must not reuse the previous token.
 
 The response wraps the stored order as `{ "order": { ... } }`. The `customerType` and `customerCreated` values are generated from server-side request and customer-profile context; clients cannot set them in the request.
 
@@ -349,6 +353,8 @@ Conceptually, the token represents the selected-method checkout result:
 | Payment method and checkout context | Keeps `paymentMethod`, `checkoutFlow`, and `entryPoint` consistent when they affect tax or provider rules |
 | Relevant cart and customer inputs | Lets order creation reject a mismatched or stale checkout submission |
 
+For bundle lines, the token also records the server-resolved component SKUs, prices, and effective tax classifications. If the catalog changes after preview, including a component change, price change, or tax-classification change, order creation rejects the request with a `bundleItems` consistency error. Request a new preview and use its new token before retrying.
+
 Treat the token as opaque. Do not parse it, modify it, or use it as a source of display data. Use the response fields from preview to render the checkout review screen, and pass the token unchanged in the order creation request.
 
 Request a new preview, and therefore a new estimate token, whenever the shopper changes anything that can affect totals or eligibility:
@@ -360,7 +366,7 @@ Request a new preview, and therefore a new estimate token, whenever the shopper 
 - Customer email when discounts or limits depend on customer identity
 - Payment method, checkout flow, or checkout entry point when tax or provider rules depend on them
 
-If the token is invalid, expired, or does not match the submitted order, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
+If the token is invalid, expired, does not match the submitted order, or the resolved bundle contents changed since preview, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
 
 ## Initiate payment
 
