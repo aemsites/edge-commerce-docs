@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "unknown"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "c5ef508"
+    lastContentCommit: "c5ef508"
 ---
 
 # PayPal order review and deferred capture

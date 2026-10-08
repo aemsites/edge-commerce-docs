@@ -1,7 +1,7 @@
 ---
 title: "Schema reference"
 description: "Reference for the Product Bus product schema and the order request schemas."
-tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status, tagged indices"
+tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status, tagged indices, social sharing image"
 daPath: "/schema-reference"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "6ce2247"
+    lastReviewedCommit: "c5ef508"
+    lastContentCommit: "c5ef508"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -96,6 +96,8 @@ The main product schema supports rich product data with HTML content, variants, 
 | `indexTags` | string[] | No | Tags that place this product in tagged indices. The product is added to every index whose `tag` is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped. |
 
 <!-- GENERATED: ProductBusEntry:end -->
+
+The `metaImage` field is accepted on product create and update requests as a social-sharing image URL override.
 
 For guidance on modeling standalone products, products with variants, and bundle compositions, see [Product catalog modeling](/product-catalog-modeling). The catalog accepts an empty `bundleItems` array, but checkout processes a bundle only when the array has at least one component.
 
@@ -593,7 +595,7 @@ The relaxed address used in order previews. Only `country` and `state` are requi
 | `name` | string | No | Full name of the recipient. max length 255 |
 | `company` | string | No | Company name. max length 255 |
 | `address1` | string | No | Primary street address line. max length 255 |
-| `address2` | string | No | Secondary address line (apartment, suite, etc.). max length 255 |
+| `address2` | string | No | Secondary address line. max length 255 |
 | `city` | string | No | City name. max length 255 |
 | `state` | string | Yes | State or province code. max length 255 |
 | `zip` | string | No | Postal or ZIP code. max length 255 |
