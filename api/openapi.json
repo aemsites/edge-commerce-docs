@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.71.0",
+    "version": "2.74.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -2335,23 +2335,70 @@
             }
           },
           "400": {
-            "description": "The order failed schema validation, or the estimateToken was invalid/expired/mismatched.",
+            "description": "The order was rejected, for example: it is invalid (`ADOBE_COMMERCE_VALIDATION_FAILED`, with per-field `errors`: schema validation failed, or the `estimateToken` is invalid or expired); it references a product path or SKU that does not exist (`ADOBE_COMMERCE_REFERENCED_NOT_FOUND`); or it is no longer consistent with server data (`ADOBE_COMMERCE_CONSISTENCY_MISMATCH`, with `details`). On `details.field` `estimateToken` or `bundleItems` (a bundle's components, their prices, or their tax classification changed since preview), re-run `POST /orders/preview` and retry with the new `estimateToken`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                  "description": "Error envelope for a rejected order. Validation failures carry `errors`; other errors (e.g. consistency mismatches, referenced products not found) carry structured `details`.",
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "description": "Machine-readable error code (also sent as the `x-error-code` header). Common values include `ADOBE_COMMERCE_VALIDATION_FAILED`, `ADOBE_COMMERCE_CONSISTENCY_MISMATCH`, and `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` (an item's product path or SKU does not exist); not an exhaustive list.",
+                      "type": "string"
+                    },
+                    "message": {
+                      "description": "Human-readable error message.",
+                      "type": "string"
+                    },
+                    "resource": {
+                      "description": "The resource type involved, when applicable.",
+                      "type": "string"
+                    },
+                    "errors": {
+                      "description": "Per-field validation failures (present on `ADOBE_COMMERCE_VALIDATION_FAILED`).",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "description": "JSON path to the offending value, e.g. `$.allowedOrigins[0]`.",
+                            "type": "string"
+                          },
+                          "message": {
+                            "description": "What was wrong at this path.",
+                            "type": "string"
+                          },
+                          "details": {
+                            "description": "Optional extra context.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "message"
+                        ]
+                      }
+                    },
+                    "details": {
+                      "description": "Optional structured detail; fields vary by error. For example, `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` carries `path` or `sku`; `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` carries `field`, e.g. `estimateToken` (the order changed since the token was issued) or `bundleItems` (a bundle's components, component prices, or tax classification changed since preview; `sku` is the bundle line) — re-run preview for both — or `price` / `bundle_price` / `bundle_variant` (an item price does not match the catalog or its active catalog promotion; for `price`, `actualPrice` is the effective final price the client should use, after any active catalog promotion is applied; a bundle's price does not match its components; or the selected options do not resolve to exactly one bundle variant).",
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
                 },
                 "examples": {
                   "example": {
                     "value": {
-                      "code": "validation_failed",
-                      "message": "invalid order",
-                      "errors": [
-                        {
-                          "path": "$.items",
-                          "message": "is required"
-                        }
-                      ]
+                      "code": "ADOBE_COMMERCE_CONSISTENCY_MISMATCH",
+                      "message": "bundle contents changed since preview for item: 'BUNDLE-SKU'",
+                      "details": {
+                        "field": "bundleItems",
+                        "sku": "BUNDLE-SKU"
+                      }
                     }
                   }
                 }
@@ -2796,7 +2843,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The estimate and signed token. Line allocations are server-calculated; bundle component allocations sum to and replace the parent allocation for component-line consumers, so never subtract both levels. `price.final` remains the validated catalog price.",
+            "description": "The estimate and signed token. Line allocations are server-calculated; bundle component allocations sum to and replace the parent allocation for component-line consumers, so never subtract both levels. `price.final` is the submitted price, validated against the catalog: the item's stored price or, while a catalog promotion is active for it, its promotional price. A bundle parent at its promotional price has that price apportioned across its `bundleItems` in proportion to their stored prices, so component `price.final` values sum to the parent's.",
             "headers": {
               "Content-Type": {
                 "description": "application/json",
@@ -2971,23 +3018,74 @@
             }
           },
           "400": {
-            "description": "The preview body failed validation, shippingMethod.id is missing, or the selected method is unavailable.",
+            "description": "The preview was rejected, for example: it is invalid (`ADOBE_COMMERCE_VALIDATION_FAILED`, with per-field `errors`: the body failed validation, `shippingMethod.id` is missing, or the selected method is unavailable); it references a product path or SKU that does not exist (`ADOBE_COMMERCE_REFERENCED_NOT_FOUND`); or it is not consistent with the catalog (`ADOBE_COMMERCE_CONSISTENCY_MISMATCH`, with `details.field` such as `price`, `bundle_price`, or `bundle_variant`).",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                  "description": "Error envelope for a rejected preview. Validation failures carry `errors`; other errors (e.g. consistency mismatches, referenced products not found) carry structured `details`.",
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "description": "Machine-readable error code (also sent as the `x-error-code` header). Common values include `ADOBE_COMMERCE_VALIDATION_FAILED`, `ADOBE_COMMERCE_CONSISTENCY_MISMATCH`, and `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` (an item's product path or SKU does not exist); not an exhaustive list.",
+                      "type": "string"
+                    },
+                    "message": {
+                      "description": "Human-readable error message.",
+                      "type": "string"
+                    },
+                    "resource": {
+                      "description": "The resource type involved, when applicable.",
+                      "type": "string"
+                    },
+                    "errors": {
+                      "description": "Per-field validation failures (present on `ADOBE_COMMERCE_VALIDATION_FAILED`).",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "description": "JSON path to the offending value, e.g. `$.allowedOrigins[0]`.",
+                            "type": "string"
+                          },
+                          "message": {
+                            "description": "What was wrong at this path.",
+                            "type": "string"
+                          },
+                          "details": {
+                            "description": "Optional extra context.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "message"
+                        ]
+                      }
+                    },
+                    "details": {
+                      "description": "Optional structured detail; fields vary by error. For example, `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` carries `path` or `sku`; `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` carries `field`, e.g. `price` (an item's submitted price matches neither its stored price nor its active catalog promotion price; `actualPrice` is the effective final price the client should use, after any active catalog promotion is applied), `bundle_price` (a bundle's price does not match its components, and is not its promotional price), or `bundle_variant` (the selected options do not resolve to exactly one bundle variant).",
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
                 },
                 "examples": {
                   "example": {
                     "value": {
-                      "code": "validation_failed",
-                      "message": "invalid order",
-                      "errors": [
-                        {
-                          "path": "$.shippingMethod.id",
-                          "message": "is required"
+                      "code": "ADOBE_COMMERCE_CONSISTENCY_MISMATCH",
+                      "message": "price mismatch for item: 'SKU-1'",
+                      "details": {
+                        "field": "price",
+                        "sku": "SKU-1",
+                        "actualPrice": {
+                          "final": "100.00",
+                          "currency": "USD"
                         }
-                      ]
+                      }
                     }
                   }
                 }
@@ -7123,6 +7221,10 @@
           },
           "metaDescription": {
             "description": "HTML meta description override.",
+            "type": "string"
+          },
+          "metaImage": {
+            "description": "Social-sharing image URL override.",
             "type": "string"
           },
           "gtin": {
