@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, catalog promotions"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "739d7a6"
+    lastContentCommit: "739d7a6"
 ---
 
 # Order lifecycle
@@ -190,7 +190,7 @@ The response includes the calculated totals and a signed [`estimateToken`](#esti
 }
 ```
 
-For bundle lines, component discount allocations are a decomposition of the parent allocation. Use either the parent allocation or the component allocations when calculating effective prices; do not subtract both.
+For bundle lines, component discount allocations are a decomposition of the parent allocation. Use either the parent allocation or the component allocations when calculating effective prices; do not subtract both. When a bundle parent uses an active catalog promotional price, the API apportions that price across its components so their prices sum to the parent price.
 
 ### 3. Create the order with the estimate token
 
@@ -250,6 +250,8 @@ The response wraps the stored order. The new order starts in `pending` state.
 }
 ```
 
+If bundle contents, component prices, or effective tax classifications changed after preview, order creation rejects the request. Run preview again to obtain a token for the current catalog state.
+
 ### 4. Initiate payment
 
 Use the returned full order ID or friendly ID to start payment. Include a unique `idempotencyKey` for each new attempt.
@@ -298,7 +300,7 @@ This endpoint exists because interactive estimates are not enough to place an or
 The preview endpoint:
 
 - Validates the order shape and requires `shippingMethod.id`.
-- Validates item prices against product data unless price consistency is disabled in site configuration.
+- Validates item prices against product data, including an active catalog promotional price, unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
 - Accepts a single coupon code or multiple coupon codes. For multiple codes, it selects the best valid combination within the site's applicable-coupon limit and stacking rules.
@@ -306,7 +308,8 @@ The preview endpoint:
 - Treats coupons submitted with `couponSource: "auto"` as pinned. A pinned coupon is retained over a competing manual-only combination when selecting the applicable set.
 - Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component. A configured coupon discount cap can further limit the coupon-sourced discount on each line; automatic pricing rules and catalog-sale markdowns are not subject to that cap.
 - Returns the computed totals and line items, including server-calculated discount allocations when applicable. The persisted tax lines and totals use those same allocations and the resulting reduced taxable base.
-- Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts.
+- For a bundle at its active catalog promotional price, apportions the parent price across components so component prices sum to the parent price.
+- Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts, and records the resolved bundle composition for verification during order creation.
 
 For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enabled` is configured. See [reCAPTCHA verification](/checkout/recaptcha) and [Site configuration](/configuration/site#recaptcha-settings).
 
@@ -322,7 +325,8 @@ At creation time, the API:
 
 - Validates the order schema.
 - Verifies item prices and countries.
-- Verifies the `estimateToken` when one is supplied.
+- Verifies the `estimateToken` when one is supplied, including the bundle composition resolved during preview.
+- Rejects order creation when a token-bound bundle's components, prices, or effective tax classifications changed since preview.
 - Rejects unauthorized free items that are not covered by a promotion grant.
 - Creates or associates the customer record when needed.
 - Records `customerType` as `registered` when the authenticated human caller has an email, or `guest` for unauthenticated and service-token checkout.
@@ -330,6 +334,14 @@ At creation time, the API:
 - Persists the order with state `pending`.
 - Stores server-calculated line discount allocations from the verified estimate token.
 - Creates the first order history entry.
+
+### Price validation and bundle changes
+
+Order creation validates submitted prices against authoritative catalog data. An item can use its stored price or its active catalog promotional price. For a bundle submitted at an active promotional price, the API apportions the parent price across the resolved components so their prices sum to the parent price.
+
+When an `estimateToken` is present, the token also binds the bundle composition resolved during preview, including each component's SKU, price, and effective tax classification. If the catalog changes before order creation—such as a component being added or removed, a component price changing, or a component tax classification changing—the request fails with `ADOBE_COMMERCE_CONSISTENCY_MISMATCH`. The error details identify the `bundleItems` field and the affected bundle SKU.
+
+A price or bundle validation failure can also use `ADOBE_COMMERCE_CONSISTENCY_MISMATCH`, with details identifying `price`, `bundle_price`, or `bundle_variant`. For a price mismatch, the details include the effective catalog price the client should use when available. Treat these errors as stale checkout data: run `POST /orders/preview` again, display the refreshed totals and bundle contents, and retry order creation with the new `estimateToken`.
 
 The response wraps the stored order as `{ "order": { ... } }`. The `customerType` and `customerCreated` values are generated from server-side request and customer-profile context; clients cannot set them in the request.
 
@@ -347,6 +359,7 @@ Conceptually, the token represents the selected-method checkout result:
 | Tax result | Keeps the tax calculation tied to the previewed address, cart, and provider result |
 | Discounts and free-item grants | Prevents unapproved coupon, promotion, or free-item changes during order creation |
 | Payment method and checkout context | Keeps `paymentMethod`, `checkoutFlow`, and `entryPoint` consistent when they affect tax or provider rules |
+| Resolved bundle composition | Detects changes to bundle components, component prices, or effective tax classifications between preview and order creation |
 | Relevant cart and customer inputs | Lets order creation reject a mismatched or stale checkout submission |
 
 Treat the token as opaque. Do not parse it, modify it, or use it as a source of display data. Use the response fields from preview to render the checkout review screen, and pass the token unchanged in the order creation request.
@@ -360,7 +373,7 @@ Request a new preview, and therefore a new estimate token, whenever the shopper 
 - Customer email when discounts or limits depend on customer identity
 - Payment method, checkout flow, or checkout entry point when tax or provider rules depend on them
 
-If the token is invalid, expired, or does not match the submitted order, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
+If the token is invalid, expired, does not match the submitted order, or identifies bundle contents that changed since preview, `POST /orders` returns a validation or consistency error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
 
 ## Initiate payment
 
@@ -450,7 +463,7 @@ For automation that sends transactional emails directly, use a service token wit
 The lifecycle is designed so the browser can drive checkout without controlling sensitive outcomes:
 
 - Guest checkout can create orders and start payments, but unauthenticated preview and order creation can be reCAPTCHA-gated.
-- Order creation verifies product prices, country availability, and preview tokens.
+- Order creation verifies product prices, country availability, preview tokens, and token-bound bundle composition.
 - Authenticated order creation rejects a checkout customer email that differs from the signed-in account email with `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH`.
 - Payment initiation uses stored order totals, not client-supplied totals.
 - Only `pending` orders accept a new payment initiation.

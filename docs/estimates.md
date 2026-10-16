@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, postal prefixes"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "739d7a6"
+    lastContentCommit: "739d7a6"
 ---
 
 # Estimates and cart totals
@@ -331,12 +331,20 @@ Use `/orders/preview` after estimates, when the shopper has selected the final s
 Preview differs from estimates because it:
 
 - Requires `shippingMethod.id`.
-- Validates item prices against product data.
+- Validates item prices against product data, including active catalog promotion prices.
 - Validates item country availability.
 - Computes the committed tax, shipping, and discount result.
 - Returns an [`estimateToken`](/orders/lifecycle#estimate-tokens).
 
-Preview responses also include server-calculated discount allocations on `lineItems`. The signed `estimateToken` carries these allocations as sparse `lineItemDiscounts` data so order creation can persist the verified values rather than relying on client-supplied line discounts. For bundle products, each parent discount is distributed proportionally across the bundle components using their effective extended prices.
+The estimate token binds a normalized postal prefix rather than the complete postal code. For Canadian addresses, the prefix is the first three alphanumeric characters; for United States addresses, it is the first five. Spaces, dashes, and letter case are ignored. This allows a wallet-provided postal prefix during preview to remain compatible with the full postal code supplied later during order creation.
+
+Preview accepts an item's active catalog promotion price during price consistency validation. This also applies when a bundle parent is submitted at its promotional price. The parent price is apportioned across the bundle components using their stored prices and a deterministic largest-remainder calculation, so the component prices sum exactly to the parent price.
+
+Current preview tokens include `bundleCompositions`, which records the server-resolved bundle component SKUs, prices, and effective tax classifications. Order creation verifies this data against the catalog. If the bundle contents, component prices, or tax classification changes after preview, order creation rejects the order and the shopper must run preview again.
+
+A rejected preview returns a structured 400 response. Common consistency details identify `price` when an item price matches neither its stored price nor its active promotion price, `bundle_price` when a bundle parent price does not match its components, and `bundle_variant` when the selected options do not resolve to exactly one bundle variant. A `referenced_not_found` error identifies a product path or SKU that does not exist. For a `price` mismatch, the response can include `actualPrice`, the effective final price to use after an active catalog promotion is applied.
+
+Preview responses also include server-calculated discount allocations on `lineItems`. The signed `estimateToken` carries these allocations as sparse `lineItemDiscounts` data so order creation can persist the verified values rather than relying on client-supplied line discounts. For bundle products, each parent discount is distributed proportionally across the bundle components using their effective extended prices. A bundle parent at an active catalog promotion price is also apportioned across its components so their prices sum to the parent price. The preview binds the resolved bundle components to the token; if their SKUs, prices, or tax classifications change before order creation, the order is rejected and the shopper must run preview again.
 
 Parent and component allocations are alternate, non-additive views of the same discount. Use the parent allocation when calculating a parent line total, or use the component allocations when calculating component line totals; never subtract both levels.
 

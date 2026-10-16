@@ -9,7 +9,7 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
+    lastReviewedCommit: "739d7a6"
     lastContentCommit: "0fdf2af"
 migration:
   from: "helix-commerce-documentation/documentation/coupons.md"

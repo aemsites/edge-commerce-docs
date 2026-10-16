@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "739d7a6"
+    lastContentCommit: "739d7a6"
 ---
 
 # Customers and account data
