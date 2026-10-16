@@ -1,7 +1,7 @@
 ---
 title: "Schema reference"
 description: "Reference for the Product Bus product schema and the order request schemas."
-tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status, tagged indices"
+tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status, tagged indices, social sharing"
 daPath: "/schema-reference"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "6ce2247"
+    lastReviewedCommit: "739d7a6"
+    lastContentCommit: "739d7a6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -65,6 +65,7 @@ The main product schema supports rich product data with HTML content, variants, 
 | `name` | string | Yes | Display name for the product. |
 | `metaTitle` | string | No | HTML meta title override. |
 | `metaDescription` | string | No | HTML meta description override. |
+| `metaImage` | string | No | Social-sharing image URL override. |
 | `gtin` | string | No | Global Trade Item Number (barcode). |
 | `mpn` | string | No | Manufacturer Part Number. Used as a product identifier when no GTIN is available. |
 | `productType` | string | No | Merchant-defined product category, e.g. "Home > Kitchen > Blenders". |
@@ -96,6 +97,8 @@ The main product schema supports rich product data with HTML content, variants, 
 | `indexTags` | string[] | No | Tags that place this product in tagged indices. The product is added to every index whose `tag` is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped. |
 
 <!-- GENERATED: ProductBusEntry:end -->
+
+The `metaImage` field is accepted on product writes and overrides the image used for social sharing when one is provided.
 
 For guidance on modeling standalone products, products with variants, and bundle compositions, see [Product catalog modeling](/product-catalog-modeling). The catalog accepts an empty `bundleItems` array, but checkout processes a bundle only when the array has at least one component.
 
