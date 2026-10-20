@@ -609,3 +609,15 @@ body.docs-template .doc-last-modified {
   font-style: italic;
   color: light-dark(var(--s2-gray-600), var(--s2-gray-500));
 }
+
+/* Invitation-only gate: blur the page until a valid access code is entered.
+   Lives here (not in invite-gate.css) so it applies before first paint. */
+html.invite-gated body {
+  overflow: hidden;
+}
+
+html.invite-gated body > :not(dialog.invite-gate) {
+  filter: blur(14px) saturate(0.8);
+  pointer-events: none;
+  user-select: none;
+}

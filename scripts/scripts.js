@@ -1,4 +1,7 @@
 import { loadArea, loadBlock, setConfig } from './nx.js';
+import { preGate, checkInviteGate } from './invite-gate.js';
+
+preGate();
 
 // Supported locales
 const locales = {
@@ -155,6 +158,8 @@ export async function loadPage() {
   detectTutorial();
   detectLabs();
   setLabPlaceholders();
+  // Started after setLabPlaceholders, which replaces the body markup.
+  checkInviteGate();
   loadNav('sitenav');
 
   await loadArea();
