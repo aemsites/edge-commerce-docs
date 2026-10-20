@@ -1,0 +1,92 @@
+dialog.invite-gate {
+  box-sizing: border-box;
+  width: min(92vw, 460px);
+  padding: var(--spacing-xl);
+  border: 1px solid light-dark(var(--s2-gray-200), var(--s2-gray-700));
+  border-radius: 16px;
+  background: light-dark(var(--light-color), var(--s2-gray-800));
+  color: light-dark(var(--dark-color), var(--light-color));
+  box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+  font-family: var(--font-family);
+}
+
+dialog.invite-gate::backdrop {
+  background:
+    linear-gradient(
+      to bottom,
+      light-dark(rgb(255 255 255 / 15%), rgb(14 14 14 / 15%)) 0%,
+      light-dark(rgb(255 255 255 / 75%), rgb(14 14 14 / 75%)) 60%
+    );
+}
+
+dialog.invite-gate form {
+  display: grid;
+  gap: var(--spacing-m);
+}
+
+dialog.invite-gate h2,
+dialog.invite-gate p {
+  margin: 0;
+}
+
+dialog.invite-gate h2 {
+  font-size: var(--heading-font-size-l);
+  line-height: var(--heading-line-height);
+}
+
+dialog.invite-gate .invite-gate-eyebrow {
+  color: var(--doc-accent);
+  font-size: var(--body-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+dialog.invite-gate .invite-gate-hint {
+  font-weight: 700;
+}
+
+dialog.invite-gate label {
+  margin-top: var(--spacing-s);
+  font-size: var(--body-font-size-s);
+  font-weight: 700;
+}
+
+dialog.invite-gate input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid light-dark(var(--s2-gray-400), var(--s2-gray-600));
+  border-radius: 8px;
+  background: light-dark(var(--light-color), var(--dark-color));
+  color: inherit;
+  font: inherit;
+}
+
+dialog.invite-gate input:focus-visible {
+  outline: 2px solid var(--doc-accent);
+  outline-offset: 1px;
+}
+
+dialog.invite-gate .invite-gate-error {
+  min-height: 1.6em;
+  color: light-dark(var(--s2-red-900), var(--s2-red-300));
+  font-size: var(--body-font-size-s);
+}
+
+dialog.invite-gate button {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--doc-accent-strong);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+dialog.invite-gate button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
