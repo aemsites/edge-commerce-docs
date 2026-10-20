@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "unknown"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "05b753f"
+    lastReviewedCommit: "c564649"
+    lastContentCommit: "c564649"
 ---
 
 # PayPal order review and deferred capture
@@ -127,7 +127,9 @@ If PayPal rejects a shipping-option update, the API returns a retryable `502` er
 
 ### 1. Start payment initiation
 
-Call the payment initiation endpoint with the PayPal order ID:
+Create the PayPal Express session first. The session response provides the PayPal order ID and a session capability. Include both the PayPal order ID and capability in the payment initiation request.
+
+Call the payment initiation endpoint with the PayPal order ID and session capability:
 
 ```bash
 curl -X POST \
@@ -137,7 +139,9 @@ curl -X POST \
   "https://api.adobecommerce.live/{org}/sites/{site}/orders/{order-id}/payments"
 ```
 
-When `orderReview.express` is enabled, the API validates the PayPal order without capturing it.
+For `paypal-express`, include `paypalOrderId` and `paypalSessionToken` in the request body. The session capability expires after three hours and is bound to the PayPal order. A missing, invalid, expired, or mismatched capability returns `403`; no payment attempt is recorded.
+
+When `orderReview.express` is enabled, the API validates the PayPal order without capturing it. It verifies the approved amount and currency against the server-computed order total before proceeding.
 
 A successful review response has this form:
 
@@ -174,6 +178,7 @@ The order is cancelled when:
 
 - PayPal returns a successful response whose order status is not `APPROVED`.
 - PayPal returns `404`, indicating that the PayPal order cannot be found.
+- The approved amount or currency does not match the server-computed order total.
 
 The order remains `pending` and the request returns a retryable error when validation fails because of an upstream or transport problem, such as:
 
@@ -184,6 +189,8 @@ The order remains `pending` and the request returns a retryable error when valid
 - Server errors
 
 These failures do not prove that the buyer rejected the payment. Retry the initiation request after addressing the upstream failure. Do not create a new storefront order solely because the validation request failed.
+
+A PayPal order can be claimed by only one storefront order. Retrying initiation for the same storefront order is allowed, but using the PayPal order with another storefront order returns a provider rejection.
 
 ## Confirm the reviewed order
 

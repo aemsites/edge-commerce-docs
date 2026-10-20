@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "c564649"
+    lastContentCommit: "c564649"
 ---
 
 # Estimates and cart totals
@@ -335,6 +335,10 @@ Preview differs from estimates because it:
 - Validates item country availability.
 - Computes the committed tax, shipping, and discount result.
 - Returns an [`estimateToken`](/orders/lifecycle#estimate-tokens).
+
+Preview accepts an item's authoritative stored catalog price or its active catalog-promotion price. If validation fails, the consistency response includes the effective price the client should use in `details.actualPrice`. For a bundle parent accepted at a promotional price, preview apportions that price across `bundleItems` in proportion to their stored prices so component prices sum to the parent price.
+
+Rejected previews use structured 400 responses. Common codes include `ADOBE_COMMERCE_VALIDATION_FAILED` with field-level `errors`, `ADOBE_COMMERCE_REFERENCED_NOT_FOUND` with the missing `path` or `sku`, and `ADOBE_COMMERCE_CONSISTENCY_MISMATCH` with a `details.field` such as `price`, `bundle_price`, or `bundle_variant`.
 
 Preview responses also include server-calculated discount allocations on `lineItems`. The signed `estimateToken` carries these allocations as sparse `lineItemDiscounts` data so order creation can persist the verified values rather than relying on client-supplied line discounts. For bundle products, each parent discount is distributed proportionally across the bundle components using their effective extended prices.
 

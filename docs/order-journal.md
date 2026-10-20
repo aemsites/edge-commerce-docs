@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.56.0"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "c564649"
+    lastContentCommit: "c564649"
 ---
 
 # Order journal
@@ -74,7 +74,7 @@ Event-specific fields vary. Payment events can include provider, attempt, reason
 
 The `payment_requires_confirmation` event is emitted when a buyer has approved a PayPal payment but capture is deferred to an explicit confirmation step. Its `provider` identifies the PayPal flow, and `attemptId` correlates the entry with the payment attempt and related provider request entries. Redirect flows can also include `paypalOrderId`; express flows can include `method` and `idempotencyKey`.
 
-For `payment_cancelled` entries, `configuration_error` indicates that review mode could not resolve a valid review URL. `order_not_approved` indicates that express review validation found that the PayPal order was not approved or was not found. Other upstream validation failures remain retryable and do not cancel the order.
+For `payment_cancelled` entries, `configuration_error` indicates that review mode could not resolve a valid review URL. `order_not_approved` indicates that express review validation found that the PayPal order was not approved or was not found. PayPal Express can also cancel before capture when the approved amount or currency cannot be verified against the server total, using reasons such as `amount_mismatch` or `missing_amount`. Other upstream validation failures remain retryable and do not cancel the order.
 
 Payment-cancellation journal entries contain the internal cancellation `reason` and provider diagnostics for administrative troubleshooting. For Chase payment declines, diagnostics can also include the provider transaction reference and, when available, the gateway processing status and status message. These values help correlate a failed attempt with the provider and identify gateway-level declines.
 

@@ -1,7 +1,7 @@
 ---
 title: "Schema reference"
 description: "Reference for the Product Bus product schema and the order request schemas."
-tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, coupon stacking, coupon status, tagged indices"
+tags: "aggregate rating, schema.org, weight dimensions, validation errors, bundles, mpn, item condition, availability status, express checkout, estimate tokens, image deduplication, meta image, coupon stacking, coupon status, tagged indices"
 daPath: "/schema-reference"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "6ce2247"
+    lastReviewedCommit: "c564649"
+    lastContentCommit: "c564649"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -96,6 +96,10 @@ The main product schema supports rich product data with HTML content, variants, 
 | `indexTags` | string[] | No | Tags that place this product in tagged indices. The product is added to every index whose `tag` is listed here, instead of its path-based index; when no listed tag matches an index, the path-based index is used. Tags are trimmed, lowercased and deduplicated before validation; at most 6 tags. An empty list is dropped. |
 
 <!-- GENERATED: ProductBusEntry:end -->
+
+#### Meta image
+
+Product writes accept an optional `metaImage` field for the product's metadata image. The image counts toward the product image limit in the same way as an entry in `images`; include it when calculating the total number of product images submitted in a write.
 
 For guidance on modeling standalone products, products with variants, and bundle compositions, see [Product catalog modeling](/product-catalog-modeling). The catalog accepts an empty `bundleItems` array, but checkout processes a bundle only when the array has at least one component.
 
