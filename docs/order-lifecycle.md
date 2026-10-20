@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "6ce2247"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "c564649"
+    lastContentCommit: "c564649"
 ---
 
 # Order lifecycle
@@ -264,6 +264,8 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/{orderId}
   }'
 ```
 
+For `paypal-express`, create the PayPal session first and pass its returned PayPal order ID and session capability as `paypalOrderId` and `paypalSessionToken`. The capability is required for payment initiation and is bound to that PayPal order.
+
 Redirect-based providers return an action for the storefront to follow.
 
 ```json
@@ -333,7 +335,15 @@ At creation time, the API:
 
 The response wraps the stored order as `{ "order": { ... } }`. The `customerType` and `customerCreated` values are generated from server-side request and customer-profile context; clients cannot set them in the request.
 
-### Estimate tokens
+### Price and bundle validation
+
+Order creation accepts an item's active catalog-promotion price when it matches the promotion price resolved from server-side catalog data. It does not trust a promotional price supplied by the client. The submitted price must match either the stored product price or an applicable active catalog promotion price.
+
+When an estimate token is supplied, it also binds the bundle composition resolved during preview, including component prices and tax classifications. If the bundle contents, component prices, or tax classifications change before order creation, the API rejects the order instead of creating it with a different tax or price basis.
+
+If order creation reports a bundle consistency mismatch, discard the previous token, run `POST /orders/preview` again with the current cart and checkout details, show the refreshed totals, and retry `POST /orders` with the new token. The same re-preview behavior applies to any invalid, expired, or otherwise mismatched estimate token.
+
+## Estimate tokens
 
 An `estimateToken` is an opaque, signed token returned by `POST /orders/preview`. It binds the final preview result to the later `POST /orders` request.
 
@@ -349,6 +359,8 @@ Conceptually, the token represents the selected-method checkout result:
 | Payment method and checkout context | Keeps `paymentMethod`, `checkoutFlow`, and `entryPoint` consistent when they affect tax or provider rules |
 | Relevant cart and customer inputs | Lets order creation reject a mismatched or stale checkout submission |
 
+For bundle items, the token also binds the previewed bundle composition, including the resolved components, component prices, and tax classifications. This prevents a catalog edit between preview and creation from changing the items or tax treatment while retaining the old totals. A change to those values causes order creation to return a consistency error; the storefront must re-run preview and use the newly returned token.
+
 Treat the token as opaque. Do not parse it, modify it, or use it as a source of display data. Use the response fields from preview to render the checkout review screen, and pass the token unchanged in the order creation request.
 
 Request a new preview, and therefore a new estimate token, whenever the shopper changes anything that can affect totals or eligibility:
@@ -359,8 +371,9 @@ Request a new preview, and therefore a new estimate token, whenever the shopper 
 - Coupon code or coupon source
 - Customer email when discounts or limits depend on customer identity
 - Payment method, checkout flow, or checkout entry point when tax or provider rules depend on them
+- Bundle contents, component selections, or any catalog data used to resolve bundle prices or tax classifications
 
-If the token is invalid, expired, or does not match the submitted order, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
+If the token is invalid, expired, or does not match the submitted order, including when bundle contents or tax classifications changed after preview, `POST /orders` returns a validation error. The storefront should send the shopper back through preview, show the refreshed totals, and then retry order creation with the new token.
 
 ## Initiate payment
 
@@ -375,6 +388,8 @@ Required fields:
 | `idempotencyKey` | Client-generated key used to make retries safe |
 | `fraudToken` | Optional fraud-provider browser token |
 
+For `paypal-express`, also send the PayPal order ID and the session capability returned when the PayPal session was created. The capability must match the PayPal order and is rejected with HTTP 403 when it is missing, invalid, expired, or bound to another order.
+
 Payment initiation is available to guest checkout flows. It is protected by order-state checks, idempotency, provider configuration validation, attempt limits, fraud evaluation when configured, and server-computed totals.
 
 The API computes the payable amount from the stored order and its locked-in estimates. The request body does not control the charge amount.
@@ -384,6 +399,8 @@ See [Payments overview](/checkout/payments/overview) for provider-specific payme
 ## Payment result handling
 
 Redirect-based providers move the order to `payment_processing` when initiation succeeds. The provider then redirects to an API callback URL. The callback verifies the payment with the provider before updating the order.
+
+PayPal Express validates the approved PayPal order status and amount against the stored order total before capture. A mismatch is cancelled without capturing payment.
 
 PayPal can be configured with an order review step independently for standard checkout and express flows. When order review is enabled, PayPal approval does not capture payment immediately. Instead, the API returns a `review` action, sends the shopper to the configured review URL, and moves the order to `payment_requires_confirmation`. The storefront displays its final order review and calls `POST /orders/{orderId}/payments/confirm` to capture the payment. If the shopper abandons the review, call `POST /orders/{orderId}/payments/cancel` to move the order to `payment_cancelled`.
 
@@ -451,9 +468,12 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 
 - Guest checkout can create orders and start payments, but unauthenticated preview and order creation can be reCAPTCHA-gated.
 - Order creation verifies product prices, country availability, and preview tokens.
+- Active catalog-promotion prices are resolved from server-side catalog data; client-submitted promotional prices are accepted only when they match that active promotion.
+- Estimate tokens bind bundle compositions, component prices, and tax classifications. Changes after preview reject order creation and require a new preview.
 - Authenticated order creation rejects a checkout customer email that differs from the signed-in account email with `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH`.
 - Payment initiation uses stored order totals, not client-supplied totals.
 - Only `pending` orders accept a new payment initiation.
+- PayPal Express requires a session capability bound to the PayPal order and verifies the approved amount before capture.
 - PayPal order-review confirmation requires an idempotency key and captures only an order still awaiting confirmation.
 - Idempotency keys make safe retries possible.
 - Provider callbacks verify the result directly with the provider before changing terminal state.
