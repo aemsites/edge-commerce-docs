@@ -1,7 +1,7 @@
 ---
 title: "Edge Commerce API reference"
 description: "Human-readable API reference for Edge Commerce operations."
-tags: "etag, conditional requests, legacy site tokens, bulk operations, cache invalidation, index management, tagged indices, multi locale paths, payload size limits, full replacement updates, automatic index assignment, deletion cascade, cache purging"
+tags: "etag, conditional requests, legacy site tokens, bulk operations, cache invalidation, index management, tagged indices, multi locale paths, payload size limits, full replacement updates, automatic index assignment, deletion cascade, cache purging, image collection, retryable image failures"
 llmScope: "Covers the core platform HTTP APIs: product catalog operations, authentication and access, product indexing, site configuration, and cache management. EXCLUDES checkout, payments, orders, estimates, and journals — those are documented on their own topic pages (payments, payments-*, order-lifecycle, order-journal, checkout, estimates), not here."
 daPath: "/api-reference"
 status: migrated
@@ -10,8 +10,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c564649"
-    lastContentCommit: "bee9c4b"
+    lastReviewedCommit: "326cbff"
+    lastContentCommit: "326cbff"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -341,6 +341,8 @@ Example response:
 #### Image processing behavior
 
 Image processing is synchronous when you submit 10 or fewer products with 10 or fewer total images. For larger requests, images are queued for asynchronous background processing. When processed asynchronously, products initially point to the external URLs you provided in the request. After processing completes, image URLs are transformed to relative paths (e.g., `./media_{image-hash}.png`). External images are fetched, deduplicated via SHA-1 hashing, and stored in the media bus.
+
+When synchronous image processing fails, the product is still saved with the external image URL. Failures with retryable errors are handed to the image collector after a 30-second delay. Images that fail permanently, such as with a `404` response, are not requeued. If you resubmit an unchanged product whose image remains uncollected, the product is skipped; use `forceUpdate=true` to write the product and retry image collection.
 
 Learn more about [image handling](/schema-reference#productbusmedia) in the schema reference.
 
