@@ -56,6 +56,8 @@
             <tr><td><code>paymentMethod</code></td><td><code>string</code></td><td>yes</td><td>Payment method (e.g. card, wallet).</td></tr>
             <tr><td><code>idempotencyKey</code></td><td><code>string</code></td><td>yes</td><td>Caller-supplied idempotency key; replays return the prior result.</td></tr>
             <tr><td><code>fraudToken</code></td><td><code>string</code></td><td>no</td><td>Optional fraud-provider JS SDK session token.</td></tr>
+            <tr><td><code>paypalOrderId</code></td><td><code>string</code></td><td>no</td><td>PayPal order id from the PayPal session create call. Required for <code>paypal-express</code>.</td></tr>
+            <tr><td><code>paypalSessionToken</code></td><td><code>string</code></td><td>no</td><td>Capability returned as <code>sessionToken</code> by the PayPal session create call for <code>paypalOrderId</code>. Required for <code>paypal-express</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -75,6 +77,17 @@
             <tr><td><code>errors</code></td><td><code>object[]</code></td><td>no</td><td>Per-field validation failures.</td></tr>
           </table>
         </div>
+        <h3><span class="status-badge status-4xx">403</span> For <code>paypal-express</code>: the <code>paypalSessionToken</code> capability is missing, invalid, expired, or bound to another PayPal order. No attempt is recorded.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
         <h3><span class="status-badge status-4xx">404</span> No order with this id.</h3>
         <div class="table">
           <table>
@@ -86,7 +99,7 @@
             <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">422</span> Order not payable (not pending), provider not configured, max attempts exceeded, or provider rejection.</h3>
+        <h3><span class="status-badge status-4xx">422</span> Order not payable (not pending), provider not configured, max attempts exceeded, or provider rejection (including <code>providerCode: paypal_order_already_claimed</code> when the PayPal order is already used by another order).</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
@@ -151,6 +164,13 @@
       "message": "missing provider"
     }
   ]
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">403</span></span></div>
+          <pre><code class="language-json">{
+  "code": "forbidden",
+  "message": "access denied"
 }</code></pre>
         </div>
         <div class="code-sample">
