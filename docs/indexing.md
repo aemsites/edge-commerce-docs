@@ -91,7 +91,7 @@ Index tags are normalized by trimming whitespace, converting to lowercase, and r
 
 ### Step 3: Verify indexing
 
-Product indices update asynchronously. Indexing runs every 10 minutes, so new and updated products usually appear in the index, sitemap, and merchant feed within about 10 minutes. Each site's updates are processed in order and separately from other sites' updates, so a large import can delay later updates for the same site until it has been processed. When you create a path-based index, any existing products under that path are automatically queued for indexing, so you don't need to re-save them. Tagged indices are not backfilled; existing products join them on a subsequent changed or `forceUpdate` write.
+Product indices update asynchronously. Indexing runs continuously, and new and updated products usually appear in the index, sitemap, and merchant feed within about 10 minutes. Each site's updates are processed in order and separately from other sites' updates, so a large import can delay later updates for the same site until it has been processed. When you create a path-based index, any existing products under that path are automatically queued for indexing, so you don't need to re-save them. Tagged indices are not backfilled; existing products join them on a subsequent changed or `forceUpdate` write.
 
 You can check if your products appear in the index by visiting:
 
@@ -167,7 +167,7 @@ Each index also drives the `sitemap.xml` at the same path: the sitemap is genera
 
 ### Index size limits
 
-Each index holds up to 50,000 products, and each index and its merchant feed have a maximum data size. See [Product index size](/limits#product-index-size) for the limits and planning guidance.
+Each index holds up to 50,000 products and 48 MB of product data, and its merchant feed has a separate 48 MB limit. See [Product index size](/limits#product-index-size) for the limits and planning guidance.
 
 The data size of an index grows with:
 
@@ -175,11 +175,11 @@ The data size of an index grows with:
 - The number of variants per product. Variants are stored with their parent product in the index and in the merchant feed.
 - Long text values, such as descriptions.
 
-The merchant feed grows faster than the index for products with many variants. Each variant is a separate feed item that repeats the parent product's description and images when the variant doesn't have its own.
+The index and the merchant feed are sized separately. The index stores the properties in your mapping, while the merchant feed stores a fixed set of fields for each product and variant (see [Merchant feed configuration](#merchant-feed-configuration)). A variant without its own description or images repeats the parent product's in the feed. Which one reaches its limit first depends on your index configuration and catalog.
 
 When an index or its merchant feed reaches a limit:
 
-- New products are not added. The product write still succeeds without an error, but the product doesn't appear in that index, its sitemap, or its merchant feed. Because the merchant feed has its own size limit, a product can be added to the index and sitemap but not to the feed.
+- New products are not added. The product write still succeeds without an error, but the product doesn't appear in that index, its sitemap, or its merchant feed. Because the index and the merchant feed have separate limits, a product can be added to one but not the other.
 - Updates and deletions for products already in the index continue to apply.
 - Products that were skipped are not added automatically when space becomes available. They are added on their next changed write or a write with `forceUpdate`.
 
@@ -398,10 +398,11 @@ Merchant feed endpoint:
 curl "https://www.example.com/us/en/merchant-center-feed.xml"
 ```
 
-### Indexing performance
+### Indexing best practices
 
 Indexing jobs run automatically and asynchronously. To keep indexing fast and predictable:
 
+- Keep the order of arrays in product data stable. Arrays such as `images`, `variants`, and `options` are compared in order, so a product whose arrays arrive in a different order is treated as changed and re-indexed, even if nothing else changed. If the order changes on every write, every write re-indexes the product, which adds indexing work and can delay other updates for the site. Sort arrays consistently in your integration before sending products.
 - Send only products that changed. Writes that don't change a product are skipped and don't queue indexing work. Use `forceUpdate` only when you need to re-index unchanged products, such as after changing `productIndexerConfig` or to populate a new tagged index, because it re-indexes every product in the request.
 - Plan large imports. Each site's updates are processed in order, so a bulk import delays later updates for the same site until it has been processed. Batch product updates when possible, and schedule large catalog updates during off-peak hours.
 - Keep index configurations lean. Each mapped property is stored for every product and variant, so fewer properties keep indexes smaller, faster to load, and further from the [index size limits](/limits#product-index-size).
