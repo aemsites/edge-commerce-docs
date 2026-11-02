@@ -91,7 +91,7 @@ Index tags are normalized by trimming whitespace, converting to lowercase, and r
 
 ### Step 3: Verify indexing
 
-Product indices update asynchronously. The indexer runs every 10 minutes, so your products should appear in the index within 10 minutes of creation. When you create a path-based index, any existing products under that path are automatically queued for indexing, so you don't need to re-save them. Tagged indices are not backfilled; existing products join them on a subsequent changed or `forceUpdate` write.
+Product indices update asynchronously. Indexing runs every 10 minutes, so new and updated products usually appear in the index, sitemap, and merchant feed within about 10 minutes. Each site's updates are processed in order and separately from other sites' updates, so a large import can delay later updates for the same site until it has been processed. When you create a path-based index, any existing products under that path are automatically queued for indexing, so you don't need to re-save them. Tagged indices are not backfilled; existing products join them on a subsequent changed or `forceUpdate` write.
 
 You can check if your products appear in the index by visiting:
 
@@ -124,11 +124,11 @@ This is why an applicable index must exist before products can be indexed. Creat
 
 ### Choosing an index strategy
 
-Use a path-based index when stable URL subpaths provide useful catalog partitions, such as locale, market, or category, and each resulting index stays within the 15,000-product maximum, including variants. If a locale, market, or category still exceeds that size, split it further at deeper URL paths when practical. If the URL hierarchy does not provide suitable partitions, use tagged indexes to assign products to explicit catalog groups.
+Use a path-based index when stable URL subpaths provide useful catalog partitions, such as locale, market, or category, and each resulting index stays within the [product index size limits](/limits#product-index-size). If a locale, market, or category still exceeds those limits, split it further at deeper URL paths when practical. If the URL hierarchy does not provide suitable partitions, use tagged indexes to assign products to explicit catalog groups.
 
 Use tagged indexes when products need to be grouped independently of their URL paths. For example, tagged indexes can split a large catalog when there is no natural path hierarchy to use. Choose a tag for each group and include it in the `indexTags` of products assigned to that group. Tag values such as `catalog-a` are examples only; there are no reserved tag names. Products with multiple matching tags are added to each corresponding tagged index, so assign one matching tag per product when groups should be mutually exclusive. A storefront that needs a combined catalog view across groups must retrieve and combine the relevant indexes.
 
-Keep each index within the [15,000-product maximum, including variants](/limits#product-index-size). Tagged indexes require the site's `tagIndexSplitting` experimental flag and are not backfilled automatically; update existing products or write them with `forceUpdate` after creating the tagged indexes.
+Keep each index within the [product index size limits](/limits#product-index-size). Tagged indexes require the site's `tagIndexSplitting` experimental flag and are not backfilled automatically; update existing products or write them with `forceUpdate` after creating the tagged indexes.
 
 ### Create and populate a tagged index
 
@@ -163,7 +163,33 @@ The `PUT` request replaces the product record, so include all existing fields yo
 
 ### Indexes and sitemaps
 
-Each index also drives the `sitemap.xml` at the same path: the sitemap is generated from the index data, so the products in an index determine what appears in that path's sitemap. The [15,000-product index maximum, including variants](/limits#product-index-size), is separate from the search-engine limit of 50,000 URLs per sitemap file. Keep each sitemap file within its URL limit as well. Products marked `noindex` (via a `metadata.robots` value containing `noindex`) are excluded from the sitemap, the same way they are excluded from the default index view.
+Each index also drives the `sitemap.xml` at the same path: the sitemap is generated from the index data, so the products in an index determine what appears in that path's sitemap. An index holds at most [50,000 products](/limits#product-index-size), so each index's sitemap stays within the search-engine limit of 50,000 URLs per sitemap file. Products marked `noindex` (via a `metadata.robots` value containing `noindex`) are excluded from the sitemap, the same way they are excluded from the default index view.
+
+### Index size limits
+
+Each index holds up to 50,000 products, and each index and its merchant feed have a maximum data size. See [Product index size](/limits#product-index-size) for the limits and planning guidance.
+
+The data size of an index grows with:
+
+- The number of properties in your `productIndexerConfig` mapping. Each mapped property is stored for every product and every variant.
+- The number of variants per product. Variants are stored with their parent product in the index and in the merchant feed.
+- Long text values, such as descriptions.
+
+The merchant feed grows faster than the index for products with many variants. Each variant is a separate feed item that repeats the parent product's description and images when the variant doesn't have its own.
+
+When an index or its merchant feed reaches a limit:
+
+- New products are not added. The product write still succeeds without an error, but the product doesn't appear in that index, its sitemap, or its merchant feed. Because the merchant feed has its own size limit, a product can be added to the index and sitemap but not to the feed.
+- Updates and deletions for products already in the index continue to apply.
+- Products that were skipped are not added automatically when space becomes available. They are added on their next changed write or a write with `forceUpdate`.
+
+To check how large an index is, request one row with all products included and read the `total` field. `total` counts each product and each of its variants:
+
+```bash
+curl "https://www.example.com/us/en/index.json?include=all&limit=1"
+```
+
+If an index approaches the limits, split it into smaller path-based or tagged indexes (see [Choosing an index strategy](#choosing-an-index-strategy)), or remove properties you don't need from `productIndexerConfig`.
 
 ## Product indexing configuration
 
@@ -244,7 +270,7 @@ The indexer adds these fields to every index entry itself:
 |---|---|
 | `sku` | The product's `sku`. |
 | `url` | The product's canonical `url`, when it has one. |
-| `lastModified` | The time the entry was last added or updated. |
+| `lastModified` | The time the entry was added or its indexed values last changed. Writes that don't change any indexed value leave it unchanged. |
 
 Keep the following in mind when you write your `properties` mapping:
 
@@ -313,7 +339,9 @@ The Merchant Feed is generated automatically without configuration. It extracts 
 | `shipping` | `shipping` field, falling back to `custom.shipping`. Expected shape: `{ country, service, price }` |
 | `item_group_id` | Set to the parent product's `sku` for variant entries, linking variants in Google Merchant Center |
 
-When a product has variants, each variant produces its own feed entry with its own `item_group_id` pointing to the parent.
+When a product has variants, each variant produces its own feed entry with its own `item_group_id` pointing to the parent. A variant without its own description or images uses the parent product's description or images.
+
+Products and variants without a supported `availability` value (`InStock`, `OutOfStock`, `PreOrder`, or `BackOrder`) are not included in the merchant feed.
 
 Products are automatically excluded from the merchant feed if they have `filters.noindex` set to `true`. The indexer sets this flag when a product's `metadata.robots` field contains `"noindex"`.
 
@@ -372,7 +400,12 @@ curl "https://www.example.com/us/en/merchant-center-feed.xml"
 
 ### Indexing performance
 
-Indexing jobs run automatically and asynchronously. To optimize performance, batch product updates when possible, schedule large catalog updates during off-peak hours, monitor index update latency via last-modified timestamps, and keep index configurations lean with only needed properties.
+Indexing jobs run automatically and asynchronously. To keep indexing fast and predictable:
+
+- Send only products that changed. Writes that don't change a product are skipped and don't queue indexing work. Use `forceUpdate` only when you need to re-index unchanged products, such as after changing `productIndexerConfig` or to populate a new tagged index, because it re-indexes every product in the request.
+- Plan large imports. Each site's updates are processed in order, so a bulk import delays later updates for the same site until it has been processed. Batch product updates when possible, and schedule large catalog updates during off-peak hours.
+- Keep index configurations lean. Each mapped property is stored for every product and variant, so fewer properties keep indexes smaller, faster to load, and further from the [index size limits](/limits#product-index-size).
+- Monitor index freshness with each entry's `lastModified` value.
 
 ## Next steps
 
