@@ -428,11 +428,11 @@ Use `GET /orders` to list orders. Listing requires `orders:list`. Admin sessions
 
 | Query parameter | Description |
 |-----------------|-------------|
-| `since` | Lower bound on `updatedAt` in ISO 8601 format, inclusive. Defaults to 30 days ago |
-| `until` | Upper bound on `updatedAt` in ISO 8601 format, inclusive. Defaults to now |
+| `since` | Lower bound on `updatedAt` in ISO 8601 format, inclusive. If omitted, the scan starts at the UTC day 30 days ago and no lower `updatedAt` bound is applied |
+| `until` | Upper bound on `updatedAt` in ISO 8601 format, inclusive. If omitted, the scan ends today and no upper `updatedAt` bound is applied |
 | `state` | Current order state |
 
-The response is not paginated: every matching order is returned at once, so keep the time range short. The API reads orders created on each UTC day from the day of `since` through the day of `until`, then filters on `updatedAt`. An order created before the day of `since` is not returned, even if it was updated inside the range.
+The response is not paginated: every matching order is returned at once, so keep the time range short. The API reads orders created on each UTC day from the first scanned day through the last, then filters on `updatedAt` for the bounds that were given. An order created before the first scanned day is not returned, even if it was updated inside the range.
 
 ## Update custom order data
 
