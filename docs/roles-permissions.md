@@ -37,6 +37,7 @@ Unknown roles are ignored. A user session with an email always receives the `use
 | `catalog:read` | No | Yes | Yes | Yes |
 | `catalog:write` | No | Yes | Yes | Yes |
 | `orders:read` | Yes | Yes | Yes | Yes |
+| `orders:list` | No | Yes | No | Yes |
 | `orders:write` | Yes | Yes | Yes | Yes |
 | `orders:custom:write` | No | No | No | Yes |
 | `index:read` | No | Yes | Yes | Yes |
@@ -63,6 +64,8 @@ The `JWT service token eligible` column means the permission may be delegated wh
 
 Administrator-management operations require both the applicable `admins:read` or `admins:write` permission and verification that the caller remains a current admin for the target site.
 
+`GET /orders` requires `orders:list`. `orders:read` alone does not allow listing a site's orders, so customer sessions can read only their own orders.
+
 `PATCH /orders/{orderId}/custom` requires `orders:custom:write`. Holding `orders:write` without that dedicated permission does not authorize custom metadata updates.
 
 ## Permissions by use case
@@ -72,7 +75,7 @@ The groups below help you find individual permissions for a task. They do not gr
 | Group | Permissions | Typical use |
 |-------|-------------|-------------|
 | Catalog | `catalog:read`, `catalog:write` | Product ingestion and product data retrieval |
-| Orders | `orders:read`, `orders:write`, `orders:custom:write` | Order lookup, order creation, and custom metadata updates |
+| Orders | `orders:read`, `orders:list`, `orders:write`, `orders:custom:write` | Order lookup, order listing, order creation, and custom metadata updates |
 | Indexes | `index:read`, `index:write` | Product index configuration and updates |
 | Customers | `customers:read`, `customers:write` | [Customer profile and address management](/customers) |
 | Config | `config:read`, `config:write` | [Site configuration](/configuration/site) management |
