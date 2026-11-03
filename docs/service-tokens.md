@@ -27,6 +27,7 @@ Use a service token for recurring machine-to-machine tasks:
 |------|---------------------|
 | Product ingestion | `catalog:read`, `catalog:write`, `index:write` |
 | Order automation | `orders:read`, `orders:write` |
+| Order reconciliation | `orders:list`, `orders:read`, `orders:custom:write` |
 | Customer data sync | `customers:read`, `customers:write` |
 | Transactional email | `emails:send` plus optional destination scopes |
 | Promotions management | `coupons:read`, `coupons:write`, `price_rules:read`, `price_rules:write` |
@@ -79,6 +80,7 @@ A service token can be created only with permissions from this allowlist:
 | `catalog:read` | Read product data |
 | `catalog:write` | Create, update, or delete product data |
 | `orders:read` | Read orders |
+| `orders:list` | List all orders of the site (`GET /orders`) |
 | `orders:write` | Create or update orders |
 | `orders:custom:write` | Add, replace, or remove custom metadata on existing orders |
 | `index:read` | Read index configuration |
