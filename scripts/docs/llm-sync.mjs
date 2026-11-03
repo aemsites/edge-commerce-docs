@@ -18,6 +18,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { execSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
+import { findLeakedRoutes, findPrivateRoutes, privateRoutesRule } from './private-routes.mjs';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -363,6 +364,15 @@ async function main() {
   // Read the style guide once.
   const styleGuide = await readFile(STYLE_GUIDE_PATH, 'utf-8');
 
+  // Routes the source repo marks `visibility: 'private'` must never reach the
+  // public docs. They feed an explicit prompt rule, and LLM output that
+  // introduces one is discarded below.
+  const privateRoutes = findPrivateRoutes(sourceRepoPath, sourceRef);
+  const privateRule = privateRoutesRule(privateRoutes);
+  if (privateRoutes.length) {
+    console.log(`🔒 Private routes excluded from docs: ${privateRoutes.map((r) => r.path).join(', ')}`);
+  }
+
   // Scan docs/*.md
   const entries = await readdir(DOCS_DIR);
   const mdFiles = entries.filter((f) => f.endsWith('.md'));
@@ -471,7 +481,9 @@ async function main() {
       '```diff\n',
       diff,
       '\n```\n',
-      '\n## Instructions\n',
+      '\n',
+      privateRule,
+      '\n\n## Instructions\n',
       `Update the document above ONLY if the code changes in the diff from the ${sourceRepo} repository genuinely affect content at THIS document's level of detail.`,
       'Making no substantive change is a valid and often correct outcome: if the change is already covered, or only matters at a more detailed level than this page operates at, leave the body unchanged and only update the frontmatter markers described below.',
       "Respect this document's role and abstraction level:",
@@ -497,6 +509,18 @@ async function main() {
     const cleaned = result
       .replace(/^```(?:markdown|md)?\s*\n?/, '')
       .replace(/\n?```\s*$/, '');
+
+    const leaked = findLeakedRoutes(content, cleaned, privateRoutes);
+    if (leaked.length) {
+      console.log(`🔒 ${file}: rewrite documents private route(s) ${leaked.join(', ')}, discarding it and bumping commit marker`);
+      if (!sameCommit(source.lastReviewedCommit, sourceRef)) {
+        const bumped = bumpMarkers(content, sourceRepo, sourceRef, sourceVersion);
+        // eslint-disable-next-line no-await-in-loop
+        await writeFile(filePath, bumped, 'utf-8');
+      }
+      // eslint-disable-next-line no-continue
+      continue;
+    }
 
     await writeFile(filePath, cleaned, 'utf-8');
     updated.push(file);
@@ -556,6 +580,9 @@ async function main() {
         'scope matches, or propose a "new" page when none fits. A reference page',
         'that excludes a subject (e.g. orders/checkout/journals) must not be the',
         'target for that subject.',
+        '',
+        privateRule,
+        'Never report a gap for a private API.',
       ].join('\n');
 
       const gapUserPrompt = [
@@ -589,6 +616,13 @@ async function main() {
       }
 
       for (const gap of gaps) {
+        const gapText = [gap.target, gap.title, gap.description, gap.summary].join(' ');
+        const leakedInGap = findLeakedRoutes('', gapText, privateRoutes);
+        if (leakedInGap.length) {
+          console.log(`🔒 Skipping gap for private route(s) ${leakedInGap.join(', ')} — ${gap.summary}`);
+          // eslint-disable-next-line no-continue
+          continue;
+        }
         if (gap.type === 'existing') {
           // Add content to an existing doc.
           const targetFile = gap.target;
@@ -624,7 +658,9 @@ async function main() {
             '\n\n## Code diff\n```diff\n',
             fullDiff.length > 50000 ? fullDiff.slice(0, 50000) : fullDiff,
             '\n```\n',
-            '\n## Instructions\n',
+            '\n',
+            privateRule,
+            '\n\n## Instructions\n',
             `Add documentation for the following new feature to this document: ${gap.summary}`,
             '\nOnly add content if this page is the appropriate home for it at this page\'s level of detail. If the feature belongs on a more detailed reference page, or is already covered, leave the body unchanged and only update the frontmatter marker below.',
             '\nRespect this document\'s role: keep conceptual/overview and guide pages free of field-, parameter-, and endpoint-level specifics; that detail belongs on reference pages.',
@@ -644,6 +680,13 @@ async function main() {
           const addCleaned = addResult
             .replace(/^```(?:markdown|md)?\s*\n?/, '')
             .replace(/\n?```\s*$/, '');
+
+          const leakedInAdd = findLeakedRoutes(targetContent, addCleaned, privateRoutes);
+          if (leakedInAdd.length) {
+            console.log(`🔒 ${targetFile}: addition documents private route(s) ${leakedInAdd.join(', ')}, discarding it`);
+            // eslint-disable-next-line no-continue
+            continue;
+          }
 
           // eslint-disable-next-line no-await-in-loop
           await writeFile(targetPath, addCleaned, 'utf-8');
@@ -669,7 +712,9 @@ async function main() {
             '\n\n## Code diff\n```diff\n',
             fullDiff.length > 50000 ? fullDiff.slice(0, 50000) : fullDiff,
             '\n```\n',
-            '\n## Instructions\n',
+            '\n',
+            privateRule,
+            '\n\n## Instructions\n',
             `Create a new documentation page about: ${gap.summary}`,
             `\n\nUse this frontmatter template (adjust title and description):`,
             `\n---`,
@@ -699,6 +744,13 @@ async function main() {
           const newCleaned = newResult
             .replace(/^```(?:markdown|md)?\s*\n?/, '')
             .replace(/\n?```\s*$/, '');
+
+          const leakedInNew = findLeakedRoutes('', newCleaned, privateRoutes);
+          if (leakedInNew.length) {
+            console.log(`🔒 ${newFile}: new page documents private route(s) ${leakedInNew.join(', ')}, discarding it`);
+            // eslint-disable-next-line no-continue
+            continue;
+          }
 
           // eslint-disable-next-line no-await-in-loop
           await writeFile(newPath, newCleaned, 'utf-8');

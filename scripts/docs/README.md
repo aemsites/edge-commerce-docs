@@ -101,6 +101,16 @@ Overrides: `DA_ORG`, `DA_SITE` (defaults `aemsites` / `edge-commerce-docs`), `HE
 
 The workflow (`.github/workflows/llm-doc-sync.yaml`) runs on `repository_dispatch` events or manual `workflow_dispatch` triggers. It checks out both this repo and the source repo, runs the sync script, and opens a PR with the label `ai-authored`.
 
+### Private routes
+
+Routes that must never appear in public docs are marked `visibility: 'private'` in the source repo's route descriptors (`src/**/openapi.js`). `private-routes.mjs` reads those markers at the synced commit and enforces them three ways:
+
+- Every LLM prompt (page update, gap analysis, gap addition, new page) carries a "never document" rule that lists the private routes.
+- A rewrite, addition, or new page that mentions a private route path is discarded. A discarded page rewrite still bumps `lastReviewedCommit`.
+- A gap whose description names a private route is skipped before any LLM call.
+
+`visibility: 'internal'` is not private: it only means "not in the OpenAPI reference", and some internal routes are covered in narrative pages. A `visibility: 'private'` marker that is not directly preceded by its `path:` (path, then `tag`, then `visibility`) makes the sync fail instead of guessing.
+
 ### Run locally
 
 ```bash
