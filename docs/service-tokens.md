@@ -1,7 +1,7 @@
 ---
 title: "Service tokens"
 description: "Create and manage scoped tokens for automation and integrations."
-tags: "email scopes, legacy site tokens, secrets, jwt, revocation"
+tags: "email scopes, legacy site tokens, secrets, jwt, revocation, order listing"
 daPath: "/authentication/service-tokens"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "5577796"
+    lastReviewedCommit: "238f2b1"
+    lastContentCommit: "238f2b1"
 ---
 
 # Service tokens
@@ -79,6 +79,7 @@ A service token can be created only with permissions from this allowlist:
 | `catalog:read` | Read product data |
 | `catalog:write` | Create, update, or delete product data |
 | `orders:read` | Read orders |
+| `orders:list` | List orders for the organization and site |
 | `orders:write` | Create or update orders |
 | `orders:custom:write` | Add, replace, or remove custom metadata on existing orders |
 | `index:read` | Read index configuration |

@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition, orders:list"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "238f2b1"
+    lastContentCommit: "238f2b1"
 ---
 
 # Order lifecycle
@@ -33,7 +33,7 @@ Checkout uses three different order-related APIs because they answer different q
 | Shopper abandons an approved PayPal order-review payment | `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` | Cancels the payment and moves the order to `payment_cancelled` |
 | Provider returns the payment result | Provider callback routes | Verifies the provider result and moves the order to a payment state |
 | Customer, admin, or integration needs order data | `GET /{org}/sites/{site}/orders/{orderId}` | Reads one order by full or friendly ID |
-| Admin needs order reporting | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state |
+| Admin or integration needs order reporting | `GET /{org}/sites/{site}/orders` | Lists orders by updated time range or state; requires `orders:list` |
 | Integration needs to attach metadata | `PATCH /{org}/sites/{site}/orders/{orderId}/custom` | Adds or removes custom order fields |
 | Operations needs state history | `GET /{org}/sites/{site}/orders/journal` | Reads order state transition entries |
 
@@ -51,7 +51,7 @@ The short version: use estimates while the cart is still changing, use preview w
 | PayPal order-review cancellation | `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` | Cancels an approved but unconfirmed PayPal payment | Optional |
 | Payment callback or wallet result | Provider callback routes | Verifies payment and updates the order state | Provider-controlled |
 | Order lookup | `GET /{org}/sites/{site}/orders/{orderId}` | Retrieves one order by full or friendly ID | Required |
-| Order listing | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state | Admin only |
+| Order listing | `GET /{org}/sites/{site}/orders` | Lists orders by updated time range or state | `orders:list` permission |
 | Custom data update | `PATCH /{org}/sites/{site}/orders/{orderId}/custom` | Adds integration metadata after creation | Required |
 | Order journal | `GET /{org}/sites/{site}/orders/journal` | Reads state transition entries | Required |
 
@@ -424,13 +424,15 @@ Provider callbacks guard against replay. Once an order is terminal, later callba
 
 Use `GET /orders/{orderId}` to retrieve an order by full order ID or friendly ID. Non-admin, non-service callers can only read their own order, matched by customer email.
 
-Use `GET /orders` to list orders. Listing requires `orders:read` and admin access. Optional filters include:
+Use `GET /orders` to list orders. Listing requires the `orders:list` permission, which admins hold and which can be granted to service tokens; the `user` role does not have this permission. Optional filters include:
 
 | Query parameter | Description |
 |-----------------|-------------|
-| `since` | Lower creation-time bound in ISO 8601 format |
-| `until` | Upper creation-time bound in ISO 8601 format |
+| `since` | Inclusive lower bound on `updatedAt` in ISO 8601 format; also sets the first UTC creation day scanned |
+| `until` | Inclusive upper bound on `updatedAt` in ISO 8601 format; also sets the last UTC creation day scanned |
 | `state` | Current order state |
+
+The response is not paginated. The API scans the UTC creation days from the day of `since` (or 30 days ago) through the day of `until` (or today), keeps the latest snapshot of each order, and then filters on `updatedAt`. An order created before the first scanned day is not returned, even if it was updated within the requested range.
 
 ## Update custom order data
 
