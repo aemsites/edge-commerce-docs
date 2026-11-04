@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.75.3",
+    "version": "2.76.1",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -2076,13 +2076,13 @@
       "get": {
         "operationId": "listOrders",
         "summary": "List orders",
-        "description": "Returns orders for the org/site, optionally filtered by creation time range and state. Admin-only.",
+        "description": "Returns orders for the org/site, optionally filtered by `updatedAt` time range and state. Requires `orders:list`, which admins hold and which can be granted to service tokens; the `user` role does not have it. The response is not paginated: all matching orders are returned at once, so keep the time range short. The API scans the whole UTC creation days from the day of `since` (or 30 days ago) through the day of `until` (or today), keeps the latest snapshot of each order, then filters on `updatedAt` for the bounds that were given. An order created before the first scanned day is not returned, even if it was updated inside the range.",
         "parameters": [
           {
             "name": "Authorization",
             "in": "header",
             "required": true,
-            "description": "Bearer token. `Bearer <jwt>`. Must carry the `admin` role.",
+            "description": "Bearer token. `Bearer <jwt>`. An admin session or a service token with `orders:list`.",
             "schema": {
               "type": "string"
             }
@@ -2094,7 +2094,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Lower bound on order creation time (ISO 8601)."
+            "description": "Lower bound on order `updatedAt` (ISO 8601, inclusive). Also sets the first UTC creation day scanned. If omitted, scanning starts at the UTC day 30 days ago and no lower `updatedAt` bound is applied."
           },
           {
             "name": "until",
@@ -2103,7 +2103,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Upper bound on order creation time (ISO 8601)."
+            "description": "Upper bound on order `updatedAt` (ISO 8601, inclusive). Also sets the last UTC creation day scanned. If omitted, scanning ends today and no upper `updatedAt` bound is applied."
           },
           {
             "name": "state",
@@ -2128,7 +2128,7 @@
             }
           },
           "403": {
-            "description": "Caller lacks the orders:read permission, the admin role, or org/site mismatch.",
+            "description": "Caller lacks the orders:list permission (for example, a shopper session or a service token with only orders:read), or org/site mismatch.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2139,7 +2139,7 @@
           }
         },
         "x-permissions": [
-          "orders:read"
+          "orders:list"
         ],
         "security": [
           {
