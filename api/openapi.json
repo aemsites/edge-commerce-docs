@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Helix Commerce API",
-    "version": "2.75.3",
+    "version": "2.80.0",
     "description": "Catalog, configuration, orders, and auth API for the Helix Product Bus."
   },
   "servers": [
@@ -18,7 +18,7 @@
   "tags": [
     {
       "name": "Config",
-      "description": "Per-site configuration: allowed origins, delivery sites, auth toggle, and reCAPTCHA settings. One config document per org/site. Optional `geoOverrides` entries are deep-merged over the base config for requests whose resolved country matches, letting one site serve multiple countries (e.g. distinct order ID prefixes) from the same domain."
+      "description": "Per-site configuration: allowed origins, delivery sites, auth toggle, and reCAPTCHA settings. One config document per org/site. Optional `geoOverrides` entries are deep-merged over the base config for requests whose resolved country matches, letting one site serve multiple countries (e.g. distinct order ID prefixes) from the same domain. `timeTravel.enabled` lets the pricing endpoints accept a `simulateDate` on non-production environments."
     },
     {
       "name": "Catalog",
@@ -2076,13 +2076,13 @@
       "get": {
         "operationId": "listOrders",
         "summary": "List orders",
-        "description": "Returns orders for the org/site, optionally filtered by creation time range and state. Admin-only.",
+        "description": "Returns orders for the org/site, optionally filtered by `updatedAt` time range and state. Requires `orders:list`, which admins hold and which can be granted to service tokens; the `user` role does not have it. The response is not paginated: all matching orders are returned at once, so keep the time range short. The API scans the whole UTC creation days from the day of `since` (or 30 days ago) through the day of `until` (or today), keeps the latest snapshot of each order, then filters on `updatedAt` for the bounds that were given. An order created before the first scanned day is not returned, even if it was updated inside the range.",
         "parameters": [
           {
             "name": "Authorization",
             "in": "header",
             "required": true,
-            "description": "Bearer token. `Bearer <jwt>`. Must carry the `admin` role.",
+            "description": "Bearer token. `Bearer <jwt>`. An admin session or a service token with `orders:list`.",
             "schema": {
               "type": "string"
             }
@@ -2094,7 +2094,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Lower bound on order creation time (ISO 8601)."
+            "description": "Lower bound on order `updatedAt` (ISO 8601, inclusive). Also sets the first UTC creation day scanned. If omitted, scanning starts at the UTC day 30 days ago and no lower `updatedAt` bound is applied."
           },
           {
             "name": "until",
@@ -2103,7 +2103,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Upper bound on order creation time (ISO 8601)."
+            "description": "Upper bound on order `updatedAt` (ISO 8601, inclusive). Also sets the last UTC creation day scanned. If omitted, scanning ends today and no upper `updatedAt` bound is applied."
           },
           {
             "name": "state",
@@ -2128,7 +2128,7 @@
             }
           },
           "403": {
-            "description": "Caller lacks the orders:read permission, the admin role, or org/site mismatch.",
+            "description": "Caller lacks the orders:list permission (for example, a shopper session or a service token with only orders:read), or org/site mismatch.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2139,7 +2139,7 @@
           }
         },
         "x-permissions": [
-          "orders:read"
+          "orders:list"
         ],
         "security": [
           {
@@ -2153,7 +2153,7 @@
       "post": {
         "operationId": "createOrder",
         "summary": "Create an order",
-        "description": "Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. The optional customerTimezone field stores the shopper browser timezone for customer-facing uses, such as formatting order confirmation email timestamps. reCAPTCHA-gated for unauthenticated callers.",
+        "description": "Validates the order, verifies item prices/countries (or a signed estimateToken locking in tax/shipping/discounts), creates the customer if needed, and persists the order. The customer email is stored lowercase. The optional customerTimezone field stores the shopper browser timezone for customer-facing uses, such as formatting order confirmation email timestamps. reCAPTCHA-gated for unauthenticated callers.",
         "parameters": [
           {
             "name": "Authorization",
@@ -2524,7 +2524,7 @@
       "get": {
         "operationId": "getOrder",
         "summary": "Retrieve an order",
-        "description": "Returns the order. Non-admin/non-service callers may only read their own order (matched on customer email).",
+        "description": "Returns the order. Non-admin/non-service callers may only read their own order (matched on customer email, case-insensitively).",
         "parameters": [
           {
             "name": "Authorization",
@@ -2811,7 +2811,7 @@
       "post": {
         "operationId": "previewOrder",
         "summary": "Estimate an order",
-        "description": "Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers.",
+        "description": "Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers. The `simulateDate` query parameter (non-production only) validates prices and evaluates promotions, gifts and coupons at a simulated time.",
         "parameters": [
           {
             "name": "Authorization",
@@ -2839,6 +2839,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "simulateDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Non-production only, for testing promotions before they start. An ISO 8601 date or date-time (e.g. `2030-01-15T00:00:00-05:00`; URL-encode a `+` offset; values without an offset are UTC) at which catalog promotions, gift-with-purchase conditions and coupon expiry are evaluated instead of the current time. Applies only on non-production environments for sites whose config sets `timeTravel.enabled: true`; otherwise, or when the value is not a valid date, it is ignored and the current time is used. When applied, the response reports the time in `simulatedAt`."
           }
         ],
         "responses": {
@@ -2908,6 +2917,36 @@
                       "description": "Signed estimate token for order creation.",
                       "type": "string"
                     },
+                    "freeItems": {
+                      "description": "Free-item grants from conditional catalog promotions (gift with purchase) the cart qualifies for (product/category scope, disqualifiers and threshold, evaluated on paid lines only), present only when there is at least one. Each grant allows a line at `path` priced `0`, up to `quantity`. The grants are bound into the `estimateToken` and stored on the created order as `estimates.freeItems`.",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "description": "Product path of the free item.",
+                            "type": "string"
+                          },
+                          "ruleId": {
+                            "description": "Id of the granting promotion.",
+                            "type": "string"
+                          },
+                          "quantity": {
+                            "description": "Free units allowed at `path` for this grant.",
+                            "type": "integer"
+                          },
+                          "minimumSubtotal": {
+                            "description": "The promotion's spending threshold (`conditions.minimumSubtotal`, met by the subtotal of the paid lines in the promotion's scope), present when the promotion sets one.",
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "ruleId",
+                          "quantity"
+                        ]
+                      }
+                    },
                     "couponStatus": {
                       "description": "Per-code coupon outcome, present only when a coupon code was submitted. Reports each submitted code as applied, rejected_invalid (failed validation; reason withheld to prevent code enumeration), or rejected_not_combinable (valid but not part of the winning stacking combination).",
                       "type": "array",
@@ -2933,6 +2972,10 @@
                           "status"
                         ]
                       }
+                    },
+                    "simulatedAt": {
+                      "description": "Present only when the `simulateDate` query parameter was applied: the ISO 8601 time pricing was evaluated at. Also bound into the `estimateToken` and stored on the created order as `estimates.simulatedAt`.",
+                      "type": "string"
                     }
                   },
                   "required": [
@@ -3856,7 +3899,7 @@
       "post": {
         "operationId": "createCustomer",
         "summary": "Create a customer",
-        "description": "Validates and stores a new customer. Often called unauthenticated during checkout.",
+        "description": "Validates and stores a new customer. The email is stored lowercase. Often called unauthenticated during checkout.",
         "parameters": [
           {
             "name": "Authorization",
@@ -3906,7 +3949,7 @@
             }
           },
           "409": {
-            "description": "A customer with this email already exists.",
+            "description": "A customer with this email (compared case-insensitively) already exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3985,13 +4028,13 @@
           "schema": {
             "type": "string"
           },
-          "description": "Customer email address."
+          "description": "Customer email address. Case-insensitive: customer records are keyed on the lowercase email."
         }
       ],
       "get": {
         "operationId": "getCustomer",
         "summary": "Retrieve a customer",
-        "description": "Returns the customer. Requires ownership of the email and membership of the org/site (no `customers:read` permission).",
+        "description": "Returns the customer. Requires ownership of the email (or an admin) and membership of the org/site. Service tokens need `customers:read`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4039,7 +4082,7 @@
       "patch": {
         "operationId": "updateCustomer",
         "summary": "Create or update your profile",
-        "description": "Creates the caller's customer record if missing, or partially updates it if present. Provided first-class fields overwrite, the `custom` bag is shallow-merged, and unlisted fields are preserved. Email is taken from the path; a body `email` is rejected. Requires ownership of the email and membership of the org/site (no `customers:write` permission).",
+        "description": "Creates the caller's customer record if missing, or partially updates it if present. Provided first-class fields overwrite, the `custom` bag is shallow-merged, and unlisted fields are preserved. Email is taken from the path; a body `email` is rejected. Requires ownership of the email (or an admin) and membership of the org/site. Service tokens need `customers:write`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4089,7 +4132,7 @@
             }
           },
           "403": {
-            "description": "The caller does not own this email.",
+            "description": "The caller does not own this email, or is a service token without `customers:write`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4260,7 +4303,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Customer email address."
+          "description": "Customer email address. Case-insensitive: customer records are keyed on the lowercase email."
         },
         {
           "name": "subroute",
@@ -4279,7 +4322,7 @@
       "get": {
         "operationId": "listCustomerSubresources",
         "summary": "List addresses or orders",
-        "description": "Lists the customer's addresses (`subroute=addresses`) or orders (`subroute=orders`). Listing orders requires `orders:read`; both require ownership of the email.",
+        "description": "Lists the customer's addresses (`subroute=addresses`) or orders (`subroute=orders`). Listing orders requires `orders:read`; both require ownership of the email (or an admin). Service tokens listing addresses need `customers:read`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4311,7 +4354,7 @@
       "post": {
         "operationId": "createCustomerAddress",
         "summary": "Create an address",
-        "description": "Creates an address for the customer (`subroute=addresses` only). Requires ownership of the email.",
+        "description": "Creates an address for the customer (`subroute=addresses` only). Requires ownership of the email (or an admin). Service tokens need `customers:write`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4422,7 +4465,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Customer email address."
+          "description": "Customer email address. Case-insensitive: customer records are keyed on the lowercase email."
         },
         {
           "name": "subroute",
@@ -4450,7 +4493,7 @@
       "get": {
         "operationId": "getCustomerSubresource",
         "summary": "Retrieve an address or order",
-        "description": "Retrieves a single address (`subroute=addresses`, requires ownership of the email) or a single order (`subroute=orders`). Order lookup is intentionally unauthenticated: knowing email + orderId is treated as sufficient proof for guest order-status lookups, so a bearer token is optional on this operation.",
+        "description": "Retrieves a single address (`subroute=addresses`, requires ownership of the email or an admin; service tokens need `customers:read`) or a single order (`subroute=orders`). Order lookup is intentionally unauthenticated: knowing email + orderId is treated as sufficient proof for guest order-status lookups, so a bearer token is optional on this operation.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4499,7 +4542,7 @@
       "put": {
         "operationId": "updateCustomerAddress",
         "summary": "Update an address",
-        "description": "Replaces a single address (`subroute=addresses`). Requires ownership of the email.",
+        "description": "Replaces a single address (`subroute=addresses`). Requires ownership of the email (or an admin). Service tokens need `customers:write`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4623,7 +4666,7 @@
       "delete": {
         "operationId": "deleteCustomerAddress",
         "summary": "Delete an address",
-        "description": "Deletes a single address (`subroute=addresses`). Requires ownership of the email.",
+        "description": "Deletes a single address (`subroute=addresses`). Requires ownership of the email (or an admin). Service tokens need `customers:write`.",
         "parameters": [
           {
             "name": "Authorization",
@@ -4708,7 +4751,18 @@
       "post": {
         "operationId": "createEstimate",
         "summary": "Compute an estimate",
-        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and an optional `couponCode`, which may be a single code (string) or an array of up to 5 codes. When multiple codes are sent, the best applicable combination is applied (subject to the site `coupons.maxApplicableCoupons` limit and coupon stacking rules) and the price/order responses include a `couponStatus` array reporting each code as `applied`, `rejected_invalid`, or `rejected_not_combinable`. `couponSource` mirrors `couponCode` (a single value or an index-aligned array); `auto` marks a coupon applied by a storefront auto flow (affiliate / ID.me), which is pinned so it is retained over a competing manual coupon. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column.",
+        "description": "Request shape depends on `estimateType`. All variants accept a partial shipping address and (for price/shipping/order) a cart `items` array and an optional `couponCode`, which may be a single code (string) or an array of up to 5 codes. When multiple codes are sent, the best applicable combination is applied (subject to the site `coupons.maxApplicableCoupons` limit and coupon stacking rules) and the price/order responses include a `couponStatus` array reporting each code as `applied`, `rejected_invalid`, or `rejected_not_combinable`. `couponSource` mirrors `couponCode` (a single value or an index-aligned array); `auto` marks a coupon applied by a storefront auto flow (affiliate / ID.me), which is pinned so it is retained over a competing manual coupon. An optional BCP-47 `locale` (e.g. `fr-CA`) selects the localized shipping-method label column; the base label is used when it is absent or has no matching column. The `simulateDate` query parameter (non-production only) evaluates the price, shipping and order estimates at a simulated time; those responses then include `simulatedAt`. The tax estimate ignores it.",
+        "parameters": [
+          {
+            "name": "simulateDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Non-production only, for testing promotions before they start. An ISO 8601 date or date-time (e.g. `2030-01-15T00:00:00-05:00`; URL-encode a `+` offset; values without an offset are UTC) at which catalog promotions, gift-with-purchase conditions and coupon expiry are evaluated instead of the current time. Applies only on non-production environments for sites whose config sets `timeTravel.enabled: true`; otherwise, or when the value is not a valid date, it is ignored and the current time is used. When applied, the response reports the time in `simulatedAt`."
+          }
+        ],
         "responses": {
           "200": {
             "description": "The computed estimate. Body shape varies by `estimateType`.",
@@ -7084,6 +7138,16 @@
                 "pattern": "^[^/?#&%<> ]+$",
                 "minLength": 1,
                 "maxLength": 8
+              }
+            }
+          },
+          "timeTravel": {
+            "description": "Promotion time travel for testing. When `enabled` is `true`, the pricing endpoints (price, shipping and order estimates, order preview, and the active price rules) accept a `simulateDate` query parameter on non-production environments and evaluate promotions and coupon expiry at that time. Ignored in production. Read from the base config only, not from `geoOverrides`. Default off.",
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "description": "Enables the `simulateDate` query parameter. Default `false`.",
+                "type": "boolean"
               }
             }
           },

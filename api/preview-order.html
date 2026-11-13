@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Estimate an order — Helix Commerce API</title>
-    <meta name="description" content="Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers.">
+    <meta name="description" content="Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers. The simulateDate query parameter (non-production only) validates prices and evaluates promotions, gifts and coupons at a simulated time.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,13 +30,20 @@
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/orders/preview</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers.</p>
+        <p>Computes tax, shipping, and discounts for the cart against the selected shipping method and returns a signed estimateToken. reCAPTCHA-gated for unauthenticated callers. The <code>simulateDate</code> query parameter (non-production only) validates prices and evaluates promotions, gifts and coupons at a simulated time.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Query parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>simulateDate</code></td><td><code>string</code></td><td>no</td><td>Non-production only, for testing promotions before they start. An ISO 8601 date or date-time (e.g. <code>2030-01-15T00:00:00-05:00</code>; URL-encode a <code>+</code> offset; values without an offset are UTC) at which catalog promotions, gift-with-purchase conditions and coupon expiry are evaluated instead of the current time. Applies only on non-production environments for sites whose config sets <code>timeTravel.enabled: true</code>; otherwise, or when the value is not a valid date, it is ignored and the current time is used. When applied, the response reports the time in <code>simulatedAt</code>.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
@@ -88,7 +95,9 @@
             <tr><td><code>total</code></td><td><code>string</code></td><td>yes</td><td>Estimated order total.</td></tr>
             <tr><td><code>lineItems</code></td><td><code>StoredOrderItem[]</code></td><td>yes</td><td>Server-resolved lines. Bundle parent and component allocations are non-additive alternate views; use only the parent or the component level when deriving effective prices.</td></tr>
             <tr><td><code>estimateToken</code></td><td><code>string</code></td><td>yes</td><td>Signed estimate token for order creation.</td></tr>
+            <tr><td><code>freeItems</code></td><td><code>object[]</code></td><td>no</td><td>Free-item grants from conditional catalog promotions (gift with purchase) the cart qualifies for (product/category scope, disqualifiers and threshold, evaluated on paid lines only), present only when there is at least one. Each grant allows a line at <code>path</code> priced <code>0</code>, up to <code>quantity</code>. The grants are bound into the <code>estimateToken</code> and stored on the created order as <code>estimates.freeItems</code>.</td></tr>
             <tr><td><code>couponStatus</code></td><td><code>object[]</code></td><td>no</td><td>Per-code coupon outcome, present only when a coupon code was submitted. Reports each submitted code as applied, rejected_invalid (failed validation; reason withheld to prevent code enumeration), or rejected_not_combinable (valid but not part of the winning stacking combination).</td></tr>
+            <tr><td><code>simulatedAt</code></td><td><code>string</code></td><td>no</td><td>Present only when the <code>simulateDate</code> query parameter was applied: the ISO 8601 time pricing was evaluated at. Also bound into the <code>estimateToken</code> and stored on the created order as <code>estimates.simulatedAt</code>.</td></tr>
           </table>
         </div>
         <h3><span class="status-badge status-4xx">400</span> The preview was rejected, for example: it is invalid (<code>ADOBE_COMMERCE_VALIDATION_FAILED</code>, with per-field <code>errors</code>: the body failed validation, <code>shippingMethod.id</code> is missing, or the selected method is unavailable); it references a product path or SKU that does not exist (<code>ADOBE_COMMERCE_REFERENCED_NOT_FOUND</code>); or it is not consistent with the catalog (<code>ADOBE_COMMERCE_CONSISTENCY_MISMATCH</code>, with <code>details.field</code> such as <code>price</code>, <code>bundle_price</code>, or <code>bundle_variant</code>).</h3>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>List orders — Helix Commerce API</title>
-    <meta name="description" content="Returns orders for the org/site, optionally filtered by creation time range and state. Admin-only.">
+    <meta name="description" content="Returns orders for the org/site, optionally filtered by updatedAt time range and state. Requires orders:list, which admins hold and which can be granted to service tokens; the user role does not have it. The response is not paginated: all matching orders are returned at once, so keep the time range short. The API scans the whole UTC creation days from the day of since (or 30 days ago) through the day of until (or today), keeps the latest snapshot of each order, then filters on updatedAt for the bounds that were given. An order created before the first scanned day is not returned, even if it was updated inside the range.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,8 +30,8 @@
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/orders</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Returns orders for the org/site, optionally filtered by creation time range and state. Admin-only.</p>
-        <p class="permissions">Required permissions: <code>orders:read</code></p>
+        <p>Returns orders for the org/site, optionally filtered by <code>updatedAt</code> time range and state. Requires <code>orders:list</code>, which admins hold and which can be granted to service tokens; the <code>user</code> role does not have it. The response is not paginated: all matching orders are returned at once, so keep the time range short. The API scans the whole UTC creation days from the day of <code>since</code> (or 30 days ago) through the day of <code>until</code> (or today), keeps the latest snapshot of each order, then filters on <code>updatedAt</code> for the bounds that were given. An order created before the first scanned day is not returned, even if it was updated inside the range.</p>
+        <p class="permissions">Required permissions: <code>orders:list</code></p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
@@ -44,8 +44,8 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>since</code></td><td><code>string</code></td><td>no</td><td>Lower bound on order creation time (ISO 8601).</td></tr>
-            <tr><td><code>until</code></td><td><code>string</code></td><td>no</td><td>Upper bound on order creation time (ISO 8601).</td></tr>
+            <tr><td><code>since</code></td><td><code>string</code></td><td>no</td><td>Lower bound on order <code>updatedAt</code> (ISO 8601, inclusive). Also sets the first UTC creation day scanned. If omitted, scanning starts at the UTC day 30 days ago and no lower <code>updatedAt</code> bound is applied.</td></tr>
+            <tr><td><code>until</code></td><td><code>string</code></td><td>no</td><td>Upper bound on order <code>updatedAt</code> (ISO 8601, inclusive). Also sets the last UTC creation day scanned. If omitted, scanning ends today and no upper <code>updatedAt</code> bound is applied.</td></tr>
             <tr><td><code>state</code></td><td><code>string</code></td><td>no</td><td>Filter to orders in this state.</td></tr>
           </table>
         </div>
@@ -53,7 +53,7 @@
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
-            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>. Must carry the <code>admin</code> role.</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>yes</td><td>Bearer token. <code>Bearer &lt;jwt&gt;</code>. An admin session or a service token with <code>orders:list</code>.</td></tr>
           </table>
         </div>
         <h2>Response</h2>
@@ -64,7 +64,7 @@
             <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
           </table>
         </div>
-        <h3><span class="status-badge status-4xx">403</span> Caller lacks the orders:read permission, the admin role, or org/site mismatch.</h3>
+        <h3><span class="status-badge status-4xx">403</span> Caller lacks the orders:list permission (for example, a shopper session or a service token with only orders:read), or org/site mismatch.</h3>
         <div class="table">
           <table>
             <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
