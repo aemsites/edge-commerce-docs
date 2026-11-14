@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes, promotion time travel"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,13 +9,15 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "96a9ca0"
+    lastContentCommit: "96a9ca0"
 ---
 
 # Estimates and cart totals
 
 Estimate endpoints help storefronts show cart totals before an order is created. They are designed for interactive checkout screens where the shopper is still changing products, quantities, address details, shipping method, or coupon codes. Use [Places and address validation](/places) when the storefront needs address autocomplete or postal address validation before estimating shipping and tax.
+
+On non-production environments, enable `timeTravel.enabled` in the site configuration before using promotion time travel. With time travel enabled, price, shipping, and order estimates accept a `simulateDate` query parameter to evaluate promotions and coupon expiry at a specified time. Promotion start and end times are inclusive at the simulated time. Responses include `simulatedAt` and the `x-simulated-at` response header when the parameter is applied. Tax estimates ignore `simulateDate`.
 
 Estimates do not create an order and do not lock the final total. Use [Order preview](/orders/lifecycle#preview-the-selected-order) when the shopper is ready to place the order and you need an [`estimateToken`](/orders/lifecycle#estimate-tokens).
 
