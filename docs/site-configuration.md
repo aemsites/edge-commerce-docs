@@ -1,7 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
-tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap, tagged indices"
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap, tagged indices, promotion time travel"
 daPath: "/configuration/site"
 status: new
 managed: true
@@ -9,13 +9,13 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "6ce2247"
+    lastReviewedCommit: "96a9ca0"
+    lastContentCommit: "96a9ca0"
 ---
 
 # Site configuration
 
-Site configuration controls behavior that applies to one organization and site: allowed storefront origins, authentication, reCAPTCHA enforcement, email branding, friendly order IDs, and experimental flags.
+Site configuration controls behavior that applies to one organization and site: allowed storefront origins, authentication, reCAPTCHA enforcement, email branding, friendly order IDs, promotion time travel, and experimental flags.
 
 Configuration is stored as one JSON document per site and is separate from the encrypted [secrets store](/checkout/secrets). Use site configuration for non-secret settings. Use the secrets store for provider credentials, API keys, private tokens, and payment processor configuration.
 
@@ -71,6 +71,7 @@ All top-level fields are optional, and unknown fields are rejected.
 | `friendlyId` | object | Friendly order ID generation settings |
 | `coupons` | object | Coupon stacking and per-line discount settings |
 | `geoOverrides` | array | Country-specific overrides for selected configuration fields |
+| `timeTravel` | object | Promotion time travel settings for non-production environments |
 
 ## Allowed origins
 
@@ -295,6 +296,22 @@ An override may contain:
 Browser access, authentication, reCAPTCHA, and OTP email settings cannot be overridden because those flows do not resolve a request country before using configuration. Do not include `allowedOrigins`, `allowedDeliverySites`, `auth`, `recaptcha`, or `emails.otp` in an override.
 
 If duplicate entries use the same country, the first match wins. Keep one entry per country so behavior remains clear.
+
+## Promotion time travel
+
+Set `timeTravel.enabled` to `true` to allow pricing endpoints to evaluate promotions and coupon expiry at a simulated time in non-production environments:
+
+```json
+{
+  "timeTravel": {
+    "enabled": true
+  }
+}
+```
+
+When enabled, pricing requests can supply `simulateDate` to evaluate promotion windows and coupon expiry at that time. Simulated timestamps are interpreted in UTC.
+
+The setting is read from the base site configuration and cannot be set through `geoOverrides`. It has no effect in production. When disabled or unavailable, pricing uses the current time.
 
 ## Experimental flags
 

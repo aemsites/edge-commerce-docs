@@ -1,7 +1,7 @@
 ---
 title: "Promotions guide"
 description: "Promotion models for catalog, cart, and conditional discounts."
-tags: "stacking, rule priority, catalog price rules, free shipping, stage pricing, discount allocation"
+tags: "stacking, rule priority, catalog price rules, free shipping, stage pricing, discount allocation, product conditions, category conditions"
 daPath: "/promotions"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "96a9ca0"
+    lastContentCommit: "96a9ca0"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -101,7 +101,7 @@ Variants not explicitly listed in `rule.variants` inherit the parent product's r
 
 ### Date-limited promotions
 
-Promotions that have `start` and `end` timestamps on their rules automatically become active and expire without any manual intervention. The pipeline evaluates the rule's active window at request time, so a rule that has not yet started or has already ended is never applied.
+Promotions that have `start` and `end` timestamps on their rules automatically become active and expire without any manual intervention. The pipeline evaluates the rule's active window at request time, so a rule that has not yet started or has already passed its end time is never applied. A rule remains active at the exact `start` and `end` timestamps.
 
 Timestamps must include an explicit timezone offset — bare datetimes are not accepted. UTC (`Z`) is recommended for consistency since rule windows are evaluated against the server's UTC clock. If you need a rule to activate at a specific local business time, use the corresponding UTC offset (for example, `2026-06-01T08:00:00-05:00` for 8 AM US Central Standard Time).
 
@@ -166,9 +166,15 @@ When a catalog promotion has a `conditions` object, it behaves differently. Rath
 }
 ```
 
-The `conditions` object supports `minimumSubtotal` for a spending threshold, `requiredProducts` and `excludedProducts` for cart content requirements, and `requiredCategories` and `excludedCategories` for category-level requirements.
+Conditional promotions can include or exclude products and categories when calculating eligibility. They can also disqualify the promotion when a paid cart line contains a specified product or category. Product conditions take precedence over category conditions, and exclusions take precedence over inclusions at the same level. A disqualifying match prevents the promotion from applying.
 
-Conditional promotions are never applied by the pipeline when rendering product pages or indexes. They are only evaluated at cart and checkout time, when the storefront calls the estimate endpoint and returns the qualifying free-item grants as part of the discount breakdown. Disabled conditional rules are not applied.
+Only paid cart lines qualify, contribute to the threshold, or disqualify a promotion. Lines with a submitted price of zero or a zero post-promotion line subtotal are ignored. The threshold is calculated from the post-catalog-promotion subtotal of the paid lines that remain in scope, rather than from the entire cart subtotal. A promotion with no `minimumSubtotal` uses a zero threshold but still requires at least one paid line in scope.
+
+Product conditions match the product path whether the cart uses the path with or without the `.json` suffix. Category conditions use the product's stored category data; if that data cannot be resolved for a category disqualifier, the promotion is not granted.
+
+Conditional promotion rules use inclusive active windows: a rule is active at both its exact `start` and `end` timestamps. Rules are enabled unless `enabled` is explicitly `false`. An expired, future, or disabled rule cannot grant the promotion. When a promotion qualifies, each active grant includes the promotion's configured `minimumSubtotal`, when present, so clients can identify the threshold that produced the free-item grant.
+
+Conditional promotions are never applied by the pipeline when rendering product pages or indexes. They are only evaluated at cart and checkout time, when the storefront calls the estimate endpoint and returns the qualifying free-item grants as part of the discount breakdown.
 
 ## Cart rules
 
