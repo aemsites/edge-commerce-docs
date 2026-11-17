@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Retrieve a customer — Helix Commerce API</title>
-    <meta name="description" content="Returns the customer. Requires ownership of the email and membership of the org/site (no customers:read permission).">
+    <meta name="description" content="Returns the customer. Requires ownership of the email (or an admin) and membership of the org/site. Service tokens need customers:read.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,14 +30,14 @@
         <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/customers/{email}</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Returns the customer. Requires ownership of the email and membership of the org/site (no <code>customers:read</code> permission).</p>
+        <p>Returns the customer. Requires ownership of the email (or an admin) and membership of the org/site. Service tokens need <code>customers:read</code>.</p>
         <h2>Path parameters</h2>
         <div class="table">
           <table>
             <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
             <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
             <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
-            <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td>Customer email address.</td></tr>
+            <tr><td><code>email</code></td><td><code>string</code></td><td>yes</td><td>Customer email address. Case-insensitive: customer records are keyed on the lowercase email.</td></tr>
           </table>
         </div>
         <h2>Request headers</h2>
