@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.53.0"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -428,7 +428,7 @@ Product condition using schema.org vocabulary. These values are rendered in the 
 
 Request body schemas for the order and checkout endpoints — what a client sends when previewing or placing an order. These are distinct from the stored order shape returned in responses.
 
-Coupon inputs may contain one code or an array of up to five codes. When multiple codes are submitted, the service selects the best valid combination within the configured limit and reports each submitted code's outcome in `couponStatus` for price and order estimates. `couponSource` may be a single value or an array aligned with the submitted codes; the `auto` source pins that coupon during combination selection.
+Coupon inputs may contain one code or an array of up to five codes. When multiple codes are submitted, the service selects the best valid combination within the configured limit and reports each submitted code's outcome in `couponStatus` for price and order estimates. A valid coupon that is blocked by a catalog promotion is reported as `rejected_not_combinable_with_promotion`; other valid coupons excluded from the winning combination are reported as `rejected_not_combinable`. `couponSource` may be a single value or an array aligned with the submitted codes; the `auto` source pins that coupon during combination selection.
 
 Coupon configuration controls the number of coupons that can be applied and the maximum discount from coupons on an individual line. `maxApplicableCoupons` sets the combination limit. `maxLineDiscount` contains a `discountType` and `discountValue`; for percentage discounts, `discountValue` is the maximum percentage of a line's pre-coupon subtotal that coupon discounts may consume. Automatic pricing rules and catalog-sale markdowns are not subject to this coupon-specific line limit.
 
@@ -617,7 +617,7 @@ The estimate response includes one status for each submitted coupon code. Array 
 | Field | Type | Description |
 |---|---|---|
 | `code` | string | Submitted coupon code. |
-| `status` | `applied` \| `rejected_invalid` \| `rejected_not_combinable` | Whether the code was applied, invalid, or excluded by coupon combination rules. |
+| `status` | `applied` \| `rejected_invalid` \| `rejected_not_combinable` \| `rejected_not_combinable_with_promotion` | Whether the code was applied, invalid, excluded by coupon combination rules, or blocked by a catalog promotion. |
 
 ## Errors
 

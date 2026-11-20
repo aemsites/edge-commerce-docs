@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes, promotion time travel"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
 ---
 
 # Estimates and cart totals
@@ -35,6 +35,8 @@ POST /{org}/sites/{site}/estimate/{estimateType}
 | `order` | You need full cart totals across one or more shipping methods | `shippingMethods` with rate, tax, and total per method |
 
 For final checkout submission, use `POST /orders/preview`, not `/estimate/order`.
+
+Price, shipping, and order estimates, as well as order preview, accept the optional `simulateDate` query parameter on non-production environments when promotion time travel is enabled. The value must be an ISO 8601 date-time in UTC, such as `2026-11-19T12:00:00Z`. These endpoints evaluate promotions, conditional free-item grants, and coupon expiry at the simulated time and include the normalized time in the `x-simulated-at` response header. Promotion start and end times are inclusive. The tax estimate ignores this parameter. Production requests cannot use `simulateDate`.
 
 ## Estimate vs order preview
 
@@ -73,7 +75,7 @@ The `order` estimate also accepts checkout context used by tax configuration:
 
 Pass the same checkout context to order preview and order creation. The values can affect configured [Avalara tax rules](/checkout/tax/avalara#conditional-tax-rules) and are bound into the estimate token returned by preview.
 
-When multiple coupon codes are submitted, the API validates each code, selects the best applicable combination within the site's configured `coupons.maxApplicableCoupons` limit, and applies the combination only when the coupon stacking rules allow it. The request accepts no more than five codes. Price and order estimate responses include `couponStatus` for each submitted code, with `applied`, `rejected_invalid`, or `rejected_not_combinable` status. A coupon with source `auto` is pinned ahead of competing manual coupons when the stacking rules allow it. Coupon status is not returned by the shipping estimate.
+When multiple coupon codes are submitted, the API validates each code, selects the best applicable combination within the site's configured `coupons.maxApplicableCoupons` limit, and applies the combination only when the coupon stacking rules allow it. The request accepts no more than five codes. Price and order estimate responses include `couponStatus` for each submitted code, with `applied`, `rejected_invalid`, `rejected_not_combinable`, or `rejected_not_combinable_with_promotion` status. A coupon with source `auto` is pinned ahead of competing manual coupons when the stacking rules allow it. Coupon status is not returned by the shipping estimate. For a single coupon code, price and order estimates return a 422 error when the code cannot be applied, including when every otherwise-eligible line is blocked by its catalog promotion.
 
 ## Tax estimate
 
@@ -312,7 +314,7 @@ Estimate totals use this order of operations:
 5. Apply coupon stacking rules. Non-stackable coupons suppress automatic cart rules.
 6. Apply automatic cart rules, including method-scoped free shipping.
 7. Attribute order-level cash discounts back to eligible line items where applicable.
-8. Evaluate conditional promotions that grant free items.
+8. Evaluate conditional promotions that grant free items. Only paid lines in the promotion's product or category scope count toward its minimum subtotal; disqualifying products or categories prevent the grant.
 
 Approved coupon and automatic cash discounts are allocated per line after promotions are applied. Each allocation is limited by the line's remaining post-promotion balance, so a discount cannot make a line negative or overflow onto an ineligible line. A configured per-line coupon cap limits the combined coupon-sourced discount on each line to the configured percentage of its pre-coupon subtotal. Coupon-scoped discounts use their eligible lines first; cart-wide discounts use the remaining merchandise balances.
 

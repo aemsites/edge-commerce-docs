@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "326cbff"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -405,7 +405,7 @@ Indexing jobs run automatically and asynchronously. To keep indexing fast and pr
 - Only send values that change when the product changes. Each write is compared with the stored product field by field, including everything in `custom`. If any value differs, the product is saved and re-indexed, even when the difference doesn't affect the index or merchant feed. If it differs on every write, every write re-indexes the product, which adds indexing work and can delay other updates for the site. Common causes:
   - Arrays whose order varies between writes, such as `images`, `variants`, `options`, or arrays inside `custom`. Array order is compared, so sort arrays consistently before sending products. The order of keys within an object doesn't matter.
   - Values in `custom` that change on every publish, such as a publish or sync timestamp, a generated identifier, or a computed value. Leave these out of product data, or update them only when the product itself changes.
-- Send only products that changed. Writes that don't change a product are skipped and don't queue indexing work. Use `forceUpdate` only when you need to re-index unchanged products, such as after changing `productIndexerConfig` or to populate a new tagged index, because it re-indexes every product in the request.
+- Send only products that changed. Writes that don't change a product are skipped and don't queue indexing work. Use `forceUpdate` only when you need to re-index unchanged products, such as after changing `productIndexerConfig` or to populate a new tagged index, because it re-indexs every product in the request.
 - Plan large imports. Each site's updates are processed in order, so a bulk import delays later updates for the same site until it has been processed. Batch product updates when possible, and schedule large catalog updates during off-peak hours.
 - Keep index configurations lean. Each mapped property is stored for every product and variant, so fewer properties keep indexes smaller, faster to load, and further from the [index size limits](/limits#product-index-size).
 - Monitor index freshness with each entry's `lastModified` value.

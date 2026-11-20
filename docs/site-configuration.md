@@ -1,7 +1,7 @@
 ---
 title: "Site configuration"
 description: "Configure allowed origins, authentication, reCAPTCHA, email branding, friendly order IDs, and experimental flags."
-tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap, tagged indices"
+tags: "geographic overrides, validation rules, sender identity, delivery site slugs, coupons, coupon stacking, per-line discount cap, tagged indices, pricing simulation"
 daPath: "/configuration/site"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "6ce2247"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
 ---
 
 # Site configuration
@@ -71,6 +71,7 @@ All top-level fields are optional, and unknown fields are rejected.
 | `friendlyId` | object | Friendly order ID generation settings |
 | `coupons` | object | Coupon stacking and per-line discount settings |
 | `geoOverrides` | array | Country-specific overrides for selected configuration fields |
+| `timeTravel` | object | Pricing simulation settings |
 
 ## Allowed origins
 
@@ -311,6 +312,18 @@ If duplicate entries use the same country, the first match wins. Keep one entry 
 Set `tagIndexSplitting` to `true` before creating tagged indices. A tagged index selects products by their `indexTags` values instead of by catalog path. Product writes use `indexTags` to place a product in every matching tagged index; if no listed tag matches an index, the product uses its path-based index.
 
 Only boolean values are accepted. Experimental flags should be used only when directed by the Adobe team because they may change behavior without the same compatibility guarantees as stable configuration fields.
+
+## Pricing simulation
+
+Set `timeTravel.enabled` to `true` to allow pricing endpoints to accept a `simulateDate` in non-production environments. This lets you evaluate time-dependent pricing, such as catalog promotion windows, at a specified date.
+
+```json
+{
+  "timeTravel": {
+    "enabled": true
+  }
+}
+```
 
 ## Validation rules
 

@@ -1,7 +1,7 @@
 ---
 title: "Customers and account data"
 description: "How customer profiles, addresses, and customer-scoped orders work in the Edge Commerce API."
-tags: "passwords, access rules, cursor pagination, session cookies, guest order lookup, patch merge semantics"
+tags: "passwords, access rules, cursor pagination, session cookies, guest order lookup, patch merge semantics, case-insensitive email"
 daPath: "/customers"
 status: new
 managed: true
@@ -9,15 +9,15 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
 ---
 
 # Customers and account data
 
 Customer APIs manage customer profiles, saved addresses, and customer-scoped order lookup. They support both checkout-created customer records and authenticated account experiences.
 
-A customer profile is keyed by email address within an organization and site. Customer-scoped routes require the authenticated user to match the requested email, except for the guest order-status lookup that uses email plus order ID.
+A customer profile is keyed by lowercase email address within an organization and site. Customer-scoped routes require the authenticated user to match the requested email, except for authorized admin or service-token access and the guest order-status lookup that uses email plus order ID. Email comparisons are case-insensitive.
 
 ## How customer records are created
 
@@ -30,6 +30,8 @@ Customers can enter the system in two ways:
 
 Most storefront checkout flows do not need to call `POST /customers` before placing an order. [Order creation](/orders/lifecycle#create-the-order) handles the customer profile when needed.
 
+Customer email addresses are stored lowercase. A customer with the same email already stored for the site is treated as the same customer regardless of letter case.
+
 When checkout finds an existing profile, it preserves the profile's existing values and backfills only empty `firstName`, `lastName`, and `phone` fields from the order. It does not overwrite values the customer previously set. The order's `customerCreated` value remains `false` for an existing profile.
 
 ## API overview
@@ -38,12 +40,12 @@ When checkout finds an existing profile, it preserves the profile's existing val
 |------|-----|----------------|
 | Create a customer profile directly | `POST /{org}/sites/{site}/customers` | `customers:write` |
 | List customers | `GET /{org}/sites/{site}/customers` | `customers:read` |
-| Retrieve the signed-in customer's profile | `GET /{org}/sites/{site}/customers/{email}` | Authenticated user matching `{email}` |
-| Create or update the signed-in customer's profile | `PATCH /{org}/sites/{site}/customers/{email}` | Authenticated user matching `{email}` |
+| Retrieve the signed-in customer's profile | `GET /{org}/sites/{site}/customers/{email}` | Authenticated user matching `{email}`, admin, or service token with `customers:read` |
+| Create or update the signed-in customer's profile | `PATCH /{org}/sites/{site}/customers/{email}` | Authenticated user matching `{email}`, admin, or service token with `customers:write` |
 | Delete a customer profile | `DELETE /{org}/sites/{site}/customers/{email}` | Admin |
-| List saved addresses | `GET /{org}/sites/{site}/customers/{email}/addresses` | Authenticated user matching `{email}` |
-| Create a saved address | `POST /{org}/sites/{site}/customers/{email}/addresses` | Authenticated user matching `{email}` |
-| Retrieve, replace, or delete a saved address | `GET`, `PUT`, or `DELETE /{org}/sites/{site}/customers/{email}/addresses/{addressId}` | Authenticated user matching `{email}` |
+| List saved addresses | `GET /{org}/sites/{site}/customers/{email}/addresses` | Authenticated user matching `{email}`, admin, or service token with `customers:read` |
+| Create a saved address | `POST /{org}/sites/{site}/customers/{email}/addresses` | Authenticated user matching `{email}`, admin, or service token with `customers:write` |
+| Retrieve, replace, or delete a saved address | `GET`, `PUT`, or `DELETE /{org}/sites/{site}/customers/{email}/addresses/{addressId}` | Authenticated user matching `{email}`, admin, or service token with the corresponding customer permission |
 | List a customer's orders | `GET /{org}/sites/{site}/customers/{email}/orders` | `orders:read` and authenticated user matching `{email}` |
 | Retrieve one customer order | `GET /{org}/sites/{site}/customers/{email}/orders/{orderId}` | Optional bearer token. Email plus order ID is used for guest order-status lookup |
 
@@ -76,7 +78,7 @@ The API adds timestamps when the profile is stored. Customer phone numbers are n
 
 Customer profiles do not include passwords, password hashes, password reset tokens, or password policy settings. Customer authentication uses the [one-time password login flow](/authentication/overview) when [auth is enabled for the site](/configuration/site#authentication-settings).
 
-After login, the customer is represented by a bearer token scoped to the organization, site, and email address. Customer-scoped routes compare that token email with the `{email}` path parameter.
+After login, the customer is represented by a bearer token scoped to the organization, site, and email address. Customer-scoped routes compare that token email with the `{email}` path parameter case-insensitively.
 
 ## Create a customer directly
 
@@ -94,22 +96,22 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/customers" \
   }'
 ```
 
-If a customer with the same email already exists for the site, the API returns `409`.
+If a customer with the same email already exists for the site, ignoring letter case, the API returns `409`.
 
 ## Retrieve the signed-in customer
 
-A customer can retrieve their own profile with a [bearer token](/authentication/overview) for the same email address.
+A customer can retrieve their own profile with a [bearer token](/authentication/overview) for the same email address. Admins and service tokens with `customers:read` can also access the route within the requested organization and site.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@example.com" \
   -H "Authorization: Bearer {customer-session-token}"
 ```
 
-The token must belong to the same organization, site, and email address. Admin and service use cases should use the collection or order APIs with the appropriate permissions instead of impersonating customer-scoped profile reads.
+The token must belong to the same organization, site, and email address unless the caller is an admin or an authorized service token. Admin and service use cases should use the collection or order APIs with the appropriate permissions instead of impersonating customer-scoped profile reads.
 
 ## Update the signed-in customer
 
-Use `PATCH /customers/{email}` to create or partially update the signed-in customer's profile. The bearer token email must match the `{email}` path parameter, and the token must have membership in the requested organization and site. This self-service route does not require `customers:write`.
+Use `PATCH /customers/{email}` to create or partially update the customer's profile. Customer ownership, admin access, or a service token with `customers:write` is required, and the token must have membership in the requested organization and site.
 
 The request body can include `firstName`, `lastName`, `phone`, and `custom`. Provided first-class fields replace their existing values, while fields not included in the request are preserved. The `custom` attributes are shallow-merged, so custom attributes not included in the request are preserved. The email is taken from the path and cannot be changed; including `email` in the request body is rejected.
 
@@ -128,11 +130,11 @@ curl -X PATCH "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@
   }'
 ```
 
-A successful request returns `200` with the created or updated profile in a `customer` property. The API returns `400` when the body contains an unknown field, an invalid value type, an email field, or a create request without the required name fields. It returns `403` when the bearer token does not own the path email or lacks organization/site membership.
+A successful request returns `200` with the created or updated profile in a `customer` property. The API returns `400` when the body contains an unknown field, an invalid value type, an email field, or a create request without the required name fields. It returns `403` when the caller lacks ownership, admin access, or the required service-token permission, or lacks organization/site membership.
 
 ## Address book
 
-Saved addresses belong to a customer email. Address routes require the authenticated email to match the `{email}` path parameter. Storefronts can use [Places and address validation](/places) before saving an address to reduce entry errors. See [Schema reference](/schema-reference#address) for the generated address schema.
+Saved addresses belong to a customer email. Address routes require customer ownership or admin access; service tokens require `customers:read` for reads and `customers:write` for changes. Storefronts can use [Places and address validation](/places) before saving an address to reduce entry errors. See [Schema reference](/schema-reference#address) for the generated address schema.
 
 ### Address shape
 
@@ -200,7 +202,7 @@ curl "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@example.c
 
 ### Retrieve one customer order
 
-Retrieving one customer order by email and order ID supports guest order-status pages. A bearer token is optional for this operation. If the order does not exist or the order's customer email does not match the path email, the API returns `404`.
+Retrieving one customer order by email and order ID supports guest order-status pages. A bearer token is optional for this operation. If the order does not exist or the order's customer email does not match the path email, ignoring letter case, the API returns `404`.
 
 ```bash
 curl "https://api.adobecommerce.live/{org}/sites/{site}/customers/jane@example.com/orders/{order-id}"
@@ -214,10 +216,10 @@ Use this route for confirmation pages or “track your order” flows where the 
 |-----------|-------------|
 | Create customer directly | Requires `customers:write` |
 | List customers | Requires `customers:read` |
-| Retrieve one customer profile | Requires authenticated email ownership |
-| Create or update the signed-in customer profile | Requires authenticated email ownership and organization/site membership |
+| Retrieve one customer profile | Requires authenticated email ownership, admin access, or a service token with `customers:read` |
+| Create or update the signed-in customer profile | Requires authenticated email ownership, admin access, or a service token with `customers:write` |
 | Delete customer profile | Requires admin role |
-| Manage addresses | Requires authenticated email ownership |
+| Manage addresses | Requires authenticated email ownership or admin access; service tokens require `customers:read` to read and `customers:write` to change |
 | List customer orders | Requires `orders:read` and authenticated email ownership |
 | Retrieve one customer order | Email plus order ID is sufficient for guest order-status lookup |
 

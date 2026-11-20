@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition, simulateDate"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
 ---
 
 # Order lifecycle
@@ -280,6 +280,8 @@ Redirect-based providers return an action for the storefront to follow.
 
 The estimate APIs are for provisional cart decisions. Call them whenever the shopper changes information that affects the cart, such as address, shipping country, coupon code, selected products, or quantity. See [Estimates and cart totals](/estimates) for endpoint selection, examples, and discount behavior.
 
+In non-production environments, sites can enable pricing time travel with `timeTravel.enabled`. When enabled, pricing requests can provide `simulateDate` to evaluate the cart as of a specific date and time. Catalog promotion windows and coupon expiry checks use that simulated time, allowing storefronts and integrations to test upcoming or expired offers without changing the current clock. The setting is not available for production pricing.
+
 `POST /estimate/{estimateType}` supports four calculation modes:
 
 | Estimate type | When to call it | What it returns |
@@ -296,6 +298,8 @@ Use these endpoints for cart pages, shipping selection, wallet address callbacks
 Call `POST /orders/preview` after the shopper has selected a shipping method and is ready to submit the order. Preview is the commitment step between a changing cart and a persisted order.
 
 This endpoint exists because interactive estimates are not enough to place an order. Preview validates the final submitted cart, applies eligible merchandise discounts before calculating tax, computes the selected-method totals, and returns the signed `estimateToken` that order creation uses to verify those totals.
+
+When time travel is enabled in a non-production site, pass `simulateDate` with the preview request to use that instant for catalog promotion windows and coupon expiry evaluation. Use the same simulated pricing context when comparing preview totals with preceding estimate responses.
 
 The preview endpoint:
 
@@ -469,7 +473,7 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 - Guest checkout can create orders and start payments, but unauthenticated preview and order creation can be reCAPTCHA-gated.
 - Order creation verifies product prices, country availability, and preview tokens.
 - Active catalog-promotion prices are resolved from server-side catalog data; client-submitted promotional prices are accepted only when they match that active promotion.
-- Estimate tokens bind bundle compositions, component prices, and tax classifications. Changes after preview reject order creation and require a new preview.
+- Estimate tokens bind bundle compositions, component prices, and tax classifications. Changes after preview reject order creation and require a new token.
 - Authenticated order creation rejects a checkout customer email that differs from the signed-in account email with `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH`.
 - Payment initiation uses stored order totals, not client-supplied totals.
 - Only `pending` orders accept a new payment initiation.
