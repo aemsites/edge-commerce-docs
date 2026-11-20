@@ -1,7 +1,7 @@
 ---
 title: "Roles and permissions"
 description: "Role-based permissions for users, admins, and service tokens."
-tags: "email scopes, jwt, permission use cases"
+tags: "email scopes, jwt, permission use cases, order listing"
 daPath: "/authentication/roles-permissions"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "c8a516f"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
 ---
 
 # Roles and permissions
@@ -38,6 +38,7 @@ Unknown roles are ignored. A user session with an email always receives the `use
 | `catalog:write` | No | Yes | Yes | Yes |
 | `orders:read` | Yes | Yes | Yes | Yes |
 | `orders:write` | Yes | Yes | Yes | Yes |
+| `orders:list` | No | Yes | Yes | Yes |
 | `orders:custom:write` | No | No | No | Yes |
 | `index:read` | No | Yes | Yes | Yes |
 | `index:write` | No | Yes | Yes | Yes |
@@ -61,6 +62,8 @@ Unknown roles are ignored. A user session with an email always receives the `use
 
 The `JWT service token eligible` column means the permission may be delegated when creating a JWT service token. The token still receives only the permissions explicitly listed at creation time.
 
+Listing a site's orders requires `orders:list`. Admin sessions and legacy service-token callers have this permission through their roles. JWT service tokens must explicitly include `orders:list`; `orders:read` alone does not authorize order listing.
+
 Administrator-management operations require both the applicable `admins:read` or `admins:write` permission and verification that the caller remains a current admin for the target site.
 
 `PATCH /orders/{orderId}/custom` requires `orders:custom:write`. Holding `orders:write` without that dedicated permission does not authorize custom metadata updates.
@@ -72,7 +75,7 @@ The groups below help you find individual permissions for a task. They do not gr
 | Group | Permissions | Typical use |
 |-------|-------------|-------------|
 | Catalog | `catalog:read`, `catalog:write` | Product ingestion and product data retrieval |
-| Orders | `orders:read`, `orders:write`, `orders:custom:write` | Order lookup, order creation, and custom metadata updates |
+| Orders | `orders:read`, `orders:write`, `orders:list`, `orders:custom:write` | Order lookup, order creation, order listing, and custom metadata updates |
 | Indexes | `index:read`, `index:write` | Product index configuration and updates |
 | Customers | `customers:read`, `customers:write` | [Customer profile and address management](/customers) |
 | Config | `config:read`, `config:write` | [Site configuration](/configuration/site) management |

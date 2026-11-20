@@ -1,7 +1,7 @@
 ---
 title: "Coupons guide"
 description: "Coupon data model, validation, and redemption flows."
-tags: "batch generation, tracking codes, stacking, multiple coupons, coupon status, usage tracking, cursor pagination, category eligibility, coupon validation, product list pricing, auto apply coupons, free shipping"
+tags: "batch generation, tracking codes, stacking, multiple coupons, coupon status, usage tracking, cursor pagination, category eligibility, coupon validation, product list pricing, auto apply coupons, free shipping, coupon groups, promotion scope"
 daPath: "/coupons"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "244fe7b"
+    lastContentCommit: "244fe7b"
 migration:
   from: "helix-commerce-documentation/documentation/coupons.md"
   migratedAt: "2026-06-15"
@@ -58,6 +58,7 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 | `includedShippingTypes` | string[] | No | Restricts free shipping to specific shipping type identifiers. Only meaningful when `freeShipping` is `true` |
 | `stackable` | boolean | No | Whether the coupon can be combined with auto-applied cart rules. When `false`, all cart rules are suppressed while the coupon is active. Defaults to `true` |
 | `includeStackableCouponTypes` | string[] | No | IDs of coupon types that may be combined with this type |
+| `groups` | string[] | No | Free-form labels for grouping coupon types. Entries are trimmed and de-duplicated on write |
 | `excludeDiscountedProducts` | boolean | No | When `true`, already-discounted items (products where `price.final < price.regular`) are excluded from the coupon's scope. Defaults to `false` |
 | `applyToSalePrice` | boolean | No | When `true`, applies the coupon to the current sale price. When `false` (default), compares the sale price with the coupon-adjusted regular price and uses the lower price |
 | `discountedProducts` | array | Conditional | Product-list pricing that maps product paths, and optionally variant SKUs, to absolute final unit prices. Used instead of `discountType` and `discountValue` |
@@ -74,6 +75,19 @@ To retrieve, update, or delete a type, use `GET`, `PUT`, or `DELETE` at `/{org}/
 | `defaultUsesPerCode` | number | No | Default `usesPerCustomer` applied to codes created under this type |
 | `notes` | string | No | Internal notes. Not surfaced to customers |
 
+### Grouping coupon types
+
+The `groups` field assigns free-form labels to coupon types. Each label is trimmed and de-duplicated when written. On update, sending `groups` replaces the complete list; send `[]` or `null` to clear it. Omitting `groups` preserves the existing list.
+
+Filter the coupon type list by group with an exact, case-sensitive match after surrounding whitespace is trimmed:
+
+```bash
+curl "https://api.adobecommerce.live/{org}/sites/{site}/coupons/types?group=affiliate" \
+  -H "Authorization: Bearer {your-api-key}"
+```
+
+An empty or whitespace-only `group` value is ignored.
+
 ### Category eligibility
 
 Category scope is resolved from the authoritative product entry associated with each cart line's product path. The API does not rely only on category data supplied in the cart request. When a coupon uses `includedCategories` or `excludedCategories`, the estimate flow retrieves the product data needed to evaluate the product's categories.
@@ -87,6 +101,8 @@ For `"percentage"` discount types, the discount is `(eligibleSubtotal × discoun
 By default, `applyToSalePrice` is `false`. The API calculates the coupon against each eligible item's regular price, compares that result with the item's current sale price, and uses whichever price is lower. If the sale is already better than the coupon, the coupon contributes no additional discount for that line. Set `applyToSalePrice` to `true` to calculate the coupon from post-promotion prices instead.
 
 When `excludeDiscountedProducts` is `true`, products already reduced below their regular price are removed from the coupon scope. This setting takes precedence over `applyToSalePrice`.
+
+A catalog promotion can also block a coupon on the lines it prices. Blocked lines are excluded from coupon calculations. If every otherwise eligible line is blocked by its catalog promotion, the coupon is rejected with `ADOBE_COMMERCE_COUPON_NOT_COMBINABLE_WITH_PROMOTION`.
 
 An individual code's `discountOverride` field can replace the type's `discountType` and `discountValue` for that specific code, which allows issuing special codes with a different discount magnitude without creating a separate type.
 
@@ -206,7 +222,7 @@ The storefront can submit one coupon code or an array of up to five codes in an 
 }
 ```
 
-The API validates each code and selects the applicable combination with the greatest total discount, subject to the site's maximum applicable coupon setting and the types' stacking rules. Coupon amounts are calculated against the same post-promotion base, so selection does not depend on input order. The response for price and order estimates includes `couponStatus` entries with `applied`, `rejected_invalid`, or `rejected_not_combinable` status for each submitted code.
+The API validates each code and selects the applicable combination with the greatest total discount, subject to the site's maximum applicable coupon setting and the types' stacking rules. Coupon amounts are calculated against the same post-promotion base, so selection does not depend on input order. The response for price and order estimates includes `couponStatus` entries with `applied`, `rejected_invalid`, `rejected_not_combinable`, or `rejected_not_combinable_with_promotion` status for each submitted code.
 
 A coupon submitted with `couponSource: "auto"` is pinned during combination selection. This keeps an automatically applied coupon, such as one from an affiliate or identity-verification flow, when it competes with a manual coupon. The source also determines whether the type's `allowManualEntry` restriction applies.
 
@@ -246,7 +262,7 @@ When a coupon code is submitted, the following checks are performed in order. An
 | Per-customer limit not exhausted (when email is known) | `ADOBE_COMMERCE_COUPON_EXHAUSTED` |
 | At least one cart line is eligible (product/category scope) | `ADOBE_COMMERCE_COUPON_PRODUCT_NOT_ELIGIBLE` |
 
-For a single submitted code, failures return HTTP 422 with the human-readable message `"coupon not applicable"` regardless of the specific reason. For an array of codes, coupon validation failures are reported as `rejected_invalid` in `couponStatus`, allowing other valid codes to be evaluated. A valid code that cannot be included in the selected stacking combination is reported as `rejected_not_combinable`.
+For a single submitted code, failures return HTTP 422 with the human-readable message `"coupon not applicable"` regardless of the specific reason. For an array of codes, coupon validation failures are reported as `rejected_invalid` in `couponStatus`, allowing other valid codes to be evaluated. A valid code that cannot be included in the selected stacking combination is reported as `rejected_not_combinable`. A valid code whose otherwise eligible lines are all blocked by catalog promotions is reported as `rejected_not_combinable_with_promotion`.
 
 The machine-readable error code for single-code failures is available in the `x-error-code` response header for programmatic branching. This ensures that the error messages shown to customers do not reveal whether a code exists, has expired, or has been exhausted.
 
