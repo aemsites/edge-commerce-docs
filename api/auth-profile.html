@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Validate the token and return the caller identity — Helix Commerce API</title>
+    <meta name="description" content="Validate the token and return the caller identity">
+    <meta name="template" content="docs"/>
+    <meta name="labs" content="Commerce"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/styles/styles.css"/>
+    <script type="importmap">
+      {
+        "imports": {
+          "prismjs": "/deps/prismjs/prism.js",
+          "da-lit": "https://da.live/deps/lit/dist/index.js",
+          "da-y-wrapper": "https://da.live/deps/da-y-wrapper/dist/index.js"
+        }
+      }
+    </script>
+    <script src="/scripts/nx.js" type="module"></script>
+    <script src="/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p class="api-eyebrow">Auth</p>
+        <h1>Validate the token and return the caller identity</h1>
+        <p class="endpoint"><span class="http-method http-get">GET</span> <code class="http-path">/{org}/sites/{site}/auth/profile</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
+        <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
+        <h2>Path parameters</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>org</code></td><td><code>string</code></td><td>yes</td><td>Organization identifier.</td></tr>
+            <tr><td><code>site</code></td><td><code>string</code></td><td>yes</td><td>Site identifier.</td></tr>
+          </table>
+        </div>
+        <h2>Request headers</h2>
+        <div class="table">
+          <table>
+            <tr><td>Name</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>Authorization</code></td><td><code>string</code></td><td>no</td><td>Bearer token. <code>Bearer &lt;token&gt;</code>. Required unless the <code>auth_token</code> cookie is sent.</td></tr>
+            <tr><td><code>Cookie</code></td><td><code>string</code></td><td>no</td><td>Optional <code>auth_token</code> cookie carrying the session JWT.</td></tr>
+          </table>
+        </div>
+        <h2>Response</h2>
+        <h3><span class="status-badge status-2xx">200</span> The token is valid; the caller's identity is returned.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Header</td><td>Description</td></tr>
+            <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
+            <tr><td><code>Cache-Control</code></td><td>private, no-store</td></tr>
+          </table>
+        </div>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>email</code></td><td><code>string | null</code></td><td>yes</td><td>Caller email. Null for anything other than a session token.</td></tr>
+            <tr><td><code>org</code></td><td><code>string | null</code></td><td>yes</td><td>Org the credential is scoped to; null for operator credentials.</td></tr>
+            <tr><td><code>site</code></td><td><code>string | null</code></td><td>yes</td><td>Site the credential is scoped to; null for operator credentials.</td></tr>
+            <tr><td><code>roles</code></td><td><code>string[]</code></td><td>yes</td><td>Resolved roles: <code>["user"]</code> or <code>["admin", "user"]</code> for session tokens, <code>["service"]</code> for legacy site keys, <code>["superuser"]</code> for operator credentials, and empty for JWT service tokens (which carry permissions directly).</td></tr>
+            <tr><td><code>permissions</code></td><td><code>string[]</code></td><td>yes</td><td>Permissions granted to the credential. Read this as the grants, not as a complete permission check: JWT service tokens return their raw grants, which may include scoped entries such as <code>emails:send:*@example.com</code> that the API matches by pattern against the request (here, the recipient address), and operator (<code>superuser</code>) credentials bypass permission checks entirely, so their list understates what they can do.</td></tr>
+            <tr><td><code>serviceToken</code></td><td><code>boolean</code></td><td>yes</td><td>True only for JWT service tokens (<code>/auth/service_token</code>); false for legacy site keys.</td></tr>
+            <tr><td><code>issuedAt</code></td><td><code>number | null</code></td><td>yes</td><td>JWT <code>iat</code> (seconds since epoch); null for non-JWT credentials.</td></tr>
+            <tr><td><code>expiresAt</code></td><td><code>number | null</code></td><td>yes</td><td>JWT <code>exp</code> (seconds since epoch); null for non-JWT credentials.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">401</span> Missing, malformed, or expired token: <code>ADOBE_COMMERCE_UNAUTHORIZED</code> (<code>unauthorized</code>). Revoked (logged-out) token: <code>ADOBE_COMMERCE_TOKEN_REVOKED</code> (<code>token revoked</code>).</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+        <h3><span class="status-badge status-4xx">403</span> Token is valid but scoped to a different org/site.</h3>
+        <div class="table">
+          <table>
+            <tr><td>Field</td><td>Type</td><td>Required</td><td>Description</td></tr>
+            <tr><td><code>code</code></td><td><code>string</code></td><td>yes</td><td>Machine-readable error code (also sent as the <code>x-error-code</code> header).</td></tr>
+            <tr><td><code>message</code></td><td><code>string</code></td><td>yes</td><td>Human-readable error message (also sent as the <code>x-error</code> header).</td></tr>
+            <tr><td><code>resource</code></td><td><code>string</code></td><td>no</td><td>The resource type involved, when applicable.</td></tr>
+            <tr><td><code>retryable</code></td><td><code>boolean</code></td><td>no</td><td>Whether the caller may retry the request.</td></tr>
+            <tr><td><code>details</code></td><td><code>object</code></td><td>no</td><td>Optional structured detail.</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="code-rail">
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-2xx">200</span></span></div>
+          <pre><code class="language-json">{
+  "email": "user@example.com",
+  "org": "org",
+  "site": "site",
+  "roles": [
+    "user"
+  ],
+  "permissions": [
+    "orders:read",
+    "orders:write"
+  ],
+  "serviceToken": false,
+  "issuedAt": 1700000000,
+  "expiresAt": 1700086400
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">401</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_TOKEN_REVOKED",
+  "message": "token revoked"
+}</code></pre>
+        </div>
+        <div class="code-sample">
+          <div class="code-sample-head"><span class="code-sample-title">Response · <span class="code-status status-4xx">403</span></span></div>
+          <pre><code class="language-json">{
+  "code": "ADOBE_COMMERCE_FORBIDDEN",
+  "message": "access denied"
+}</code></pre>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

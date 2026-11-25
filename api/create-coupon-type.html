@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Create a coupon type — Helix Commerce API</title>
-    <meta name="description" content="Validates and stores a coupon type. id and name are required, plus exactly one discount shape: a flat discountType/discountValue, or a "product list coupon" discountedProducts array. The two shapes are mutually exclusive, as are country/countries; included/excluded products and categories may not overlap.">
+    <meta name="description" content="Validates and stores a coupon type. id and name are required, plus exactly one discount shape: a flat discountType/discountValue, or a "product list coupon" discountedProducts array. The two shapes are mutually exclusive, as are country/countries; included/excluded products and categories may not overlap. groups entries are trimmed and de-duplicated.">
     <meta name="template" content="docs"/>
     <meta name="labs" content="Commerce"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -30,7 +30,7 @@
         <p class="endpoint"><span class="http-method http-post">POST</span> <code class="http-path">/{org}/sites/{site}/coupons/types</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Base URL</span> <code>https://api.adobecommerce.live</code></p>
         <p class="api-base-url"><span class="api-base-url-label">Staging</span> <code>https://api-stage.adobecommerce.live</code></p>
-        <p>Validates and stores a coupon type. <code>id</code> and <code>name</code> are required, plus exactly one discount shape: a flat <code>discountType</code>/<code>discountValue</code>, or a "product list coupon" <code>discountedProducts</code> array. The two shapes are mutually exclusive, as are <code>country</code>/<code>countries</code>; included/excluded products and categories may not overlap.</p>
+        <p>Validates and stores a coupon type. <code>id</code> and <code>name</code> are required, plus exactly one discount shape: a flat <code>discountType</code>/<code>discountValue</code>, or a "product list coupon" <code>discountedProducts</code> array. The two shapes are mutually exclusive, as are <code>country</code>/<code>countries</code>; included/excluded products and categories may not overlap. <code>groups</code> entries are trimmed and de-duplicated.</p>
         <p class="permissions">Required permissions: <code>coupons:write</code></p>
         <h2>Path parameters</h2>
         <div class="table">
@@ -85,6 +85,9 @@
   "stackable": true,
   "includeStackableCouponTypes": [
     "loyalty-reward"
+  ],
+  "groups": [
+    "affiliate"
   ]
 }</code></pre>
         </div>
@@ -101,6 +104,9 @@
   "stackable": true,
   "includeStackableCouponTypes": [
     "loyalty-reward"
+  ],
+  "groups": [
+    "affiliate"
   ],
   "createdAt": "2026-01-01T00:00:00.000Z",
   "updatedAt": "2026-01-01T00:00:00.000Z"
