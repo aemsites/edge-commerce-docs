@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "326cbff"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
   helix-mixer:
     version: "v1.6.1"
     lastReviewedCommit: "b8acff4"
@@ -282,7 +282,7 @@ Keep the following in mind when you write your `properties` mapping:
 
 ### Prices in index responses
 
-The stored index contains the prices written by the Product Indexer at indexing time. When the pipeline serves an index response, it fetches and applies any active catalog price rules before returning the data, so the `price` values a browser or application sees may be lower than what was originally indexed. See the [Rendering Guide](/rendering-guide#catalog-price-rules) for details on how catalog price rules work.
+The stored index contains the prices written by the Product Indexer at indexing time. When the pipeline serves an index response, it fetchs and applies any active catalog price rules before returning the data, so the `price` values a browser or application sees may be lower than what was originally indexed. See the [Rendering Guide](/rendering-guide#catalog-price-rules) for details on how catalog price rules work.
 
 ### Configuration best practices
 

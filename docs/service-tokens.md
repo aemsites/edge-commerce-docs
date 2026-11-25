@@ -1,7 +1,7 @@
 ---
 title: "Service tokens"
 description: "Create and manage scoped tokens for automation and integrations."
-tags: "email scopes, legacy site tokens, secrets, jwt, revocation"
+tags: "email scopes, legacy site tokens, secrets, jwt, revocation, orders:list"
 daPath: "/authentication/service-tokens"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "326cbff"
-    lastContentCommit: "5577796"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
 ---
 
 # Service tokens
@@ -27,6 +27,7 @@ Use a service token for recurring machine-to-machine tasks:
 |------|---------------------|
 | Product ingestion | `catalog:read`, `catalog:write`, `index:write` |
 | Order automation | `orders:read`, `orders:write` |
+| Order listing | `orders:list` |
 | Customer data sync | `customers:read`, `customers:write` |
 | Transactional email | `emails:send` plus optional destination scopes |
 | Promotions management | `coupons:read`, `coupons:write`, `price_rules:read`, `price_rules:write` |
@@ -79,6 +80,7 @@ A service token can be created only with permissions from this allowlist:
 | `catalog:read` | Read product data |
 | `catalog:write` | Create, update, or delete product data |
 | `orders:read` | Read orders |
+| `orders:list` | List orders for the organization and site |
 | `orders:write` | Create or update orders |
 | `orders:custom:write` | Add, replace, or remove custom metadata on existing orders |
 | `index:read` | Read index configuration |
