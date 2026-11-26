@@ -36,7 +36,7 @@ Unknown roles are ignored. A user session with an email always receives the `use
 |------------|------|-------|----------------|----------------------------|
 | `catalog:read` | No | Yes | Yes | Yes |
 | `catalog:write` | No | Yes | Yes | Yes |
-| `orders:list` | No | Yes | Yes | Yes |
+| `orders:list` | No | Yes | No | Yes |
 | `orders:read` | Yes | Yes | Yes | Yes |
 | `orders:write` | Yes | Yes | Yes | Yes |
 | `orders:custom:write` | No | No | No | Yes |

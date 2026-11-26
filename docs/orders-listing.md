@@ -2,7 +2,7 @@
 title: "List site orders"
 description: "Explain how authorized integrations list orders for a site through the orders listing API."
 daPath: "/orders-listing"
-tags: "pagination, cursor based, service tokens, permissions"
+tags: "service tokens, permissions, updatedAt, order state"
 status: draft
 managed: true
 sourceFormat: markdown
@@ -15,117 +15,47 @@ sources:
 
 # List site orders
 
-Use the site orders listing endpoint to retrieve orders associated with a site. The endpoint supports cursor-based pagination and requires an authenticated caller with the `orders:list` permission.
+Use the site orders endpoint to retrieve orders for one organization and site. The endpoint requires the `orders:list` permission and returns all matching orders in one response. It does not support pagination.
 
 ## Endpoint
 
 ```http
-GET https://api.adobecommerce.live/{org}/{site}/orders
+GET https://api.adobecommerce.live/{org}/sites/{site}/orders
 ```
 
-Replace:
-
-- `{org}` with your organization identifier.
-- `{site}` with the site identifier.
-
-Send the credential in the `Authorization` header:
+Replace `{org}` with your organization identifier and `{site}` with your site identifier. Send an admin session or a service token with `orders:list` in the `Authorization` header:
 
 ```bash
 curl \
   -H "Authorization: Bearer {your-api-key}" \
-  "https://api.adobecommerce.live/{org}/{site}/orders"
+  "https://api.adobecommerce.live/{org}/sites/{site}/orders"
 ```
 
-The endpoint lists orders for the specified site only. It does not list orders across multiple sites.
-
-## Required permission
-
-The caller must have the `orders:list` permission.
-
-For service tokens, include `orders:list` in the token's permissions. A token that can create or retrieve an individual order does not automatically have permission to list all site orders.
-
-```json
-{
-  "permissions": [
-    "orders:list"
-  ]
-}
-```
-
-The permission applies to callers using service tokens and other non-operator credentials. Operator credentials are not subject to regular permission checks.
-
-If the credential is missing `orders:list`, the request is rejected with `403 Forbidden`.
+Customer sessions do not have `orders:list`. See [Service tokens](/authentication/service-tokens) to create a token with this permission.
 
 ## Query parameters
 
-The endpoint uses cursor-based pagination.
+All parameters are optional.
 
-| Parameter | Required | Description |
-|---|---:|---|
-| `limit` | No | Maximum number of orders to return in the page. |
-| `cursor` | No | Opaque cursor returned for the next page. Omit it when requesting the first page. |
+| Parameter | Description |
+|---|---|
+| `since` | Inclusive lower bound on `updatedAt`, in ISO 8601 format. Also sets the first UTC creation day scanned. If omitted, scanning starts on the UTC day 30 days ago and no lower `updatedAt` bound is applied. |
+| `until` | Inclusive upper bound on `updatedAt`, in ISO 8601 format. Also sets the last UTC creation day scanned. If omitted, scanning ends today and no upper `updatedAt` bound is applied. |
+| `state` | Filter by the current order state. |
 
-The cursor is tied to the result position for the site. Treat it as an opaque value: do not decode it, modify it, or construct it manually.
+The API scans orders created on each UTC day from the first scanned day through the last, keeps the latest snapshot of each order, then filters on `updatedAt`. An order created before the first scanned day is not returned, even if it was updated inside the requested range.
 
-### Request the first page
-
-```bash
-curl \
-  -H "Authorization: Bearer {your-api-key}" \
-  "https://api.adobecommerce.live/{org}/{site}/orders?limit=25"
-```
-
-### Request a subsequent page
-
-Use the cursor from the previous response as the `cursor` query parameter:
+For example, request orders updated within a date range and in a particular state:
 
 ```bash
 curl \
   -H "Authorization: Bearer {your-api-key}" \
-  "https://api.adobecommerce.live/{org}/{site}/orders?limit=25&cursor={next-cursor}"
+  "https://api.adobecommerce.live/{org}/sites/{site}/orders?since=2026-11-01T00:00:00Z&until=2026-11-07T23:59:59Z&state=payment_completed"
 ```
-
-Continue requesting pages until the response does not contain a next-page cursor.
 
 ## Response
 
-A successful request returns an object containing the orders for the current page and, when more results are available, a cursor for the next page.
-
-```json
-{
-  "orders": [
-    {
-      "id": "order-123",
-      "site": "site-a",
-      "email": "customer@example.com",
-      "status": "completed",
-      "createdAt": "2026-11-25T14:32:10.000Z",
-      "updatedAt": "2026-11-25T14:35:02.000Z",
-      "total": 129.99,
-      "currency": "USD",
-      "items": [
-        {
-          "sku": "example-sku",
-          "quantity": 1,
-          "price": 129.99
-        }
-      ]
-    }
-  ],
-  "cursor": "{next-cursor}"
-}
-```
-
-### Response fields
-
-| Field | Type | Description |
-|---|---|---|
-| `orders` | array | Orders included in the current page. |
-| `cursor` | string | Opaque cursor for the next page. The field is omitted when there are no more results. |
-
-Each order includes its order identifier, customer information, lifecycle timestamps, status, totals, currency, and line items. The exact order fields depend on the order data captured by the site.
-
-An empty result contains an empty `orders` array:
+A successful response contains an `orders` array:
 
 ```json
 {
@@ -133,54 +63,4 @@ An empty result contains an empty `orders` array:
 }
 ```
 
-## Pagination example
-
-The following example retrieves all pages:
-
-```js
-async function listOrders(org, site, apiKey) {
-  const orders = [];
-  let cursor;
-
-  do {
-    const params = new URLSearchParams({ limit: '100' });
-    if (cursor) params.set('cursor', cursor);
-
-    const response = await fetch(
-      `https://api.adobecommerce.live/${org}/${site}/orders?${params}`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Order listing failed: ${response.status}`);
-    }
-
-    const page = await response.json();
-    orders.push(...page.orders);
-    cursor = page.cursor;
-  } while (cursor);
-
-  return orders;
-}
-```
-
-Store the cursor only for continuing the current traversal. If you need to start over, omit `cursor` and request the first page again.
-
-## Errors
-
-| Status | Description |
-|---:|---|
-| `401 Unauthorized` | The request does not include valid authentication. |
-| `403 Forbidden` | The authenticated caller does not have the `orders:list` permission. |
-| `404 Not Found` | The organization or site does not exist, or is not available to the caller. |
-| `400 Bad Request` | A query parameter is invalid, including an invalid pagination cursor. |
-
-## Next steps
-
-- [Order details](/orders): Retrieve or process an individual order
-- [Authentication](/authentication): Configure credentials for API requests
-- [Service tokens](/service-tokens): Create tokens with the permissions required by an integration
+The response is not paginated. All matching orders are returned at once, so use a short time range when listing orders.

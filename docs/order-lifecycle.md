@@ -33,7 +33,7 @@ Checkout uses three different order-related APIs because they answer different q
 | Shopper abandons an approved PayPal order-review payment | `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` | Cancels the payment and moves the order to `payment_cancelled` |
 | Provider returns the payment result | Provider callback routes | Verifies the provider result and moves the order to a payment state |
 | Customer, admin, or integration needs order data | `GET /{org}/sites/{site}/orders/{orderId}` | Reads one order by full or friendly ID |
-| Admin needs order reporting | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state |
+| Admin or integration needs order reporting | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state |
 | Integration needs to attach metadata | `PATCH /{org}/sites/{site}/orders/{orderId}/custom` | Adds or removes custom order fields |
 | Operations needs state history | `GET /{org}/sites/{site}/orders/journal` | Reads order state transition entries |
 
@@ -427,15 +427,15 @@ Provider callbacks guard against replay. Once an order is terminal, later callba
 
 Use `GET /orders/{orderId}` to retrieve an order by full order ID or friendly ID. Non-admin, non-service callers can only read their own order, matched by customer email.
 
-Use `GET /orders` to list orders. Listing requires `orders:list`; admins and service tokens with that permission can list orders. Optional filters include:
+Use `GET /orders` to list orders. Listing requires `orders:list`. Admin sessions have it, and it can be granted to [service tokens](/authentication/service-tokens). Customer sessions do not have it. Optional filters include:
 
 | Query parameter | Description |
 |-----------------|-------------|
-| `since` | Lower `updatedAt` bound in ISO 8601 format |
-| `until` | Upper `updatedAt` bound in ISO 8601 format |
+| `since` | Inclusive lower bound on `updatedAt` in ISO 8601 format. Also sets the first UTC creation day scanned. If omitted, scanning starts 30 days ago and no lower `updatedAt` bound is applied |
+| `until` | Inclusive upper bound on `updatedAt` in ISO 8601 format. Also sets the last UTC creation day scanned. If omitted, scanning ends today and no upper `updatedAt` bound is applied |
 | `state` | Current order state |
 
-The response is not paginated. The API scans the UTC creation days covered by the requested range, keeps the latest snapshot of each order, and then filters by `updatedAt`.
+The response is not paginated, so all matching orders are returned at once. The API scans orders created on each UTC day from the first scanned day through the last, keeps the latest snapshot of each order, then filters by `updatedAt`. An order created before the first scanned day is not returned, even if it was updated inside the requested range.
 
 ## Update custom order data
 
