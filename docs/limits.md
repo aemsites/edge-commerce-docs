@@ -1,7 +1,7 @@
 ---
 title: "Limits and guidance"
 description: "API limits and operational guidance for Edge Delivery Commerce."
-tags: "rate limits, bulk operations, catalog size, index size"
+tags: "rate limits, bulk operations, catalog size, index size, merchant feed size"
 status: migrated
 managed: true
 sourceFormat: markdown
@@ -45,11 +45,16 @@ The default guidance is:
 
 ## Product index size
 
-Each product index supports up to **15,000 products, including variants**. Count every parent product and each variant toward this per-index maximum.
+Each product index has two limits:
 
-This limit applies per index, not to the catalog as a whole. A catalog can contain more than 15,000 products across multiple indexes. For guidance on splitting a catalog with path-based or tagged indexes, see the [Product Indexing Guide](/indexing#choosing-an-index-strategy).
+- **Product count**: up to **50,000 products** per index. A product counts once, regardless of how many variants it has, so an index's sitemap never exceeds 50,000 URLs.
+- **Data size**: an index can hold up to **48 MB** of product data, and its merchant feed has a separate 48 MB limit. This is the size of the stored index data, not the size of the `index.json`, sitemap, or merchant feed responses. Variants, the number of indexed properties, and long text values such as descriptions all add to it. Variants are stored with their parent product in both the index and the merchant feed, so catalogs with many variants per product reach the size limit before 50,000 products.
 
-The 15,000-product index maximum is separate from the search-engine limit of 50,000 URLs per sitemap file. Keep each sitemap file within its URL limit as well.
+As a planning guideline, keep each index under **40,000 products and variants combined**. Catalogs with few variants per product can approach the 50,000-product limit. The `total` field of an index response counts each product and each variant, so you can compare an index against this guideline with `index.json?include=all&limit=1`.
+
+When an index reaches either limit, new products are not added to it. The product write still succeeds and the product page still renders, but the product doesn't appear in that index, its sitemap, or its merchant feed. Updates and deletions for products already in the index continue to apply. The index and the merchant feed have separate size limits, and which one fills up first depends on your index configuration. A new product can therefore appear in the index and sitemap but not in the feed, or the other way around.
+
+These limits apply per index, not to the catalog as a whole. To index more products, split the catalog across multiple path-based or tagged indexes. See the [Product Indexing Guide](/indexing#choosing-an-index-strategy).
 
 ## Next steps
 

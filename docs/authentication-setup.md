@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.62.0"
-    lastReviewedCommit: "c564649"
-    lastContentCommit: "6fb1e2b"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
 ---
 
 # Set up administrative access

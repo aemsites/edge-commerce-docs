@@ -1,7 +1,7 @@
 ---
 title: "Order lifecycle"
 description: "How carts become orders, payments, confirmations, and journal entries."
-tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition"
+tags: "estimate tokens, email, safeguards, order states, idempotency, guest checkout, recaptcha, friendly order ids, discount allocation, replay safety, checkout failure outcomes, coupon stacking, coupon usage, paypal express, session capabilities, catalog promotions, bundle composition, promotion testing, simulateDate"
 daPath: "/orders/lifecycle"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c564649"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
 ---
 
 # Order lifecycle
@@ -51,7 +51,7 @@ The short version: use estimates while the cart is still changing, use preview w
 | PayPal order-review cancellation | `POST /{org}/sites/{site}/orders/{orderId}/payments/cancel` | Cancels an approved but unconfirmed PayPal payment | Optional |
 | Payment callback or wallet result | Provider callback routes | Verifies payment and updates the order state | Provider-controlled |
 | Order lookup | `GET /{org}/sites/{site}/orders/{orderId}` | Retrieves one order by full or friendly ID | Required |
-| Order listing | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state | `orders:list` |
+| Order listing | `GET /{org}/sites/{site}/orders` | Lists orders by time range or state | Admin or service token with `orders:list` |
 | Custom data update | `PATCH /{org}/sites/{site}/orders/{orderId}/custom` | Adds integration metadata after creation | Required |
 | Order journal | `GET /{org}/sites/{site}/orders/journal` | Reads state transition entries | Required |
 
@@ -159,7 +159,7 @@ curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/orders/preview" 
   }'
 ```
 
-The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable. When multiple coupon codes are submitted, the API selects the best valid combination allowed by the site's coupon rules and reports each code's outcome in `couponStatus`.
+The response includes the calculated totals and a signed [`estimateToken`](#estimate-tokens). Line-item discounts are calculated by the server and included in the preview response when applicable. When multiple coupon codes are submitted, the API selects the best valid combination allowed by the site's coupon rules and reports each code's outcome in `couponStatus`. A catalog promotion can exclude a coupon from the lines it prices; if every otherwise eligible line is blocked, the coupon is reported as `rejected_not_combinable_with_promotion`.
 
 ```json
 {
@@ -297,18 +297,21 @@ Call `POST /orders/preview` after the shopper has selected a shipping method and
 
 This endpoint exists because interactive estimates are not enough to place an order. Preview validates the final submitted cart, applies eligible merchandise discounts before calculating tax, computes the selected-method totals, and returns the signed `estimateToken` that order creation uses to verify those totals.
 
+For non-production promotion testing, you can provide `simulateDate` on preview and order-creation requests. The value is used as the pricing timestamp when evaluating time-based catalog promotions. Use the same value for preview and order creation so the estimate token and committed order use the same promotion window. The effective simulated timestamp is returned in the `x-simulated-at` response header. This option is intended for non-production environments and should not be used for production checkout.
+
 The preview endpoint:
 
 - Validates the order shape and requires `shippingMethod.id`.
 - Validates item prices against product data unless price consistency is disabled in site configuration.
 - Validates item country availability.
 - Applies catalog promotions, coupons, automatic cart rules, and shipping, then calculates tax using the discount-reduced merchandise totals.
+- Evaluates conditional catalog promotions against paid cart lines and authorizes qualifying free-item grants.
 - Accepts a single coupon code or multiple coupon codes. For multiple codes, it selects the best valid combination within the site's applicable-coupon limit and stacking rules.
-- Reports each submitted code in `couponStatus` as `applied`, `rejected_invalid`, or `rejected_not_combinable`.
+- Reports each submitted code in `couponStatus` as `applied`, `rejected_invalid`, `rejected_not_combinable`, or `rejected_not_combinable_with_promotion`.
 - Treats coupons submitted with `couponSource: "auto"` as pinned. A pinned coupon is retained over a competing manual-only combination when selecting the applicable set.
 - Allocates approved discounts to order lines and, for bundle lines, to their components without exceeding the taxable value of any line or component. A configured coupon discount cap can further limit the coupon-sourced discount on each line; automatic pricing rules and catalog-sale markdowns are not subject to that cap.
 - Returns the computed totals and line items, including server-calculated discount allocations when applicable. The persisted tax lines and totals use those same allocations and the resulting reduced taxable base.
-- Returns a signed `estimateToken` that locks the selected tax, shipping method, and discounts.
+- Returns a signed `estimateToken` that locks the selected tax, shipping method, discounts, and free-item grants.
 
 For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enabled` is configured. See [reCAPTCHA verification](/checkout/recaptcha) and [Site configuration](/configuration/site#recaptcha-settings).
 
@@ -316,7 +319,7 @@ For guest checkout, this endpoint is protected by reCAPTCHA when `recaptcha.enab
 
 Call `POST /orders` only after preview succeeds. This endpoint turns the committed cart into a persisted order. It does not start payment.
 
-The order-create body accepts the same coupon selection as preview: `couponCode` can be a single code or an array, and `couponSource` can be a single value or an index-aligned array. Send the values used for preview unchanged with the estimate token. The server verifies the selected coupon combination and stores the resulting discounts; invalid or non-combinable codes are reported through `couponStatus` during preview rather than being applied to the order.
+The order-create body accepts the same coupon selection as preview: `couponCode` can be a single code or an array, and `couponSource` can be a single value or an index-aligned array. Send the values used for preview unchanged with the estimate token. When testing promotions with `simulateDate`, send the same simulated timestamp used for preview. The server verifies the selected coupon combination and stores the resulting discounts; invalid or non-combinable codes are reported through `couponStatus` during preview rather than being applied to the order.
 
 Guest checkout is supported. Authenticated callers must have `orders:write`, and customer-scoped callers can only create orders for their own email address. If the checkout customer email differs from the signed-in account email, order creation is rejected with the `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH` error code.
 
@@ -428,11 +431,11 @@ Use `GET /orders` to list orders. Listing requires `orders:list`. Admin sessions
 
 | Query parameter | Description |
 |-----------------|-------------|
-| `since` | Lower bound on `updatedAt` in ISO 8601 format, inclusive. If omitted, the scan starts at the UTC day 30 days ago and no lower `updatedAt` bound is applied |
-| `until` | Upper bound on `updatedAt` in ISO 8601 format, inclusive. If omitted, the scan ends today and no upper `updatedAt` bound is applied |
+| `since` | Inclusive lower bound on `updatedAt` in ISO 8601 format. Also sets the first UTC creation day scanned. If omitted, scanning starts 30 days ago and no lower `updatedAt` bound is applied |
+| `until` | Inclusive upper bound on `updatedAt` in ISO 8601 format. Also sets the last UTC creation day scanned. If omitted, scanning ends today and no upper `updatedAt` bound is applied |
 | `state` | Current order state |
 
-The response is not paginated: every matching order is returned at once, so keep the time range short. The API reads orders created on each UTC day from the first scanned day through the last, then filters on `updatedAt` for the bounds that were given. An order created before the first scanned day is not returned, even if it was updated inside the range.
+The response is not paginated, so all matching orders are returned at once. The API scans orders created on each UTC day from the first scanned day through the last, keeps the latest snapshot of each order, then filters by `updatedAt`. An order created before the first scanned day is not returned, even if it was updated inside the requested range.
 
 ## Update custom order data
 
@@ -471,7 +474,7 @@ The lifecycle is designed so the browser can drive checkout without controlling 
 - Guest checkout can create orders and start payments, but unauthenticated preview and order creation can be reCAPTCHA-gated.
 - Order creation verifies product prices, country availability, and preview tokens.
 - Active catalog-promotion prices are resolved from server-side catalog data; client-submitted promotional prices are accepted only when they match that active promotion.
-- Estimate tokens bind bundle compositions, component prices, and tax classifications. Changes after preview reject order creation and require a new preview.
+- Estimate tokens bind bundle compositions, component prices, tax classifications, and approved free-item grants. Changes after preview reject order creation and require a new preview.
 - Authenticated order creation rejects a checkout customer email that differs from the signed-in account email with `ADOBE_COMMERCE_CUSTOMER_EMAIL_MISMATCH`.
 - Payment initiation uses stored order totals, not client-supplied totals.
 - Only `pending` orders accept a new payment initiation.

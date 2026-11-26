@@ -1,7 +1,7 @@
 ---
 title: "Service tokens"
 description: "Create and manage scoped tokens for automation and integrations."
-tags: "email scopes, legacy site tokens, secrets, jwt, revocation"
+tags: "email scopes, legacy site tokens, secrets, jwt, revocation, orders:list"
 daPath: "/authentication/service-tokens"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c564649"
-    lastContentCommit: "5577796"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
 ---
 
 # Service tokens

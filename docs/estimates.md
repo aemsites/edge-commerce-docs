@@ -1,7 +1,7 @@
 ---
 title: "Estimates and cart totals"
 description: "Choose the right estimate endpoint for tax, shipping, promotions, coupons, and cart totals."
-tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes"
+tags: "estimate tokens, bundles, order preview, stacking, discount allocation, free shipping, conditional tax rules, recaptcha, multiple coupons, coupon status, discount caps, price consistency, error codes, simulated pricing, simulateDate, gift with purchase, coupon promotion scope"
 daPath: "/estimates"
 status: new
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c564649"
-    lastContentCommit: "c564649"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
 ---
 
 # Estimates and cart totals
@@ -26,6 +26,29 @@ All estimate endpoints use:
 ```text
 POST /{org}/sites/{site}/estimate/{estimateType}
 ```
+
+Price, shipping, and order estimates accept the optional `simulateDate` query parameter on enabled non-production sites. Pass an ISO 8601 date or date-time value. Values without a timezone are interpreted as UTC, and timezone offsets are normalized to UTC. The simulated time determines which catalog promotion windows are active; promotion start and end times are inclusive. Tax estimates ignore this parameter.
+
+When `simulateDate` is used, the response includes the normalized simulation time in the `simulatedAt` response field when available and in the `x-simulated-at` response header. The header is exposed to browser clients. For example:
+
+```bash
+curl -X POST \
+  "https://api.adobecommerce.live/{org}/sites/{site}/estimate/price?simulateDate=2026-12-01T12:00:00Z" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "country": "US",
+    "items": [
+      {
+        "sku": "BLENDER-RED",
+        "path": "/us/en/products/blender-pro-500",
+        "quantity": 1,
+        "price": { "final": "99.99", "currency": "USD" }
+      }
+    ]
+  }'
+```
+
+Simulating a date can change the catalog-promotion price and therefore `subtotal`. Catalog-promotion savings are not included in `discountTotal` or `orderDiscountTotal`; those totals contain coupon and automatic cart-rule discounts only.
 
 | Estimate type | Call when | Main response |
 |---------------|-----------|---------------|
@@ -73,7 +96,7 @@ The `order` estimate also accepts checkout context used by tax configuration:
 
 Pass the same checkout context to order preview and order creation. The values can affect configured [Avalara tax rules](/checkout/tax/avalara#conditional-tax-rules) and are bound into the estimate token returned by preview.
 
-When multiple coupon codes are submitted, the API validates each code, selects the best applicable combination within the site's configured `coupons.maxApplicableCoupons` limit, and applies the combination only when the coupon stacking rules allow it. The request accepts no more than five codes. Price and order estimate responses include `couponStatus` for each submitted code, with `applied`, `rejected_invalid`, or `rejected_not_combinable` status. A coupon with source `auto` is pinned ahead of competing manual coupons when the stacking rules allow it. Coupon status is not returned by the shipping estimate.
+When multiple coupon codes are submitted, the API validates each code, selects the best applicable combination within the site's configured `coupons.maxApplicableCoupons` limit, and applies the combination only when the coupon stacking rules allow it. The request accepts no more than five codes. Price and order estimate responses include `couponStatus` for each submitted code, with `applied`, `rejected_invalid`, `rejected_not_combinable`, or `rejected_not_combinable_with_promotion` status. A coupon with source `auto` is pinned ahead of competing manual coupons when the stacking rules allow it. Coupon status is not returned by the shipping estimate.
 
 ## Tax estimate
 
@@ -166,7 +189,7 @@ Shipping estimates are intentionally tolerant of invalid coupons. If a coupon fa
 
 ## Price estimate
 
-Use `price` when the shopper changes products, quantities, or coupon code and you need product-level discounts, automatic cart rules, coupon effects, or free-item grants.
+Use `price` when the shopper changes products, quantities, or coupon code and you need product-level discounts, automatic cart rules, coupon effects, or free-item grants from qualifying conditional promotions.
 
 ```bash
 curl -X POST "https://api.adobecommerce.live/{org}/sites/{site}/estimate/price" \
@@ -218,6 +241,8 @@ Example response:
 ```
 
 `price` applies catalog promotions first, validates coupons, applies coupon stacking rules, and then applies automatic cart rules. Coupon pricing depends on the coupon type: by default, the API compares the existing sale price with the coupon-adjusted regular price and keeps the lower value. Coupon types with `applyToSalePrice: true` calculate their discount from the post-promotion price instead. Product-list coupons compare each configured absolute price with the current line-item price.
+
+Catalog-promotion savings are already reflected in `subtotal`. The `orderDiscountTotal` contains only allocated coupon and automatic cart-rule discounts; do not subtract catalog-promotion discounts from `subtotal` again. Conditional promotions can grant free items when paid lines in their configured scope meet the promotion's conditions.
 
 ## Order estimate
 
@@ -297,7 +322,7 @@ With `shippingMethod.id`, `order` returns a single matching method:
 
 If the requested method does not match any available rate, `shippingMethods` is an empty array.
 
-For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. A configured coupon discount cap can further limit coupon-sourced discounts on each line without limiting catalog promotions or automatic pricing rules. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ.
+For each shipping method, the estimate allocates approved coupon and automatic cash discounts to eligible lines without exceeding the lines' post-promotion balances. A configured coupon discount cap can further limit coupon-sourced discounts on each line without limiting catalog promotions or automatic pricing rules. Tax is then calculated separately using that method's discount-reduced merchandise and effective shipping amount. As a result, methods can have different tax amounts when their discounts or effective shipping charges differ. Catalog-promotion savings are already reflected in `subtotal` and are excluded from `discountTotal`.
 
 When the shopper selects a final method and submits checkout, `/orders/preview` recomputes the committed selected-method total and returns the `estimateToken` used by order creation.
 
@@ -315,6 +340,8 @@ Estimate totals use this order of operations:
 8. Evaluate conditional promotions that grant free items.
 
 Approved coupon and automatic cash discounts are allocated per line after promotions are applied. Each allocation is limited by the line's remaining post-promotion balance, so a discount cannot make a line negative or overflow onto an ineligible line. A configured per-line coupon cap limits the combined coupon-sourced discount on each line to the configured percentage of its pre-coupon subtotal. Coupon-scoped discounts use their eligible lines first; cart-wide discounts use the remaining merchandise balances.
+
+A catalog promotion can block a coupon on the lines it prices, based on the promotion's coupon type or group scope. Blocked lines are excluded from that coupon. If every otherwise eligible line is blocked, price and order estimates reject a single coupon with `ADOBE_COMMERCE_COUPON_NOT_COMBINABLE_WITH_PROMOTION`; for an array of coupon codes, the code receives `rejected_not_combinable_with_promotion`. Shipping estimates ignore this validation.
 
 See [Promotions](/promotions) and [Coupons](/coupons) for rule configuration and coupon behavior.
 

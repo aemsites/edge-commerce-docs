@@ -1,7 +1,7 @@
 ---
 title: "Promotions guide"
 description: "Promotion models for catalog, cart, and conditional discounts."
-tags: "stacking, rule priority, catalog price rules, free shipping, stage pricing, discount allocation"
+tags: "stacking, rule priority, catalog price rules, free shipping, stage pricing, discount allocation, coupon scope, gift with purchase, simulated pricing, product scope, category scope, disqualifying conditions"
 daPath: "/promotions"
 status: migrated
 managed: true
@@ -9,8 +9,8 @@ sourceFormat: markdown
 sources:
   helix-commerce-api:
     version: "v2.52.2"
-    lastReviewedCommit: "c564649"
-    lastContentCommit: "0fdf2af"
+    lastReviewedCommit: "70951d6"
+    lastContentCommit: "70951d6"
   helix-product-pipeline:
     version: "v2.9.1"
     lastReviewedCommit: "893adf9"
@@ -69,6 +69,12 @@ The request body is a `CatalogPriceRules` object with a single `promotions` arra
 | `country` | string | No | ISO 3166-1 alpha-2 country code. When set, the promotion is only applied for requests from that country |
 | `locale` | string | No | Locale string (e.g., `"en-US"`). When set, limits the promotion to that locale |
 | `conditions` | object | No | When present, marks this as a conditional promotion evaluated at cart time rather than render time (see [Conditional promotions](#conditional-promotions)) |
+| `includedCouponTypes` | string[] | No | Coupon type IDs allowed on lines priced by this promotion |
+| `excludedCouponTypes` | string[] | No | Coupon type IDs blocked on lines priced by this promotion |
+| `includedCouponGroups` | string[] | No | Coupon type groups allowed on lines priced by this promotion |
+| `excludedCouponGroups` | string[] | No | Coupon type groups blocked on lines priced by this promotion |
+
+Coupon scope fields are not allowed on conditional promotions. For a non-conditional promotion, scope is decided by the promotion that sets each line's price. Excluded coupon types take precedence over included types, followed by excluded groups and included groups. If an included type or group list is set, types not explicitly included are blocked. Without scope fields, coupons are allowed.
 
 Each `CatalogPriceRule` within `rules`:
 
@@ -95,7 +101,7 @@ Each `CatalogPriceRule` within `rules`:
 
 When the pipeline evaluates catalog promotions for a product, it finds the best active promotion rule for that product path across all promotions. A rule qualifies if its price is lower than the product's current `price.final` or if any of its active variant-specific prices are lower than the corresponding variants' current prices. Among qualifying rules, the one with the lowest product-level price wins.
 
-A rule is considered active when it is enabled and the current time falls within its optional `start`/`end` window. Rules without a `start` or `end` are always active. A rule is enabled unless `enabled` is explicitly `false`. The same rules apply to variant-specific price overrides.
+A rule is considered active when it is enabled and the current time falls within its optional `start`/`end` window. Rules without a `start` or `end` are always active. A rule is enabled unless `enabled` is explicitly `false`. The same rules apply to variant-specific price overrides. A rule's `start` and `end` boundaries are inclusive.
 
 Variants not explicitly listed in `rule.variants` inherit the parent product's rule price if it is lower than their current price.
 
@@ -104,6 +110,8 @@ Variants not explicitly listed in `rule.variants` inherit the parent product's r
 Promotions that have `start` and `end` timestamps on their rules automatically become active and expire without any manual intervention. The pipeline evaluates the rule's active window at request time, so a rule that has not yet started or has already ended is never applied.
 
 Timestamps must include an explicit timezone offset — bare datetimes are not accepted. UTC (`Z`) is recommended for consistency since rule windows are evaluated against the server's UTC clock. If you need a rule to activate at a specific local business time, use the corresponding UTC offset (for example, `2026-06-01T08:00:00-05:00` for 8 AM US Central Standard Time).
+
+Both the start and end boundaries are inclusive. A rule applies at the exact `start` timestamp and remains active through the exact `end` timestamp, unless it is disabled.
 
 ```json
 {
@@ -146,6 +154,8 @@ A promotion with a `country` field is only applied when the request's resolved c
 
 To preview how catalog promotions will look before activating them in production, send the `x-env: stage` request header to the pipeline. The pipeline loads promotions from a separate staging store and returns the adjusted prices without caching the response. This does not affect production traffic.
 
+On non-production environments, you can also use the `simulateDate` query parameter when time travel is enabled in the site configuration. This evaluates scheduled promotions and coupon expiry at the supplied time and returns the applied time as `simulatedAt`.
+
 ## Conditional promotions
 
 When a catalog promotion has a `conditions` object, it behaves differently. Rather than being applied at render time to lower displayed prices, a conditional promotion is evaluated at cart/estimate time. The typical use case is granting a free product when the cart meets a spending threshold. See [Estimates and cart totals](/estimates) for estimate-time discount behavior.
@@ -166,9 +176,11 @@ When a catalog promotion has a `conditions` object, it behaves differently. Rath
 }
 ```
 
-The `conditions` object supports `minimumSubtotal` for a spending threshold, `requiredProducts` and `excludedProducts` for cart content requirements, and `requiredCategories` and `excludedCategories` for category-level requirements.
+Conditional promotions can scope qualification to included or excluded products and categories. Disqualifying product or category conditions prevent the promotion from applying when any paid cart line matches them. Product scope takes precedence over category scope, and exclusions take precedence within each scope level.
 
-Conditional promotions are never applied by the pipeline when rendering product pages or indexes. They are only evaluated at cart and checkout time, when the storefront calls the estimate endpoint and returns the qualifying free-item grants as part of the discount breakdown. Disabled conditional rules are not applied.
+Only paid lines qualify: a line must have a submitted price greater than zero and a positive post-promotion line subtotal. Free-item lines do not count, qualify, or disqualify a promotion. The promotion qualifies only when at least one paid line is in scope and the subtotal of those in-scope lines meets `minimumSubtotal`. The threshold comparison is made against the scoped subtotal, not the full cart subtotal.
+
+Only active rules can produce grants. A rule is enabled unless `enabled` is explicitly `false`, and its `start` and `end` timestamps are inclusive. A qualifying free-item grant includes the promotion's `minimumSubtotal` when that condition is set, allowing the storefront to show the threshold associated with the grant in the discount breakdown.
 
 ## Cart rules
 
@@ -256,7 +268,7 @@ Cart rules that list a coupon type ID in their `incompatibleTypes` array are aut
 
 ## How promotions apply during the purchase flow
 
-The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, coupon codes are validated and the best applicable combination is selected, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the coupon type: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. Third, cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client.
+The estimate endpoint applies each discount layer in sequence. First, catalog promotion overrides lower the per-item prices. Second, coupon codes are validated and the best applicable combination is selected, including minimum-order checks against the post-promotion subtotal. Coupon pricing then follows the coupon type: the API either compares the coupon-adjusted regular price with the active sale price, applies the coupon to the sale price, or uses absolute product-list prices. A catalog promotion's coupon scope can exclude a coupon from the lines that promotion prices; when every otherwise eligible line is blocked, the coupon is rejected as not combinable with the promotion. Third, cart rules are evaluated — non-stackable coupon types suppress all rules, and incompatible type declarations remove specific rules. Finally, the remaining qualifying cart rules are applied, and the full discount breakdown is returned to the client. Catalog-promotion savings are already included in the subtotal and are not counted again in the additional discount total.
 
 ## Next steps
 
