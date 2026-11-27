@@ -1,0 +1,14 @@
+{
+  "loop": 8,
+  "accent": "var(--pdp)",
+  "r": 3.5,
+  "ring_r": 9,
+  "events": [
+    { "id": "m1", "kind": "packet", "at": 0.2, "travel": 0.7, "from": [72, 306], "via": [[220, 306], [220, 280]], "to": [264, 280], "color": "var(--pdp)", "glow": { "x": 264, "y": 260, "w": 112, "h": 72, "rx": 7 }, "note": "PDP request reaches AEM Network" },
+    { "id": "m2", "kind": "packet", "after": "m1", "gap": 0.2, "travel": 0.65, "from": [376, 280], "to": [480, 280], "color": "var(--pdp)", "glow": { "x": 480, "y": 260, "w": 168, "h": 72, "rx": 7 }, "note": "AEM Network routes PDP request to Product Pipeline" },
+    { "id": "m3", "kind": "packet", "after": "m2", "gap": 0.2, "travel": 0.9, "from": [364, 136], "via": [[364, 208], [520, 208]], "to": [520, 260], "color": "var(--pdp)", "glow": { "x": 480, "y": 260, "w": 168, "h": 72, "rx": 7 }, "note": "Product Pipeline reads PDP data from Product Bus" },
+    { "id": "m4", "kind": "packet", "after": "m3", "gap": 0.8, "travel": 0.7, "from": [152, 306], "via": [[232, 306], [232, 312]], "to": [264, 312], "color": "var(--plp)", "glow": { "x": 264, "y": 260, "w": 112, "h": 72, "rx": 7 }, "note": "PLP index request reaches AEM Network" },
+    { "id": "m5", "kind": "packet", "after": "m4", "gap": 0.2, "travel": 0.65, "from": [376, 312], "to": [480, 312], "color": "var(--plp)", "glow": { "x": 480, "y": 260, "w": 168, "h": 72, "rx": 7 }, "note": "AEM Network routes PLP request to Product Pipeline" },
+    { "id": "m6", "kind": "packet", "after": "m5", "gap": 0.2, "travel": 0.9, "from": [588, 136], "via": [[588, 208], [608, 208]], "to": [608, 260], "color": "var(--plp)", "glow": { "x": 480, "y": 260, "w": 168, "h": 72, "rx": 7 }, "note": "Product Pipeline reads PLP data from Product Index" }
+  ]
+}
