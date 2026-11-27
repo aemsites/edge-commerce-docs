@@ -171,14 +171,14 @@ Focused, task-oriented guides for each part of the platform.
 
 Product data flows from your sources into the product data store, then out to search and delivery.
 
-<div class="flow">
-<div><div>:storage:</div><div>Sources</div><div>Catalog &amp; commerce data</div></div>
-<div><div>:bolt:</div><div>Product Pipeline</div><div>ETL ingestion</div></div>
-<div><div>:hub:</div><div><strong>Product data</strong></div><div>Path-based storage</div></div>
-<div><div>:search:</div><div>Indexer</div><div>Search &amp; feeds</div></div>
-<div><div>:alt_route:</div><div>AEM Network</div><div>URL routing</div></div>
-<div><div>:public:</div><div>Delivery</div><div>HTML · JSON · feeds</div></div>
-</div>
+<picture class="flow-diagram flow-diagram-light">
+  <source media="(max-width: 600px)" srcset="/diagrams/data-to-storefront-mobile-light.svg" width="320" height="568">
+  <img src="/diagrams/data-to-storefront-light.svg" alt="PIM data passes through ETL and the API into Product Bus, and the Indexer builds Product Index. PDP requests go through AEM Network and Product Pipeline to Product Bus; PLP index requests use the same route and load Product Index JSON." width="660" height="420">
+</picture>
+<picture class="flow-diagram flow-diagram-dark">
+  <source media="(max-width: 600px)" srcset="/diagrams/data-to-storefront-mobile.svg" width="320" height="568">
+  <img src="/diagrams/data-to-storefront.svg" alt="PIM data passes through ETL and the API into Product Bus, and the Indexer builds Product Index. PDP requests go through AEM Network and Product Pipeline to Product Bus; PLP index requests use the same route and load Product Index JSON." width="660" height="420">
+</picture>
 
 ## Reading paths
 

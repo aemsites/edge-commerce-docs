@@ -241,6 +241,22 @@ img {
   height: auto;
 }
 
+.flow-diagram {
+  display: block;
+}
+
+.flow-diagram-dark {
+  display: none;
+}
+
+body.dark-theme .flow-diagram-light {
+  display: none;
+}
+
+body.dark-theme .flow-diagram-dark {
+  display: block;
+}
+
 /* sections */
 .section {
   display: block;
